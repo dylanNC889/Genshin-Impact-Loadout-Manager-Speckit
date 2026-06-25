@@ -38,7 +38,16 @@
       "Bash(echo \"local roster: $\\(curl -s http://localhost:3000/api/v1/characters)",
       "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\)['character']; print\\(' ', d['name'], d['baseStats']\\)\")",
       "Bash(curl -s http://localhost:3000/api/v1/weapons)",
-      "Bash(echo \"weapons: $\\(curl -s http://localhost:3000/api/v1/weapons)"
+      "Bash(echo \"weapons: $\\(curl -s http://localhost:3000/api/v1/weapons)",
+      "Bash(echo \"frontend: $\\(curl -s -o /dev/null -w 'HTTP %{http_code}' http://localhost:5173/\\)\")",
+      "Bash(curl -s http://localhost:3000/api/v1/characters/hu-tao)",
+      "Bash(python3 -c \"import sys,json; lv=json.load\\(sys.stdin\\)['character']['levels']; print\\(' ', ' '.join\\(f\\\\\"L{l['level']}:HP{round\\(l['hp']\\)}\\\\\" for l in lv\\)\\)\")",
+      "Bash(node -e \"const d=require\\('./data/genshindb/characters.json'\\); const h=d.find\\(c=>c.id==='hu-tao'\\); const na=h.skills.find\\(s=>s.type==='NormalAttack'\\); console.log\\(na.scaling.slice\\(0,2\\).map\\(r=>r.label+' L10='+r.valuesByLevel[9]+\\(r.percent?'%':''\\)\\).join\\(' | '\\)\\)\")",
+      "Bash(pkill -f concurrently)",
+      "Bash(pkill -f \"tsx src/server.ts\")",
+      "Bash(pkill -f vite)",
+      "Bash(lsof -ti:3000 -ti:5173)",
+      "Bash(xargs kill -9)"
     ]
   }
 }

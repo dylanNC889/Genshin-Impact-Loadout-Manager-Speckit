@@ -44,7 +44,12 @@ interface RawCharacter {
   ascensionStat: StatValue;
   levels?: { level: number; hp: number; atk: number; def: number; ascensionStat: number }[];
   roles: Role[];
-  skills: { type: TalentType; name: string; desc?: string }[];
+  skills: {
+    type: TalentType;
+    name: string;
+    desc?: string;
+    scaling?: { label: string; valuesByLevel: number[]; percent: boolean }[];
+  }[];
 }
 
 interface MetaFile {
@@ -99,7 +104,7 @@ function normalizeCharacter(raw: RawCharacter): Character {
       type: s.type,
       name: s.name,
       description: s.desc ?? "",
-      scaling: [],
+      scaling: s.scaling ?? [],
     })),
   };
   // Validate the assembled record against the contract (single source of truth).

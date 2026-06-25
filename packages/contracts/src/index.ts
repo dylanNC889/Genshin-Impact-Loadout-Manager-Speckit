@@ -117,8 +117,10 @@ export const SkillSchema = z.object({
   type: TalentTypeSchema,
   name: z.string(),
   description: z.string().default(""),
-  /** Scaling values per talent level (1..N); each entry is a labeled multiplier. */
-  scaling: z.array(z.object({ label: z.string(), valuesByLevel: z.array(z.number()) })).default([]),
+  /** Scaling values per talent level (1..N); each entry is a labeled multiplier (FR-004). */
+  scaling: z
+    .array(z.object({ label: z.string(), valuesByLevel: z.array(z.number()), percent: z.boolean().default(false) }))
+    .default([]),
 });
 export type Skill = z.infer<typeof SkillSchema>;
 

@@ -17,11 +17,18 @@ import { useLoadoutStore } from "../state/loadoutStore";
 
 const PRIMARY_ORDER = ["HP", "ATK", "DEF", "CRIT_RATE", "CRIT_DMG", "EM", "ER"];
 
+/** Format a talent scaling value at the chosen talent level (FR-004). */
+function fmtScale(row: { valuesByLevel: number[]; percent: boolean }, level: number): string {
+  const v = row.valuesByLevel[level - 1] ?? row.valuesByLevel[row.valuesByLevel.length - 1] ?? 0;
+  return row.percent ? `${v.toFixed(1)}%` : String(v);
+}
+
 export function CharacterPage() {
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
   const loadoutParam = searchParams.get("loadout");
   const [level, setLevel] = useState(90);
+  const [talentLevel, setTalentLevel] = useState(10);
   const resetLoadout = useLoadoutStore((s) => s.reset);
   const setWeapon = useLoadoutStore((s) => s.setWeapon);
   const setArtifact = useLoadoutStore((s) => s.setArtifact);
@@ -114,12 +121,34 @@ export function CharacterPage() {
         </Card>
 
         <Card title="Skills">
+          <div className="talent-control">
+            <label htmlFor="talent">Talent level</label>
+            <select id="talent" value={talentLevel} onChange={(e) => setTalentLevel(Number(e.target.value))}>
+              {Array.from({ length: 15 }, (_, i) => i + 1).map((l) => (
+                <option key={l} value={l}>
+                  Lv {l}
+                </option>
+              ))}
+            </select>
+          </div>
           <ul className="skills">
             {char.skills.map((s) => (
               <li key={s.id}>
                 <span className="skill-type">{s.type}</span>
                 <span className="skill-name">{s.name}</span>
                 {s.description ? <span className="skill-desc">{s.description}</span> : null}
+                {s.scaling.length ? (
+                  <table className="scaling">
+                    <tbody>
+                      {s.scaling.map((row, i) => (
+                        <tr key={i}>
+                          <td>{row.label}</td>
+                          <td>{fmtScale(row, talentLevel)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                ) : null}
               </li>
             ))}
           </ul>

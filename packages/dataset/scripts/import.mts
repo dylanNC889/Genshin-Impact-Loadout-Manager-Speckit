@@ -85,6 +85,28 @@ function ascensionValue(key: string, specialized: number): number {
   return key === "EM" ? round(specialized) : round(specialized * 100);
 }
 
+/** Extract scaling rows from a genshin-db combat talent (labels + parameters). */
+function scalingOf(combat: any): { label: string; valuesByLevel: number[]; percent: boolean }[] {
+  const labels: string[] = combat?.attributes?.labels ?? [];
+  const params: Record<string, number[]> = combat?.attributes?.parameters ?? {};
+  const rows: { label: string; valuesByLevel: number[]; percent: boolean }[] = [];
+  for (const label of labels) {
+    const [name, template = ""] = String(label).split("|");
+    const m = template.match(/\{(param\d+):([^}]*)\}/);
+    if (!m) continue;
+    const arr = params[m[1]!];
+    if (!Array.isArray(arr) || arr.length === 0) continue;
+    const percent = m[2]!.includes("P");
+    const suffix = template.replace(/\{param\d+:[^}]*\}/g, "").replace(/\s+/g, " ").trim();
+    rows.push({
+      label: suffix ? `${name!.trim()} ${suffix}`.trim() : name!.trim(),
+      valuesByLevel: arr.map((v) => round(percent ? v * 100 : v)),
+      percent,
+    });
+  }
+  return rows;
+}
+
 function firstContentLine(desc: unknown): string {
   const lines = String(desc ?? "")
     .split("\n")
@@ -126,7 +148,9 @@ for (const name of charNames) {
     });
     const t = genshindb.talents(name) as any;
     const skill = (combat: any, type: string) =>
-      combat ? { type, name: combat.name as string, desc: firstContentLine(combat.description) } : null;
+      combat
+        ? { type, name: combat.name as string, desc: firstContentLine(combat.description), scaling: scalingOf(combat) }
+        : null;
     const skills = [
       skill(t?.combat1, "NormalAttack"),
       skill(t?.combat2, "ElementalSkill"),

@@ -31,10 +31,13 @@ describe("full genshin-db dataset loads and validates against @app/contracts (T0
     expect(new Set(dataset.characters.map((c) => c.id)).size).toBe(dataset.characters.length);
   });
 
-  it("characters have real skill descriptions (FR-004)", () => {
+  it("characters have real skill descriptions + talent scaling (FR-004)", () => {
     const huTao = byId("hu-tao");
     expect(huTao.skills.length).toBeGreaterThanOrEqual(3);
     expect(huTao.skills.every((s) => s.description.length > 0)).toBe(true);
+    const na = huTao.skills.find((s) => s.type === "NormalAttack");
+    expect(na?.scaling.length).toBeGreaterThan(0);
+    expect(na?.scaling[0]?.valuesByLevel.length).toBeGreaterThanOrEqual(10);
   });
 });
 
