@@ -40,9 +40,9 @@ Monorepo (pnpm + Turborepo) per plan.md:
 - [X] T003 [P] Configure ESLint + Prettier at repo root (`.eslintrc.cjs`, `.prettierrc`) with zero-error rule (Principle I)
 - [X] T004 [P] Scaffold workspace packages with `package.json` each: `packages/contracts/`, `packages/stat-engine/`, `backend/`, `frontend/`
 - [X] T005 [P] Configure Vitest workspace (unit + integration) and Vitest `bench` in `vitest.workspace.ts` (Principles II/IV)
-- [ ] T006 [P] Configure Playwright (`playwright.config.ts`) and install browsers for `frontend/tests/e2e`
-- [ ] T007 [P] Add `docker-compose.yml` for PostgreSQL 16 and `backend/.env.example` (DATABASE_URL)
-- [ ] T008 Add CI workflow `.github/workflows/ci.yml` running lint + test + bench, failing on any gate violation
+- [X] T006 [P] Configure Playwright (`playwright.config.ts`) and install browsers for `frontend/tests/e2e`
+- [X] T007 [P] Add `docker-compose.yml` for PostgreSQL 16 and `backend/.env.example` (DATABASE_URL)
+- [X] T008 Add CI workflow `.github/workflows/ci.yml` running lint + test + bench, failing on any gate violation
 
 ---
 
@@ -173,7 +173,7 @@ Monorepo (pnpm + Turborepo) per plan.md:
 
 - [X] T055 [P] Accessibility pass (keyboard nav + ARIA) across shared components in `frontend/src/components/` (Principle III)
 - [X] T056 [P] Verify full-roster dataset coverage (100% of targeted version) and add a coverage check to `data/` tooling (SC-008)
-- [ ] T057 [P] Wire CI perf gate to run `stat-engine` benches and fail on budget regression (Principle IV)
+- [X] T057 [P] Wire CI perf gate to run `stat-engine` benches and fail on budget regression (Principle IV)
 - [X] T058 [P] Actionable-error consistency tests across the API surface (envelope shape) in `backend/tests/contract/errors.contract.test.ts` (Principle III)
 - [X] T059 Run `quickstart.md` end-to-end and confirm SC-001..SC-009 (acceptance)
 - [X] T060 [P] Root `README.md` with setup/run/test and the per-version dataset refresh procedure

@@ -106,6 +106,29 @@ describe("US4 session 2 — reopen across sessions, duplicate, delete (T048)", (
     expect(body.assumptions.rotation).toBe("v1-generic");
   });
 
+  it("uses a slot's associated loadout for geared damage vs base stats (FR-017)", async () => {
+    const gearedTeam = await app.inject({
+      method: "POST",
+      url: "/api/v1/teams",
+      payload: { name: "Geared", slots: [{ characterId: "hu-tao", loadoutId }] },
+    });
+    const baseTeam = await app.inject({
+      method: "POST",
+      url: "/api/v1/teams",
+      payload: { name: "Base", slots: [{ characterId: "hu-tao" }] },
+    });
+    const gearedId = (gearedTeam.json() as { id: string }).id;
+    const baseId = (baseTeam.json() as { id: string }).id;
+
+    const geared = await app.inject({ method: "POST", url: `/api/v1/teams/${gearedId}/calculate`, payload: {} });
+    const base = await app.inject({ method: "POST", url: `/api/v1/teams/${baseId}/calculate`, payload: {} });
+
+    const gearedTotal = (geared.json() as { totalEstimated: number }).totalEstimated;
+    const baseTotal = (base.json() as { totalEstimated: number }).totalEstimated;
+    // The loadout adds weapon base ATK + Pyro DMG, so geared damage must exceed base.
+    expect(gearedTotal).toBeGreaterThan(baseTotal);
+  });
+
   it("deletes a loadout (404 afterwards)", async () => {
     const del = await app.inject({ method: "DELETE", url: `/api/v1/loadouts/${loadoutId}` });
     expect(del.statusCode).toBe(204);
