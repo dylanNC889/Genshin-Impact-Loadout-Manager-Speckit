@@ -122,6 +122,16 @@ export const SkillSchema = z.object({
 });
 export type Skill = z.infer<typeof SkillSchema>;
 
+/** Base stats at a specific level anchor (FR-003). `ascensionStat` is the dedicated stat value. */
+export const LevelStatSchema = z.object({
+  level: z.number().int(),
+  hp: z.number(),
+  atk: z.number(),
+  def: z.number(),
+  ascensionStat: z.number(),
+});
+export type LevelStat = z.infer<typeof LevelStatSchema>;
+
 export const CharacterSchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -134,6 +144,8 @@ export const CharacterSchema = z.object({
   growthCurveId: z.string(),
   /** Six ascension phases (index 0 = phase 1 ... index 5 = phase 6). */
   ascensions: z.array(AscensionPhaseSchema).length(6),
+  /** Optional base-stat anchors per level for FR-003 level support; preferred over curves. */
+  levels: z.array(LevelStatSchema).default([]),
   roles: z.array(RoleSchema).default([]),
   skills: z.array(SkillSchema).default([]),
 });

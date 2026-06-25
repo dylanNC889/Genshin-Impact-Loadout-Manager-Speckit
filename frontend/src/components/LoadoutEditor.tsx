@@ -28,10 +28,12 @@ interface Props {
   artifactSets: ArtifactSet[];
   rules: SlotStatRules;
   statValues: StatValuesTable;
-  ascensionPhase: number;
+  level: number;
   /** When set, the editor was opened on an existing saved loadout (FR-018 edit). */
   editingLoadoutId?: string | null;
 }
+
+const ASCENSION_FOR_LEVEL: Record<number, number> = { 1: 0, 20: 1, 40: 2, 50: 3, 60: 4, 70: 5, 80: 6, 90: 6 };
 
 export function LoadoutEditor({
   character,
@@ -40,7 +42,7 @@ export function LoadoutEditor({
   artifactSets,
   rules,
   statValues,
-  ascensionPhase,
+  level,
   editingLoadoutId,
 }: Props) {
   const weaponId = useLoadoutStore((s) => s.weaponId);
@@ -62,8 +64,8 @@ export function LoadoutEditor({
   const loadout: LoadoutInput = {
     name: "editor",
     characterId: character.id,
-    level: 90,
-    ascensionPhase,
+    level,
+    ascensionPhase: ASCENSION_FOR_LEVEL[level] ?? 6,
     weaponId,
     artifacts: SLOTS.flatMap((slot) => {
       const d = artifacts[slot];

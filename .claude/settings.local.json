@@ -33,7 +33,12 @@
       "Bash(git commit *)",
       "Bash(gh run *)",
       "Bash(curl -s http://localhost:3000/api/v1/characters)",
-      "Bash(echo \"local app roster: $\\(curl -s http://localhost:3000/api/v1/characters)"
+      "Bash(echo \"local app roster: $\\(curl -s http://localhost:3000/api/v1/characters)",
+      "Bash(curl -s --retry 25 --retry-connrefused --retry-delay 1 http://localhost:3000/health)",
+      "Bash(echo \"local roster: $\\(curl -s http://localhost:3000/api/v1/characters)",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\)['character']; print\\(' ', d['name'], d['baseStats']\\)\")",
+      "Bash(curl -s http://localhost:3000/api/v1/weapons)",
+      "Bash(echo \"weapons: $\\(curl -s http://localhost:3000/api/v1/weapons)"
     ]
   }
 }

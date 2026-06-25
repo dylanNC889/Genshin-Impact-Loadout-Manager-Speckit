@@ -42,6 +42,7 @@ interface RawCharacter {
   rarity: number;
   lv90: { hp: number; atk: number; def: number };
   ascensionStat: StatValue;
+  levels?: { level: number; hp: number; atk: number; def: number; ascensionStat: number }[];
   roles: Role[];
   skills: { type: TalentType; name: string; desc?: string }[];
 }
@@ -91,6 +92,7 @@ function normalizeCharacter(raw: RawCharacter): Character {
     baseStats: { baseHP: raw.lv90.hp, baseATK: raw.lv90.atk, baseDEF: raw.lv90.def },
     growthCurveId: "endgame",
     ascensions: buildAscensions(raw.ascensionStat),
+    levels: raw.levels ?? [],
     roles: raw.roles,
     skills: raw.skills.map((s) => ({
       id: slug(s.name),

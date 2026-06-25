@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useSearchParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { computeBaseSheet, statRecord } from "@app/stat-engine";
+import { computeBaseSheet, statRecord, LEVEL_ANCHORS } from "@app/stat-engine";
 import {
   fetchArtifactSets,
   fetchCharacterDetail,
@@ -21,7 +21,7 @@ export function CharacterPage() {
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
   const loadoutParam = searchParams.get("loadout");
-  const [phase, setPhase] = useState(6);
+  const [level, setLevel] = useState(90);
   const resetLoadout = useLoadoutStore((s) => s.reset);
   const setWeapon = useLoadoutStore((s) => s.setWeapon);
   const setArtifact = useLoadoutStore((s) => s.setArtifact);
@@ -57,6 +57,7 @@ export function CharacterPage() {
     const saved = savedLoadoutQ.data;
     if (!saved) return;
     resetLoadout();
+    setLevel(saved.level);
     setWeapon(saved.weaponId ?? null);
     for (const a of saved.artifacts) {
       setArtifact(a.slot, { setId: a.setId, mainStat: a.mainStat, subStats: a.subStats });
@@ -68,8 +69,8 @@ export function CharacterPage() {
   if (!detail.data) return <p className="muted">Not found.</p>;
 
   const { character: char, curves } = detail.data;
-  // Client-side recalculation — instant on ascension change (Principle IV / FR-003).
-  const sheet = statRecord(computeBaseSheet(char, 90, phase, curves));
+  // Client-side recalculation — instant on level change (Principle IV / FR-003).
+  const sheet = statRecord(computeBaseSheet(char, level, 6, curves));
   const extras = Object.entries(sheet).filter(
     ([key, value]) => !PRIMARY_ORDER.includes(key) && key.endsWith("_DMG") && value !== 0,
   );
@@ -95,16 +96,14 @@ export function CharacterPage() {
       <div className="char-body">
         <Card title="Base Stats">
           <div className="ascension-control">
-            <label htmlFor="phase">Ascension phase (Lv 90)</label>
-            <input
-              id="phase"
-              type="range"
-              min={0}
-              max={6}
-              value={phase}
-              onChange={(e) => setPhase(Number(e.target.value))}
-            />
-            <span className="phase-badge">A{phase}</span>
+            <label htmlFor="level">Level</label>
+            <select id="level" value={level} onChange={(e) => setLevel(Number(e.target.value))}>
+              {LEVEL_ANCHORS.map((l) => (
+                <option key={l} value={l}>
+                  Lv {l}
+                </option>
+              ))}
+            </select>
           </div>
           {PRIMARY_ORDER.map((key) => (
             <StatRow key={key} label={statLabel(key)} value={formatStat(key, sheet[key] ?? 0)} />
@@ -135,7 +134,7 @@ export function CharacterPage() {
           artifactSets={setsQ.data ?? []}
           rules={rulesQ.data!}
           statValues={statValsQ.data!}
-          ascensionPhase={phase}
+          level={level}
           editingLoadoutId={loadoutParam}
         />
       ) : (

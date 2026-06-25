@@ -116,6 +116,14 @@ for (const name of charNames) {
     if (!key) continue;
     const s90 = c.stats(90, "6");
     const id = slug(c.name);
+    // Per-level anchors at the ascension caps (FR-003): [level, ascension].
+    const LEVEL_ASCENSION: [number, number][] = [
+      [1, 0], [20, 1], [40, 2], [50, 3], [60, 4], [70, 5], [80, 6], [90, 6],
+    ];
+    const levels = LEVEL_ASCENSION.map(([lvl, asc]) => {
+      const s = c.stats(lvl, String(asc));
+      return { level: lvl, hp: round(s.hp), atk: round(s.attack), def: round(s.defense), ascensionStat: ascensionValue(key, s.specialized) };
+    });
     const t = genshindb.talents(name) as any;
     const skill = (combat: any, type: string) =>
       combat ? { type, name: combat.name as string, desc: firstContentLine(combat.description) } : null;
@@ -132,6 +140,7 @@ for (const name of charNames) {
       rarity: c.rarity,
       lv90: { hp: round(s90.hp), atk: round(s90.attack), def: round(s90.defense) },
       ascensionStat: { key, value: ascensionValue(key, s90.specialized) },
+      levels,
       roles: ROLE_OVERRIDES[id] ?? ["MainDPS"],
       skills,
     });

@@ -53,8 +53,15 @@ describe("engine reproduces real Lv90 base stats from the imported data (SC-003)
     expect(computeBaseStats(byId("kaedehara-kazuha"), 90, 6, dataset.curves).sheet.EM).toBeCloseTo(115.2, 1);
   });
 
-  it("only the supported level (90) is populated in this dataset", () => {
-    expect(() => computeBaseStats(byId("hu-tao"), 80, 6, dataset.curves)).toThrow(/no entry for level 80/);
+  it("supports any level via per-level anchors + interpolation (FR-003)", () => {
+    const hp = (lvl: number, asc: number) => computeBaseStats(byId("hu-tao"), lvl, asc, dataset.curves).baseHP;
+    expect(hp(1, 0)).toBeCloseTo(1211, 0); // real Lv1 base HP
+    expect(hp(90, 6)).toBeCloseTo(15552, 0); // real Lv90 base HP
+    // Monotonic increase, incl. an interpolated mid-band level (55, between 50 and 60).
+    expect(hp(1, 0)).toBeLessThan(hp(50, 3));
+    expect(hp(50, 3)).toBeLessThan(hp(55, 3));
+    expect(hp(55, 3)).toBeLessThan(hp(60, 4));
+    expect(hp(60, 4)).toBeLessThan(hp(90, 6));
   });
 });
 
