@@ -1,0 +1,128 @@
+import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+import { z } from "zod";
+import {
+  ArtifactSetSchema,
+  CharacterSchema,
+  DatasetMetaSchema,
+  SlotStatRulesSchema,
+  StatValuesTableSchema,
+  WeaponSchema,
+} from "@app/contracts";
+import type {
+  AscensionPhase,
+  Character,
+  Dataset,
+  Element,
+  GrowthCurve,
+  Role,
+  StatKey,
+  StatValue,
+  TalentType,
+  WeaponType,
+} from "@app/contracts";
+
+/**
+ * Loads the curated reference dataset from `data/<version>/` JSON, normalizes the compact
+ * authored character shape into full `Character` records, and validates everything against
+ * the `@app/contracts` Zod schemas (FR-021 / task T014). Throws a descriptive ZodError if
+ * any record is malformed.
+ *
+ * NOTE: This is a curated *slice* (not the full roster — SC-008 not yet met). Base stats
+ * are best-effort published Lv90 / ascension-6 values and only level 90 is supported.
+ */
+
+/** Compact authored character shape (see data/<version>/characters.json). */
+interface RawCharacter {
+  id: string;
+  name: string;
+  element: Element;
+  weaponType: WeaponType;
+  rarity: number;
+  lv90: { hp: number; atk: number; def: number };
+  ascensionStat: StatValue;
+  roles: Role[];
+  skills: { type: TalentType; name: string }[];
+}
+
+interface MetaFile {
+  meta: { gameVersion: string; datasetVersion: string; generatedAt: string };
+  curves: Record<string, GrowthCurve>;
+  slotStatRules: unknown;
+  statValues: unknown;
+}
+
+const here = dirname(fileURLToPath(import.meta.url));
+/** packages/dataset/src -> repo root. */
+const REPO_ROOT = join(here, "..", "..", "..");
+export const DEFAULT_DATASET_DIR = join(REPO_ROOT, "data", "5x-slice");
+
+function round2(n: number): number {
+  return Math.round(n * 100) / 100;
+}
+
+function slug(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+/** Ramp the dedicated ascension stat across the 6 phases (full value at phase 6). */
+function buildAscensions(stat: StatValue): AscensionPhase[] {
+  const factors = [0, 0, 0.3, 0.5, 0.75, 1];
+  return factors.map((f) => ({
+    hpAdd: 0,
+    atkAdd: 0,
+    defAdd: 0,
+    ascensionStat: { key: stat.key, value: round2(stat.value * f) },
+  }));
+}
+
+function normalizeCharacter(raw: RawCharacter): Character {
+  const candidate = {
+    id: raw.id,
+    name: raw.name,
+    element: raw.element,
+    weaponType: raw.weaponType,
+    rarity: raw.rarity,
+    baseStats: { baseHP: raw.lv90.hp, baseATK: raw.lv90.atk, baseDEF: raw.lv90.def },
+    growthCurveId: "endgame",
+    ascensions: buildAscensions(raw.ascensionStat),
+    roles: raw.roles,
+    skills: raw.skills.map((s) => ({
+      id: slug(s.name),
+      type: s.type,
+      name: s.name,
+      description: "",
+      scaling: [],
+    })),
+  };
+  // Validate the assembled record against the contract (single source of truth).
+  return CharacterSchema.parse(candidate);
+}
+
+function readJson(dir: string, file: string): unknown {
+  return JSON.parse(readFileSync(join(dir, file), "utf8"));
+}
+
+export function loadDatasetFromDir(dir: string): Dataset {
+  const metaFile = readJson(dir, "meta.json") as MetaFile;
+  const rawCharacters = readJson(dir, "characters.json") as RawCharacter[];
+
+  const characters = rawCharacters.map(normalizeCharacter);
+  const weapons = z.array(WeaponSchema).parse(readJson(dir, "weapons.json"));
+  const artifactSets = z.array(ArtifactSetSchema).parse(readJson(dir, "artifact-sets.json"));
+  const slotStatRules = SlotStatRulesSchema.parse(metaFile.slotStatRules);
+  const statValues = StatValuesTableSchema.parse(metaFile.statValues);
+  const meta = DatasetMetaSchema.parse(metaFile.meta);
+
+  return { meta, curves: metaFile.curves, characters, weapons, artifactSets, slotStatRules, statValues };
+}
+
+export function loadBundledDataset(): Dataset {
+  return loadDatasetFromDir(DEFAULT_DATASET_DIR);
+}
+
+export type { Character, Dataset, StatKey };

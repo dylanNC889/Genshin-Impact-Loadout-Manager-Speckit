@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm *)",
+      "Bash(curl -s --retry 15 --retry-connrefused --retry-delay 1 http://localhost:3000/health)",
+      "Bash(curl -s \"http://localhost:3000/api/v1/weapons?weaponType=Polearm\")",
+      "Bash(python3 -c \"import sys,json; print\\([w['id'] for w in json.load\\(sys.stdin\\)]\\)\")",
+      "Bash(curl -s http://localhost:3000/api/v1/artifact-sets)",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\('count=%d first=%s'%\\(len\\(d\\), d[0]['id']\\)\\)\")",
+      "Bash(curl -s http://localhost:3000/api/v1/meta/rules)",
+      "Bash(python3 -c \"import sys,json; print\\(json.load\\(sys.stdin\\)['allowedMainStats']['Goblet']\\)\")",
+      "Bash(lsof -ti:3000)",
+      "Bash(xargs kill)",
+      "Bash(rm -f /tmp/glm-live2.json)",
+      "Bash(STORE_PATH=/tmp/glm-live2.json pnpm --filter @app/backend start)"
+    ]
+  }
+}

@@ -1,0 +1,68 @@
+{
+  "meta": {
+    "gameVersion": "5.x-slice",
+    "datasetVersion": "2026.01-slice",
+    "generatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  "curves": {
+    "endgame": { "90": 1 }
+  },
+  "slotStatRules": {
+    "allowedMainStats": {
+      "Flower": ["HP"],
+      "Plume": ["ATK"],
+      "Sands": ["HP_PCT", "ATK_PCT", "DEF_PCT", "EM", "ER"],
+      "Goblet": [
+        "HP_PCT", "ATK_PCT", "DEF_PCT", "EM",
+        "PYRO_DMG", "HYDRO_DMG", "ELECTRO_DMG", "CRYO_DMG",
+        "ANEMO_DMG", "GEO_DMG", "DENDRO_DMG", "PHYS_DMG"
+      ],
+      "Circlet": ["HP_PCT", "ATK_PCT", "DEF_PCT", "EM", "CRIT_RATE", "CRIT_DMG", "HEAL_BONUS"]
+    },
+    "allowedSubStats": [
+      "HP", "HP_PCT", "ATK", "ATK_PCT", "DEF", "DEF_PCT",
+      "EM", "CRIT_RATE", "CRIT_DMG", "ER"
+    ]
+  },
+  "statValues": {
+    "mainStatValues": {
+      "HP": 4780,
+      "ATK": 311,
+      "HP_PCT": 46.6,
+      "ATK_PCT": 46.6,
+      "DEF_PCT": 58.3,
+      "EM": 187,
+      "ER": 51.8,
+      "CRIT_RATE": 31.1,
+      "CRIT_DMG": 62.2,
+      "HEAL_BONUS": 35.9,
+      "PYRO_DMG": 46.6,
+      "HYDRO_DMG": 46.6,
+      "ELECTRO_DMG": 46.6,
+      "CRYO_DMG": 46.6,
+      "ANEMO_DMG": 46.6,
+      "GEO_DMG": 46.6,
+      "DENDRO_DMG": 46.6,
+      "PHYS_DMG": 58.3
+    },
+    "subStatValues": {
+      "HP": [209.1, 239.0, 268.9, 298.8],
+      "ATK": [13.6, 15.6, 17.5, 19.5],
+      "DEF": [16.2, 18.5, 20.8, 23.2],
+      "HP_PCT": [4.1, 4.7, 5.2, 5.8],
+      "ATK_PCT": [4.1, 4.7, 5.2, 5.8],
+      "DEF_PCT": [5.1, 5.8, 6.6, 7.3],
+      "EM": [16.3, 18.7, 21.0, 23.3],
+      "ER": [4.5, 5.2, 5.8, 6.5],
+      "CRIT_RATE": [2.7, 3.1, 3.5, 3.9],
+      "CRIT_DMG": [5.4, 6.2, 7.0, 7.8]
+    }
+  },
+  "_notes": [
+    "This is a CURATED SLICE, not the full roster (SC-008 not yet met).",
+    "Base stats are best-effort published Lv90/ascension-6 values and must be",
+    "cross-checked against an authoritative source per the dataset refresh procedure.",
+    "Only level 90 is supported in this slice (curve 'endgame' has a single anchor);",
+    "full per-level growth curves are a documented import step (FR-021)."
+  ]
+}

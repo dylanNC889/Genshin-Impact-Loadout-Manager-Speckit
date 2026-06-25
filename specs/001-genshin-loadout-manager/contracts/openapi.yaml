@@ -1,0 +1,499 @@
+openapi: 3.1.0
+info:
+  title: Genshin Loadout & Team Builder API
+  version: 1.0.0
+  description: >
+    REST API for the single-user Genshin Impact loadout & team builder. Serves the
+    versioned reference dataset and persists user loadouts and teams. All errors use the
+    actionable error envelope (code/message/remedy) per Constitution Principle III.
+servers:
+  - url: /api/v1
+    description: Versioned base path (breaking changes require a new version)
+
+tags:
+  - name: reference
+    description: Read-only game reference data (characters, weapons, artifact sets)
+  - name: loadouts
+    description: User character loadouts (CRUD)
+  - name: teams
+    description: User teams (CRUD) and on-demand damage calculation
+
+paths:
+  /meta/dataset:
+    get:
+      tags: [reference]
+      summary: Active dataset / game version (FR-021, SC-008)
+      responses:
+        "200":
+          description: Active dataset metadata
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DatasetMeta" }
+
+  /meta/stat-values:
+    get:
+      tags: [reference]
+      summary: Canonical equipment stat values for build dropdowns (FR-022)
+      responses:
+        "200":
+          description: Main-stat and substat value tables
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mainStatValues: { type: object, additionalProperties: { type: number } }
+                  subStatValues: { type: object, additionalProperties: { type: array, items: { type: number } } }
+
+  /characters:
+    get:
+      tags: [reference]
+      summary: Browse/search the character roster (FR-001)
+      parameters:
+        - { name: q, in: query, schema: { type: string }, description: name search }
+        - { name: element, in: query, schema: { $ref: "#/components/schemas/Element" } }
+        - { name: weaponType, in: query, schema: { $ref: "#/components/schemas/WeaponType" } }
+      responses:
+        "200":
+          description: Roster summaries
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/CharacterSummary" }
+
+  /characters/{characterId}:
+    get:
+      tags: [reference]
+      summary: Full character detail incl. base stats and skills (FR-002, FR-004)
+      parameters:
+        - { name: characterId, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: Character detail
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Character" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /weapons:
+    get:
+      tags: [reference]
+      summary: List weapons (FR-005)
+      parameters:
+        - { name: weaponType, in: query, schema: { $ref: "#/components/schemas/WeaponType" } }
+      responses:
+        "200":
+          description: Weapons
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: "#/components/schemas/Weapon" } }
+
+  /artifact-sets:
+    get:
+      tags: [reference]
+      summary: List artifact sets and their 2/4-piece bonuses (FR-009)
+      responses:
+        "200":
+          description: Artifact sets
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: "#/components/schemas/ArtifactSet" } }
+
+  /loadouts:
+    get:
+      tags: [loadouts]
+      summary: List saved loadouts (FR-018)
+      responses:
+        "200":
+          description: Saved loadouts
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: "#/components/schemas/Loadout" } }
+    post:
+      tags: [loadouts]
+      summary: Create/save a loadout (FR-018); server validates gear (FR-005/FR-007)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/LoadoutInput" }
+      responses:
+        "201":
+          description: Created; includes server-computed final stats (FR-008)
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Loadout" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /loadouts/{loadoutId}:
+    parameters:
+      - { name: loadoutId, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [loadouts]
+      summary: Get a saved loadout
+      responses:
+        "200":
+          description: Loadout
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Loadout" }
+        "404": { $ref: "#/components/responses/NotFound" }
+    put:
+      tags: [loadouts]
+      summary: Update/edit a loadout (FR-018)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/LoadoutInput" }
+      responses:
+        "200":
+          description: Updated loadout with recomputed stats
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Loadout" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+    delete:
+      tags: [loadouts]
+      summary: Delete a loadout (FR-018)
+      responses:
+        "204": { description: Deleted }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /loadouts/{loadoutId}/duplicate:
+    post:
+      tags: [loadouts]
+      summary: Duplicate a loadout into an independent copy (FR-018)
+      parameters:
+        - { name: loadoutId, in: path, required: true, schema: { type: string } }
+      responses:
+        "201":
+          description: New independent copy
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Loadout" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /teams:
+    get:
+      tags: [teams]
+      summary: List saved teams (FR-019)
+      responses:
+        "200":
+          description: Saved teams
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: "#/components/schemas/Team" } }
+    post:
+      tags: [teams]
+      summary: Create/save a team of up to 4 distinct characters (FR-012/FR-019)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/TeamInput" }
+      responses:
+        "201":
+          description: Created; includes derived synergy assessment (FR-013/14/15)
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Team" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /teams/{teamId}:
+    parameters:
+      - { name: teamId, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [teams]
+      summary: Get a saved team with synergy assessment
+      responses:
+        "200":
+          description: Team
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Team" }
+        "404": { $ref: "#/components/responses/NotFound" }
+    put:
+      tags: [teams]
+      summary: Update/edit a team (FR-019)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/TeamInput" }
+      responses:
+        "200":
+          description: Updated team
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Team" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+    delete:
+      tags: [teams]
+      summary: Delete a team (FR-019)
+      responses:
+        "204": { description: Deleted }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /teams/{teamId}/calculate:
+    post:
+      tags: [teams]
+      summary: On-demand quantitative team damage estimate (FR-016, SC-009)
+      description: >
+        Explicit, user-initiated. Returns a damage estimate together with the assumptions
+        used (rotation, enemy baseline, reaction type). Never required to view the default
+        synergy assessment. Parity endpoint for saved teams; the primary on-demand path for
+        unsaved teams is client-side (see plan.md).
+      parameters:
+        - { name: teamId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/DamageCalcOptions" }
+      responses:
+        "200":
+          description: Damage estimate + assumptions
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DamageEstimate" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+components:
+  responses:
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+    ValidationError:
+      description: Request failed validation (e.g., invalid artifact main stat for slot)
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+
+  schemas:
+    Element:
+      type: string
+      enum: [Pyro, Hydro, Electro, Cryo, Anemo, Geo, Dendro]
+    WeaponType:
+      type: string
+      enum: [Sword, Claymore, Polearm, Bow, Catalyst]
+    ArtifactSlot:
+      type: string
+      enum: [Flower, Plume, Sands, Goblet, Circlet]
+    StatKey:
+      type: string
+      enum: [HP, HP_PCT, ATK, ATK_PCT, DEF, DEF_PCT, EM, CRIT_RATE, CRIT_DMG, ER,
+             HEAL_BONUS, PYRO_DMG, HYDRO_DMG, ELECTRO_DMG, CRYO_DMG, ANEMO_DMG, GEO_DMG,
+             DENDRO_DMG, PHYS_DMG]
+
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code: { type: string, example: INVALID_ARTIFACT_MAIN_STAT }
+        message: { type: string, example: "A Flower's main stat must be flat HP." }
+        remedy: { type: string, example: "Choose HP as the Flower main stat." }
+
+    DatasetMeta:
+      type: object
+      required: [gameVersion, datasetVersion, generatedAt]
+      properties:
+        gameVersion: { type: string, example: "4.6" }
+        datasetVersion: { type: string, example: "2026.06.01" }
+        generatedAt: { type: string, format: date-time }
+
+    StatValue:
+      type: object
+      required: [key, value]
+      properties:
+        key: { $ref: "#/components/schemas/StatKey" }
+        value: { type: number }
+
+    CharacterSummary:
+      type: object
+      required: [id, name, element, weaponType, rarity]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        element: { $ref: "#/components/schemas/Element" }
+        weaponType: { $ref: "#/components/schemas/WeaponType" }
+        rarity: { type: integer, enum: [4, 5] }
+
+    Character:
+      allOf:
+        - $ref: "#/components/schemas/CharacterSummary"
+        - type: object
+          properties:
+            baseStats:
+              type: object
+              properties:
+                baseHP: { type: number }
+                baseATK: { type: number }
+                baseDEF: { type: number }
+            roles:
+              type: array
+              items: { type: string, enum: [MainDPS, SubDPS, Healer, Shielder, Buffer, Battery] }
+            skills:
+              type: array
+              items: { $ref: "#/components/schemas/Skill" }
+
+    Skill:
+      type: object
+      required: [id, type, name]
+      properties:
+        id: { type: string }
+        type: { type: string, enum: [NormalAttack, ElementalSkill, ElementalBurst, Passive] }
+        name: { type: string }
+        description: { type: string }
+
+    Weapon:
+      type: object
+      required: [id, name, weaponType, rarity, baseATK]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        weaponType: { $ref: "#/components/schemas/WeaponType" }
+        rarity: { type: integer, enum: [4, 5] }
+        baseATK: { type: number }
+        secondaryStat: { $ref: "#/components/schemas/StatValue" }
+        passiveStatBonuses:
+          type: array
+          items: { $ref: "#/components/schemas/StatValue" }
+
+    ArtifactSet:
+      type: object
+      required: [id, name]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        bonus2:
+          type: object
+          properties:
+            description: { type: string }
+            statBonuses: { type: array, items: { $ref: "#/components/schemas/StatValue" } }
+        bonus4:
+          type: object
+          properties:
+            description: { type: string }
+            statBonuses: { type: array, items: { $ref: "#/components/schemas/StatValue" } }
+
+    ArtifactInput:
+      type: object
+      required: [slot, setId, mainStat]
+      properties:
+        slot: { $ref: "#/components/schemas/ArtifactSlot" }
+        setId: { type: string }
+        mainStat: { $ref: "#/components/schemas/StatValue" }
+        subStats:
+          type: array
+          maxItems: 4
+          items: { $ref: "#/components/schemas/StatValue" }
+
+    LoadoutInput:
+      type: object
+      required: [name, characterId, level, ascensionPhase]
+      properties:
+        name: { type: string }
+        characterId: { type: string }
+        level: { type: integer, minimum: 1, maximum: 90 }
+        ascensionPhase: { type: integer, minimum: 0, maximum: 6 }
+        weaponId: { type: string, nullable: true }
+        artifacts:
+          type: array
+          maxItems: 5
+          items: { $ref: "#/components/schemas/ArtifactInput" }
+
+    Loadout:
+      allOf:
+        - $ref: "#/components/schemas/LoadoutInput"
+        - type: object
+          required: [id]
+          properties:
+            id: { type: string }
+            computedFinalStats:
+              type: array
+              items: { $ref: "#/components/schemas/StatValue" }
+            activeSetBonuses:
+              type: array
+              items: { type: object, properties: { setId: { type: string }, pieces: { type: integer, enum: [2, 4] } } }
+
+    TeamSlotInput:
+      type: object
+      required: [characterId]
+      properties:
+        characterId: { type: string }
+        loadoutId: { type: string, nullable: true }
+
+    TeamInput:
+      type: object
+      required: [name, slots]
+      properties:
+        name: { type: string }
+        slots:
+          type: array
+          maxItems: 4
+          items: { $ref: "#/components/schemas/TeamSlotInput" }
+
+    Team:
+      allOf:
+        - $ref: "#/components/schemas/TeamInput"
+        - type: object
+          required: [id, synergy]
+          properties:
+            id: { type: string }
+            synergy: { $ref: "#/components/schemas/SynergyAssessment" }
+
+    SynergyAssessment:
+      type: object
+      description: Default rule-based assessment (FR-013/14/15) — always non-empty
+      required: [complete, resonances, possibleReactions, roleCoverage]
+      properties:
+        complete: { type: boolean, description: false when <4 members (US3 scenario 5) }
+        resonances:
+          type: array
+          items: { type: object, properties: { name: { type: string }, description: { type: string } } }
+        possibleReactions:
+          type: array
+          items: { type: string }
+        roleCoverage:
+          type: object
+          properties:
+            covered: { type: array, items: { type: string } }
+            gaps: { type: array, items: { type: string }, example: ["Healer", "SubDPS"] }
+        notes:
+          type: array
+          items: { type: string }
+
+    DamageCalcOptions:
+      type: object
+      description: Optional overrides for the on-demand calc; defaults are documented assumptions
+      properties:
+        enemyLevel: { type: integer, default: 90 }
+        enemyResistancePct: { type: number, default: 10 }
+        rotation: { type: string, description: "named/standard rotation identifier" }
+
+    DamageEstimate:
+      type: object
+      required: [totalEstimated, assumptions, perCharacter]
+      properties:
+        totalEstimated: { type: number }
+        perCharacter:
+          type: array
+          items:
+            type: object
+            properties:
+              characterId: { type: string }
+              estimated: { type: number }
+        assumptions:
+          type: object
+          description: Echoed assumptions shown to the user (FR-016)
+          properties:
+            enemyLevel: { type: integer }
+            enemyResistancePct: { type: number }
+            rotation: { type: string }
+            reactionTypes: { type: array, items: { type: string } }

@@ -1,0 +1,18 @@
+# Optional PostgreSQL for the (deferred) database-backed persistence path.
+# The default build is Docker-free (JSON file store); this is provided for when the
+# Postgres path is wired up (see plan.md / data-model.md). Start with: docker compose up -d db
+services:
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: glm
+      POSTGRES_PASSWORD: glm
+      POSTGRES_DB: glm
+    ports:
+      - "5432:5432"
+    volumes:
+      - glm-db:/var/lib/postgresql/data
+
+volumes:
+  glm-db:
