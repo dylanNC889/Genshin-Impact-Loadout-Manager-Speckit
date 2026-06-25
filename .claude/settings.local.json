@@ -20,7 +20,17 @@
       "Bash(lsof -i:3000 -i:5173)",
       "Bash(xargs -I{} echo \"listening sockets: {}\")",
       "Bash(curl -s -o /dev/null -w \"frontend HTTP %{http_code}\\\\n\" http://localhost:5173/)",
-      "Bash(open http://localhost:5173)"
+      "Bash(open http://localhost:5173)",
+      "Bash(command -v gh)",
+      "Bash(echo \"gh: $\\(command -v gh || echo 'not installed'\\)\")",
+      "Bash(gh auth *)",
+      "Bash(git remote *)",
+      "Bash(git branch *)",
+      "Bash(git push *)",
+      "Bash(gh api *)",
+      "Bash(python3 -c 'import sys,json; *)",
+      "Bash(git add *)",
+      "Bash(git commit *)"
     ]
   }
 }
