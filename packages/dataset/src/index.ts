@@ -43,7 +43,7 @@ interface RawCharacter {
   lv90: { hp: number; atk: number; def: number };
   ascensionStat: StatValue;
   roles: Role[];
-  skills: { type: TalentType; name: string }[];
+  skills: { type: TalentType; name: string; desc?: string }[];
 }
 
 interface MetaFile {
@@ -95,7 +95,7 @@ function normalizeCharacter(raw: RawCharacter): Character {
       id: slug(s.name),
       type: s.type,
       name: s.name,
-      description: "",
+      description: s.desc ?? "",
       scaling: [],
     })),
   };

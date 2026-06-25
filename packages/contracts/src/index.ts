@@ -245,6 +245,8 @@ export const SynergyAssessmentSchema = z.object({
     covered: z.array(RoleSchema),
     gaps: z.array(z.string()),
   }),
+  /** Scored/labeled rating derived from the qualitative signals (FR-015). */
+  rating: z.object({ score: z.number(), grade: z.string() }),
   notes: z.array(z.string()),
 });
 export type SynergyAssessment = z.infer<typeof SynergyAssessmentSchema>;

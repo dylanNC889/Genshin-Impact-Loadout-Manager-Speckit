@@ -12,7 +12,15 @@
       "Bash(lsof -ti:3000)",
       "Bash(xargs kill)",
       "Bash(rm -f /tmp/glm-live2.json)",
-      "Bash(STORE_PATH=/tmp/glm-live2.json pnpm --filter @app/backend start)"
+      "Bash(STORE_PATH=/tmp/glm-live2.json pnpm --filter @app/backend start)",
+      "Bash(curl -s --retry 8 --retry-connrefused --retry-delay 1 http://localhost:3000/health)",
+      "Bash(echo \"backend: $\\(curl -s --retry 8 --retry-connrefused --retry-delay 1 http://localhost:3000/health || echo DOWN\\)\")",
+      "Bash(curl -s -o /dev/null -w 'HTTP %{http_code}' http://localhost:5173/)",
+      "Bash(echo \"frontend: $\\(curl -s -o /dev/null -w 'HTTP %{http_code}' http://localhost:5173/ || echo DOWN\\)\")",
+      "Bash(lsof -i:3000 -i:5173)",
+      "Bash(xargs -I{} echo \"listening sockets: {}\")",
+      "Bash(curl -s -o /dev/null -w \"frontend HTTP %{http_code}\\\\n\" http://localhost:5173/)",
+      "Bash(open http://localhost:5173)"
     ]
   }
 }

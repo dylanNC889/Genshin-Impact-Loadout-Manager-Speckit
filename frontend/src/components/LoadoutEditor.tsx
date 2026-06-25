@@ -14,7 +14,7 @@ import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { computeFinalStats, statRecord, validateArtifact } from "@app/stat-engine";
 import { useLoadoutStore, type ArtifactDraft } from "../state/loadoutStore";
-import { createLoadout } from "../api";
+import { createLoadout, updateLoadout } from "../api";
 import { Card, StatRow } from "./ui";
 import { formatStat, statLabel } from "../format";
 
@@ -29,6 +29,8 @@ interface Props {
   rules: SlotStatRules;
   statValues: StatValuesTable;
   ascensionPhase: number;
+  /** When set, the editor was opened on an existing saved loadout (FR-018 edit). */
+  editingLoadoutId?: string | null;
 }
 
 export function LoadoutEditor({
@@ -39,6 +41,7 @@ export function LoadoutEditor({
   rules,
   statValues,
   ascensionPhase,
+  editingLoadoutId,
 }: Props) {
   const weaponId = useLoadoutStore((s) => s.weaponId);
   const artifacts = useLoadoutStore((s) => s.artifacts);
@@ -84,9 +87,15 @@ export function LoadoutEditor({
 
   const qc = useQueryClient();
   const [saveName, setSaveName] = useState("");
-  const saveMut = useMutation({
-    mutationFn: () => createLoadout({ ...loadout, name: saveName.trim() || `${character.name} build` }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["loadouts"] }),
+  const named = () => ({ ...loadout, name: saveName.trim() || `${character.name} build` });
+  const onSaved = () => {
+    qc.invalidateQueries({ queryKey: ["loadouts"] });
+    qc.invalidateQueries({ queryKey: ["saved-loadout"] });
+  };
+  const saveMut = useMutation({ mutationFn: () => createLoadout(named()), onSuccess: onSaved });
+  const updateMut = useMutation({
+    mutationFn: () => updateLoadout(editingLoadoutId ?? "", named()),
+    onSuccess: onSaved,
   });
 
   return (
@@ -152,11 +161,24 @@ export function LoadoutEditor({
           placeholder={`${character.name} build`}
           aria-label="Loadout name"
         />
-        <button className="calc-btn" onClick={() => saveMut.mutate()} disabled={saveMut.isPending}>
-          Save loadout
-        </button>
+        {editingLoadoutId ? (
+          <>
+            <button className="calc-btn" onClick={() => updateMut.mutate()} disabled={updateMut.isPending}>
+              Update loadout
+            </button>
+            <button className="mini" onClick={() => saveMut.mutate()} disabled={saveMut.isPending}>
+              Save as new
+            </button>
+          </>
+        ) : (
+          <button className="calc-btn" onClick={() => saveMut.mutate()} disabled={saveMut.isPending}>
+            Save loadout
+          </button>
+        )}
         {saveMut.isSuccess ? <span className="saved-ok">Saved ✓</span> : null}
+        {updateMut.isSuccess ? <span className="saved-ok">Updated ✓</span> : null}
         {saveMut.isError ? <span className="error">{(saveMut.error as Error).message}</span> : null}
+        {updateMut.isError ? <span className="error">{(updateMut.error as Error).message}</span> : null}
       </div>
     </Card>
   );

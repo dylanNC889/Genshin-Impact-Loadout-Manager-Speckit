@@ -120,6 +120,7 @@ export function CharacterPage() {
               <li key={s.id}>
                 <span className="skill-type">{s.type}</span>
                 <span className="skill-name">{s.name}</span>
+                {s.description ? <span className="skill-desc">{s.description}</span> : null}
               </li>
             ))}
           </ul>
@@ -135,6 +136,7 @@ export function CharacterPage() {
           rules={rulesQ.data!}
           statValues={statValsQ.data!}
           ascensionPhase={phase}
+          editingLoadoutId={loadoutParam}
         />
       ) : (
         <p className="muted">Loading gear options…</p>

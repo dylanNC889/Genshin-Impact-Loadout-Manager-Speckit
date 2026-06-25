@@ -9,9 +9,9 @@
     "ascensionStat": { "key": "CRIT_DMG", "value": 88.4 },
     "roles": ["MainDPS"],
     "skills": [
-      { "type": "NormalAttack", "name": "Secret Spear of Wangsheng" },
-      { "type": "ElementalSkill", "name": "Guide to Afterlife" },
-      { "type": "ElementalBurst", "name": "Spirit Soother" }
+      { "type": "NormalAttack", "name": "Secret Spear of Wangsheng", "desc": "Up to 6 spear strikes; the charged attack lunges forward, consuming stamina." },
+      { "type": "ElementalSkill", "name": "Guide to Afterlife", "desc": "Enters Paramita Papilio, converting Max HP into ATK and infusing Normal Attacks with Pyro at the cost of HP." },
+      { "type": "ElementalBurst", "name": "Spirit Soother", "desc": "Deals AoE Pyro DMG and heals Hu Tao based on enemies hit; stronger while at low HP." }
     ]
   },
   {
@@ -24,9 +24,9 @@
     "ascensionStat": { "key": "CRIT_RATE", "value": 19.2 },
     "roles": ["MainDPS"],
     "skills": [
-      { "type": "NormalAttack", "name": "Tempered Sword" },
-      { "type": "ElementalSkill", "name": "Searing Onslaught" },
-      { "type": "ElementalBurst", "name": "Dawn" }
+      { "type": "NormalAttack", "name": "Tempered Sword", "desc": "Up to 4 strikes; the charged attack spins the blade, draining stamina." },
+      { "type": "ElementalSkill", "name": "Searing Onslaught", "desc": "Three consecutive forward slashes dealing Pyro DMG; can be cast up to 3 times." },
+      { "type": "ElementalBurst", "name": "Dawn", "desc": "Releases a phoenix that knocks back enemies, deals Pyro DMG, and infuses the blade with Pyro." }
     ]
   },
   {
@@ -54,9 +54,9 @@
     "ascensionStat": { "key": "ER", "value": 26.7 },
     "roles": ["Buffer", "Healer"],
     "skills": [
-      { "type": "NormalAttack", "name": "Strike of Fortune" },
-      { "type": "ElementalSkill", "name": "Passion Overload" },
-      { "type": "ElementalBurst", "name": "Fantastic Voyage" }
+      { "type": "NormalAttack", "name": "Strike of Fortune", "desc": "Up to 5 strikes; charged attack delivers swift consecutive sword swings." },
+      { "type": "ElementalSkill", "name": "Passion Overload", "desc": "Charges a fiery strike; longer holds deal more Pyro DMG and explode in an arc." },
+      { "type": "ElementalBurst", "name": "Fantastic Voyage", "desc": "Creates a healing field that restores HP and grants an ATK bonus to characters inside." }
     ]
   },
   {

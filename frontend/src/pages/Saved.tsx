@@ -79,6 +79,9 @@ export function SavedPage() {
                     ) : null}
                   </div>
                   <div className="saved-actions">
+                    <Link className="mini" to={`/team?team=${t.id}`}>
+                      open
+                    </Link>
                     <button className="mini" onClick={() => dupT.mutate(t.id)}>
                       duplicate
                     </button>

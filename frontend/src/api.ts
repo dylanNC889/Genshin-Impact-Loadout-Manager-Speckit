@@ -113,6 +113,9 @@ export function getLoadout(id: string): Promise<SavedLoadout> {
 export function createLoadout(input: LoadoutInput): Promise<SavedLoadout> {
   return sendJson("POST", `${BASE}/loadouts`, input);
 }
+export function updateLoadout(id: string, input: LoadoutInput): Promise<SavedLoadout> {
+  return sendJson("PUT", `${BASE}/loadouts/${id}`, input);
+}
 export function duplicateLoadout(id: string): Promise<SavedLoadout> {
   return sendJson("POST", `${BASE}/loadouts/${id}/duplicate`);
 }
@@ -124,8 +127,14 @@ export function deleteLoadout(id: string): Promise<void> {
 export function listTeams(): Promise<SavedTeam[]> {
   return getJson(`${BASE}/teams`);
 }
+export function getTeam(id: string): Promise<SavedTeam> {
+  return getJson(`${BASE}/teams/${id}`);
+}
 export function createTeam(input: TeamInput): Promise<SavedTeam> {
   return sendJson("POST", `${BASE}/teams`, input);
+}
+export function updateTeam(id: string, input: TeamInput): Promise<SavedTeam> {
+  return sendJson("PUT", `${BASE}/teams/${id}`, input);
 }
 export function duplicateTeam(id: string): Promise<SavedTeam> {
   return sendJson("POST", `${BASE}/teams/${id}/duplicate`);

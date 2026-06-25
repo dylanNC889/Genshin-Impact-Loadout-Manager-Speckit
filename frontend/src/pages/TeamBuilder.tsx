@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { assessSynergy, computeBaseStats, estimateTeamDamage } from "@app/stat-engine";
 import type { DamageMember } from "@app/stat-engine";
 import type { DamageEstimate, SynergyAssessment } from "@app/contracts";
@@ -8,7 +8,9 @@ import {
   createTeam,
   fetchCharacters,
   fetchCharacterDetail,
+  getTeam,
   listLoadouts,
+  updateTeam,
   type CharacterDetail,
   type SavedLoadout,
 } from "../api";
@@ -62,8 +64,17 @@ export function TeamBuilder() {
   ]);
   const [damage, setDamage] = useState<DamageEstimate | null>(null);
 
+  const [searchParams] = useSearchParams();
+  const teamParam = searchParams.get("team");
+  const editing = Boolean(teamParam);
+
   const rosterQ = useQuery({ queryKey: ["characters", "team"], queryFn: () => fetchCharacters({}) });
   const loadoutsQ = useQuery({ queryKey: ["loadouts"], queryFn: listLoadouts });
+  const savedTeamQ = useQuery({
+    queryKey: ["saved-team", teamParam],
+    queryFn: () => getTeam(teamParam ?? ""),
+    enabled: editing,
+  });
 
   const selected = slots.filter((s): s is { characterId: string; loadoutId: string | null } => Boolean(s.characterId));
   const detailsQ = useQuery({
@@ -74,19 +85,32 @@ export function TeamBuilder() {
 
   const qc = useQueryClient();
   const [teamName, setTeamName] = useState("");
-  const saveMut = useMutation({
-    mutationFn: () =>
-      createTeam({
-        name: teamName.trim() || "My team",
-        slots: selected.map((s) => ({ characterId: s.characterId, loadoutId: s.loadoutId })),
-      }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["teams"] }),
+  const teamPayload = () => ({
+    name: teamName.trim() || "My team",
+    slots: selected.map((s) => ({ characterId: s.characterId, loadoutId: s.loadoutId })),
+  });
+  const onTeamSaved = () => qc.invalidateQueries({ queryKey: ["teams"] });
+  const saveMut = useMutation({ mutationFn: () => createTeam(teamPayload()), onSuccess: onTeamSaved });
+  const updateMut = useMutation({
+    mutationFn: () => updateTeam(teamParam ?? "", teamPayload()),
+    onSuccess: onTeamSaved,
   });
 
   // Damage is on-demand (FR-016): clear it whenever the team changes.
   useEffect(() => {
     setDamage(null);
   }, [slots]);
+
+  // Hydrate from a saved team when opened via ?team=<id> (FR-019 reopen).
+  useEffect(() => {
+    const t = savedTeamQ.data;
+    if (!t) return;
+    setSlots([0, 1, 2, 3].map((i) => {
+      const s = t.slots[i];
+      return s ? { characterId: s.characterId, loadoutId: s.loadoutId ?? null } : { characterId: null, loadoutId: null };
+    }));
+    setTeamName(t.name);
+  }, [savedTeamQ.data]);
 
   const roster = rosterQ.data ?? [];
   const savedLoadouts = loadoutsQ.data ?? [];
@@ -178,18 +202,38 @@ export function TeamBuilder() {
           placeholder="Team name"
           aria-label="Team name"
         />
-        <button
-          className="calc-btn"
-          onClick={() => saveMut.mutate()}
-          disabled={selected.length === 0 || saveMut.isPending}
-        >
-          Save team
-        </button>
+        {editing ? (
+          <>
+            <button
+              className="calc-btn"
+              onClick={() => updateMut.mutate()}
+              disabled={selected.length === 0 || updateMut.isPending}
+            >
+              Update team
+            </button>
+            <button className="mini" onClick={() => saveMut.mutate()} disabled={selected.length === 0 || saveMut.isPending}>
+              Save as new
+            </button>
+          </>
+        ) : (
+          <button
+            className="calc-btn"
+            onClick={() => saveMut.mutate()}
+            disabled={selected.length === 0 || saveMut.isPending}
+          >
+            Save team
+          </button>
+        )}
         {saveMut.isSuccess ? <span className="saved-ok">Saved ✓</span> : null}
+        {updateMut.isSuccess ? <span className="saved-ok">Updated ✓</span> : null}
       </div>
 
       <div className="synergy-grid">
         <Card title={`Synergy${synergy.complete ? "" : " (partial)"}`}>
+          <div className={`rating-badge grade-${synergy.rating.grade}`}>
+            Rating <strong>{synergy.rating.grade}</strong>
+            <span className="muted small"> ({synergy.rating.score})</span>
+          </div>
           <h4>Elemental Resonance</h4>
           {synergy.resonances.length ? (
             <ul className="chips">

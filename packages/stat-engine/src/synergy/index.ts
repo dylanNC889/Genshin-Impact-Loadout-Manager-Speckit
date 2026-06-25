@@ -48,6 +48,15 @@ export function assessSynergy(members: SynergyMember[]): SynergyAssessment {
   const hasDamage = covered.includes("MainDPS") || covered.includes("SubDPS");
   if (!hasDamage) gaps.push("Damage dealer (MainDPS/SubDPS)");
 
+  // Scored/labeled rating from the qualitative signals (FR-015).
+  const hasSupport = covered.includes("Healer") || covered.includes("Shielder");
+  const hasEnergy = covered.includes("Battery") || covered.includes("Buffer");
+  let score = resonances.length * 2 + Math.min(possibleReactions.length, 4);
+  if (hasDamage) score += 1;
+  if (hasSupport) score += 1;
+  if (hasEnergy) score += 1;
+  const grade = score >= 7 ? "S" : score >= 5 ? "A" : score >= 3 ? "B" : "C";
+
   const notes: string[] = [];
   if (!complete) notes.push(`Team has ${members.length}/4 members (incomplete assessment).`);
   if (resonances.length === 0) notes.push("No elemental resonance active.");
@@ -59,6 +68,7 @@ export function assessSynergy(members: SynergyMember[]): SynergyAssessment {
     resonances,
     possibleReactions,
     roleCoverage: { covered, gaps },
+    rating: { score, grade },
     notes,
   };
 }

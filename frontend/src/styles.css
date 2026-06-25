@@ -240,6 +240,12 @@ select {
   font-weight: 600;
 }
 
+.skill-desc {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
 .note {
   margin-top: 12px;
 }
@@ -459,6 +465,34 @@ select {
   .synergy-grid {
     grid-template-columns: 1fr;
   }
+}
+
+.rating-badge {
+  display: inline-block;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 12px;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.rating-badge strong {
+  font-size: 18px;
+  margin-left: 4px;
+}
+
+.rating-badge.grade-S strong {
+  color: #ffd66b;
+}
+.rating-badge.grade-A strong {
+  color: #7ad6e6;
+}
+.rating-badge.grade-B strong {
+  color: #a5c83b;
+}
+.rating-badge.grade-C strong {
+  color: var(--muted);
 }
 
 .synergy-grid h4 {
