@@ -125,6 +125,9 @@ importers:
       '@app/stat-engine':
         specifier: workspace:*
         version: link:../stat-engine
+      genshin-db:
+        specifier: ^5.2.11
+        version: 5.2.11
 
   packages/stat-engine:
     dependencies:
@@ -1338,6 +1341,12 @@ packages:
     engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
     os: [darwin]
 
+  fuzzysort@1.9.0:
+    resolution: {integrity: sha512-MOxCT0qLTwLqmEwc7UtU045RKef7mc8Qz8eR4r2bLNEq9dy/c3ZKMEFp6IEst69otkQdFZ4FfgH2dmZD+ddX1g==}
+
+  genshin-db@5.2.11:
+    resolution: {integrity: sha512-YhkRmMySZIhpjaEYMdHIWXxJsw/GOg3TRUhWSMhYuvvJOuAJY3cHk/lpw2NBbd94XfZ/LqYF9+1tdJ4IPLPHiQ==}
+
   gensync@1.0.0-beta.2:
     resolution: {integrity: sha512-3hN7NaskYvMDLQY55gnW3NQ+mesEAepTqlg+VEbj7zzqEMBVNhzcGYYeqFo/TlYz6eQiFcp1HcsCZO+nGgS8zg==}
     engines: {node: '>=6.9.0'}
@@ -1498,6 +1507,9 @@ packages:
   p-locate@5.0.0:
     resolution: {integrity: sha512-LaNjtRWUBY++zB5nE/NwcaoMylSPk+S+ZHNB1TzdbMJMny6dynpAGt7X/tl/QYq3TIeE6nxHppbo2LGymrG5Pw==}
     engines: {node: '>=10'}
+
+  pako@2.2.0:
+    resolution: {integrity: sha512-zJq6RP/5q+TO2OpFV3FHzlPnFjmkb7Nc99a5SNjJE+uu/PkpChs+NIZSSzbBoD+6kjiISXjfYdwj1ZRQ81dz/w==}
 
   parent-module@1.0.1:
     resolution: {integrity: sha512-GQ2EWRpQV8/o+Aw8YqtfZZPfNRWZYkbidE9k5rpl/hC3vtHHBfGm2Ifi6qWV+coDGkrUKZAxE3Lot5kcsRlh+g==}
@@ -3050,6 +3062,13 @@ snapshots:
   fsevents@2.3.3:
     optional: true
 
+  fuzzysort@1.9.0: {}
+
+  genshin-db@5.2.11:
+    dependencies:
+      fuzzysort: 1.9.0
+      pako: 2.2.0
+
   gensync@1.0.0-beta.2: {}
 
   get-caller-file@2.0.5: {}
@@ -3182,6 +3201,8 @@ snapshots:
   p-locate@5.0.0:
     dependencies:
       p-limit: 3.1.0
+
+  pako@2.2.0: {}
 
   parent-module@1.0.1:
     dependencies:

@@ -18,7 +18,7 @@ describe("GET /api/v1/characters (T020 / FR-001)", () => {
     const res = await app.inject({ method: "GET", url: "/api/v1/characters" });
     expect(res.statusCode).toBe(200);
     const body = res.json() as Array<{ id: string; element: string }>;
-    expect(body.length).toBe(30);
+    expect(body.length).toBeGreaterThanOrEqual(100);
     expect(body.some((c) => c.id === "hu-tao")).toBe(true);
     expect(body[0]).toHaveProperty("element");
   });
@@ -60,6 +60,6 @@ describe("GET /api/v1/meta/dataset (T016 / FR-021)", () => {
   it("exposes the active dataset version", async () => {
     const res = await app.inject({ method: "GET", url: "/api/v1/meta/dataset" });
     expect(res.statusCode).toBe(200);
-    expect((res.json() as { gameVersion: string }).gameVersion).toBe("5.x-slice");
+    expect((res.json() as { gameVersion: string }).gameVersion).toBe("genshin-db-5");
   });
 });

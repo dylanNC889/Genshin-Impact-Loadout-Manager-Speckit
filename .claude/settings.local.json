@@ -31,7 +31,9 @@
       "Bash(python3 -c 'import sys,json; *)",
       "Bash(git add *)",
       "Bash(git commit *)",
-      "Bash(gh run *)"
+      "Bash(gh run *)",
+      "Bash(curl -s http://localhost:3000/api/v1/characters)",
+      "Bash(echo \"local app roster: $\\(curl -s http://localhost:3000/api/v1/characters)"
     ]
   }
 }

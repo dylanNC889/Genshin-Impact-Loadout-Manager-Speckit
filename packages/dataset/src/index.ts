@@ -56,7 +56,8 @@ interface MetaFile {
 const here = dirname(fileURLToPath(import.meta.url));
 /** packages/dataset/src -> repo root. */
 const REPO_ROOT = join(here, "..", "..", "..");
-export const DEFAULT_DATASET_DIR = join(REPO_ROOT, "data", "5x-slice");
+/** Full accurate dataset imported from genshin-db (see scripts/import.mts). */
+export const DEFAULT_DATASET_DIR = join(REPO_ROOT, "data", "genshindb");
 
 function round2(n: number): number {
   return Math.round(n * 100) / 100;
