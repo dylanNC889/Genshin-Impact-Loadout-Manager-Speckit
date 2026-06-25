@@ -30,7 +30,8 @@
       "Bash(gh api *)",
       "Bash(python3 -c 'import sys,json; *)",
       "Bash(git add *)",
-      "Bash(git commit *)"
+      "Bash(git commit *)",
+      "Bash(gh run *)"
     ]
   }
 }
