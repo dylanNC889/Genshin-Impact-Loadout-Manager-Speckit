@@ -36,14 +36,27 @@ The keystone is `stat-engine` — identical accuracy-critical math runs client-s
 
 ```bash
 pnpm install
-pnpm rebuild esbuild            # one-time: vitest/vite need esbuild's binary
+pnpm rebuild esbuild   # one-time: vitest/vite need esbuild's native binary
+```
 
+**Run both (one command):**
+
+```bash
+pnpm dev               # backend API :3000 + frontend :5173 together
+```
+
+**Or run them separately (two terminals):**
+
+```bash
 pnpm --filter @app/backend start    # API on http://localhost:3000
 pnpm --filter @app/frontend dev     # UI  on http://localhost:5173 (proxies /api → backend)
 ```
 
-Open <http://localhost:5173>. The backend persists to `.data/store.json` (override with
-`STORE_PATH=/path/to/store.json`).
+Open <http://localhost:5173>. The backend persists saved loadouts/teams to `.data/store.json`
+(override with `STORE_PATH=/path/to/store.json`). Stop with `Ctrl+C`.
+
+> The live GitHub Pages site is a **static, backend-free** build (data bundled, saves in
+> localStorage). Local dev above is the **full** app with the real API.
 
 ## Quality gates
 
