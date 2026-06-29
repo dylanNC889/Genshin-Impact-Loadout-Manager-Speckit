@@ -15,7 +15,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { computeFinalStats, statRecord, validateArtifact } from "@app/stat-engine";
 import { useLoadoutStore, type ArtifactDraft } from "../state/loadoutStore";
 import { createLoadout, updateLoadout } from "../api";
-import { Card, StatRow } from "./ui";
+import { Card, Icon, StatRow } from "./ui";
 import { formatStat, statLabel } from "../format";
 
 const SLOTS: ArtifactSlot[] = ["Flower", "Plume", "Sands", "Goblet", "Circlet"];
@@ -106,14 +106,17 @@ export function LoadoutEditor({
         <div className="loadout-editor">
           <div className="field">
             <label htmlFor="weapon">Weapon ({character.weaponType})</label>
-            <select id="weapon" value={weaponId ?? ""} onChange={(e) => setWeapon(e.target.value || null)}>
-              <option value="">— none —</option>
-              {weapons.map((w) => (
-                <option key={w.id} value={w.id}>
-                  {w.name}
-                </option>
-              ))}
-            </select>
+            <div className="picker-row">
+              <Icon src={weapons.find((w) => w.id === weaponId)?.icon} alt="weapon" size={32} />
+              <select id="weapon" value={weaponId ?? ""} onChange={(e) => setWeapon(e.target.value || null)}>
+                <option value="">— none —</option>
+                {weapons.map((w) => (
+                  <option key={w.id} value={w.id}>
+                    {w.name}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
           {SLOTS.map((slot) => (
@@ -253,6 +256,7 @@ function ArtifactSlotEditor({
     <div className="slot">
       <div className="slot-head">
         <span className="slot-name">{slot}</span>
+        <Icon src={sets.find((s) => s.id === draft?.setId)?.icon} alt="set" size={28} />
         <select value={draft?.setId ?? ""} onChange={(e) => onSetChange(e.target.value)} aria-label={`${slot} set`}>
           <option value="">— empty —</option>
           {sets.map((s) => (

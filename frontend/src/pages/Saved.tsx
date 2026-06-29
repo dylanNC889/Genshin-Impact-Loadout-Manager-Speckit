@@ -10,7 +10,7 @@ import {
   fetchCharacters,
   type SavedLoadout,
 } from "../api";
-import { Card } from "../components/ui";
+import { Card, Icon } from "../components/ui";
 import { formatStat } from "../format";
 
 export function SavedPage() {
@@ -20,6 +20,7 @@ export function SavedPage() {
   const rosterQ = useQuery({ queryKey: ["characters", "saved"], queryFn: () => fetchCharacters({}) });
 
   const nameById = (id: string) => rosterQ.data?.find((c) => c.id === id)?.name ?? id;
+  const iconById = (id: string) => rosterQ.data?.find((c) => c.id === id)?.icon;
   const statOf = (l: SavedLoadout, key: string) =>
     l.computedFinalStats.find((s) => s.key === key)?.value ?? 0;
 
@@ -37,13 +38,16 @@ export function SavedPage() {
             <ul className="saved-list">
               {loadoutsQ.data.map((l) => (
                 <li key={l.id}>
-                  <div className="saved-info">
-                    <span className="saved-name">{l.name}</span>
+                  <div className="saved-left">
+                    <Icon src={iconById(l.characterId)} alt="" size={36} />
+                    <div className="saved-info">
+                      <span className="saved-name">{l.name}</span>
                     <span className="muted small">
                       {nameById(l.characterId)} · ATK {Math.round(statOf(l, "ATK"))} · CR{" "}
                       {formatStat("CRIT_RATE", statOf(l, "CRIT_RATE"))} · CD{" "}
                       {formatStat("CRIT_DMG", statOf(l, "CRIT_DMG"))}
                     </span>
+                    </div>
                   </div>
                   <div className="saved-actions">
                     <Link className="mini" to={`/character/${l.characterId}?loadout=${l.id}`}>

@@ -40,3 +40,31 @@ export function ElementBadge({ element }: { element: string }) {
 export function RarityStars({ rarity }: { rarity: number }) {
   return <span className="stars">{"★".repeat(rarity)}</span>;
 }
+
+/** Game asset icon (mihoyo CDN); hides itself if the image fails to load. */
+export function Icon({
+  src,
+  alt,
+  size = 40,
+  className,
+}: {
+  src?: string;
+  alt: string;
+  size?: number;
+  className?: string;
+}) {
+  if (!src) return null;
+  return (
+    <img
+      src={src}
+      alt={alt}
+      width={size}
+      height={size}
+      loading="lazy"
+      className={`icon-img${className ? ` ${className}` : ""}`}
+      onError={(e) => {
+        e.currentTarget.style.display = "none";
+      }}
+    />
+  );
+}

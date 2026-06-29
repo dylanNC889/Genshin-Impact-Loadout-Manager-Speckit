@@ -162,6 +162,7 @@ for (const name of charNames) {
       element: c.elementText,
       weaponType: c.weaponText,
       rarity: c.rarity,
+      icon: c.images?.mihoyo_icon ?? c.images?.["hoyolab-avatar"] ?? "",
       lv90: { hp: round(s90.hp), atk: round(s90.attack), def: round(s90.defense) },
       ascensionStat: { key, value: ascensionValue(key, s90.specialized) },
       levels,
@@ -188,6 +189,7 @@ for (const name of weaponNames) {
       name: w.name,
       weaponType: w.weaponText,
       rarity: w.rarity,
+      icon: w.images?.mihoyo_icon ?? w.images?.icon ?? "",
       baseATK: round(s90.attack),
       ...(secKey ? { secondaryStat: { key: secKey, value: ascensionValue(secKey, s90.specialized) } } : {}),
       passiveStatBonuses: [],
@@ -208,6 +210,7 @@ for (const name of artifactNames) {
     artifactSets.push({
       id: slug(a.name),
       name: a.name,
+      icon: a.images?.flower ?? a.images?.circlet ?? "",
       bonus2: { description: String(a.effect2Pc ?? ""), statBonuses: parse2pc(String(a.effect2Pc ?? "")) },
       bonus4: { description: String(a.effect4Pc ?? ""), statBonuses: [] },
     });

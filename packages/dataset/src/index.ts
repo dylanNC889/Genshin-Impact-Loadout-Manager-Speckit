@@ -40,6 +40,7 @@ interface RawCharacter {
   element: Element;
   weaponType: WeaponType;
   rarity: number;
+  icon?: string;
   lv90: { hp: number; atk: number; def: number };
   ascensionStat: StatValue;
   levels?: { level: number; hp: number; atk: number; def: number; ascensionStat: number }[];
@@ -94,6 +95,7 @@ function normalizeCharacter(raw: RawCharacter): Character {
     element: raw.element,
     weaponType: raw.weaponType,
     rarity: raw.rarity,
+    icon: raw.icon ?? "",
     baseStats: { baseHP: raw.lv90.hp, baseATK: raw.lv90.atk, baseDEF: raw.lv90.def },
     growthCurveId: "endgame",
     ascensions: buildAscensions(raw.ascensionStat),

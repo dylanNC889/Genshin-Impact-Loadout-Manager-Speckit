@@ -14,7 +14,7 @@ import {
   type CharacterDetail,
   type SavedLoadout,
 } from "../api";
-import { Card } from "../components/ui";
+import { Card, Icon } from "../components/ui";
 
 interface Slot {
   characterId: string | null;
@@ -155,6 +155,7 @@ export function TeamBuilder() {
             <div className="team-slot col" key={i}>
               <div className="team-slot-row">
                 <span className="slot-num">{i + 1}</span>
+                <Icon src={roster.find((c) => c.id === slot.characterId)?.icon} alt="" size={32} />
                 <select
                   value={slot.characterId ?? ""}
                   onChange={(e) => setSlotCharacter(i, e.target.value)}

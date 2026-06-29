@@ -14,6 +14,7 @@ export interface CharacterSummary {
   element: string;
   weaponType: string;
   rarity: number;
+  icon: string;
 }
 
 export interface CharacterDetail {

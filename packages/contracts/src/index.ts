@@ -140,6 +140,8 @@ export const CharacterSchema = z.object({
   element: ElementSchema,
   weaponType: WeaponTypeSchema,
   rarity: RaritySchema,
+  /** Icon URL (mihoyo CDN). */
+  icon: z.string().default(""),
   /** Level-1 base values. */
   baseStats: z.object({ baseHP: z.number(), baseATK: z.number(), baseDEF: z.number() }),
   /** Named level-growth curve id; resolved against Dataset.curves. */
@@ -158,6 +160,7 @@ export const WeaponSchema = z.object({
   name: z.string(),
   weaponType: WeaponTypeSchema,
   rarity: RaritySchema,
+  icon: z.string().default(""),
   /** Base ATK at the weapon's max level (used by loadouts at endgame). */
   baseATK: z.number(),
   secondaryStat: StatValueSchema.optional(),
@@ -168,6 +171,7 @@ export type Weapon = z.infer<typeof WeaponSchema>;
 export const ArtifactSetSchema = z.object({
   id: z.string(),
   name: z.string(),
+  icon: z.string().default(""),
   bonus2: z.object({ description: z.string().default(""), statBonuses: z.array(StatValueSchema).default([]) }).optional(),
   bonus4: z.object({ description: z.string().default(""), statBonuses: z.array(StatValueSchema).default([]) }).optional(),
 });

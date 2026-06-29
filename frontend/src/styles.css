@@ -97,6 +97,47 @@ select {
   margin-bottom: 10px;
 }
 
+/* --- Game asset icons --- */
+.icon-img {
+  object-fit: contain;
+  border-radius: 6px;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+.char-card-icon {
+  display: block;
+  margin: 0 auto 8px;
+  background: var(--surface-2);
+}
+
+.char-header-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.char-header-top h1 {
+  margin: 0;
+}
+
+.picker-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.picker-row select {
+  flex: 1;
+}
+
+.saved-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
 .char-name {
   font-weight: 600;
 }

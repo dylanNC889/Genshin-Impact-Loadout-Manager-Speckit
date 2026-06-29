@@ -10,7 +10,7 @@ import {
   fetchWeapons,
   getLoadout,
 } from "../api";
-import { Card, StatRow, ElementBadge, RarityStars } from "../components/ui";
+import { Card, StatRow, ElementBadge, Icon, RarityStars } from "../components/ui";
 import { LoadoutEditor } from "../components/LoadoutEditor";
 import { formatStat, statLabel } from "../format";
 import { useLoadoutStore } from "../state/loadoutStore";
@@ -91,7 +91,10 @@ export function CharacterPage() {
       </Link>
 
       <div className="char-header">
-        <h1>{char.name}</h1>
+        <div className="char-header-top">
+          <Icon src={char.icon} alt={char.name} size={72} />
+          <h1>{char.name}</h1>
+        </div>
         <div className="char-tags">
           <ElementBadge element={char.element} />
           <span className="badge muted-badge">{char.weaponType}</span>

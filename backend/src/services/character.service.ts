@@ -6,6 +6,7 @@ export interface CharacterSummary {
   element: Character["element"];
   weaponType: Character["weaponType"];
   rarity: Character["rarity"];
+  icon: string;
 }
 
 export interface CharacterDetail {
@@ -33,6 +34,7 @@ export function listCharacters(dataset: Dataset, filters: CharacterFilters = {})
       element: c.element,
       weaponType: c.weaponType,
       rarity: c.rarity,
+      icon: c.icon,
     }));
 }
 

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { fetchCharacters } from "../api";
-import { ElementBadge, RarityStars } from "../components/ui";
+import { ElementBadge, Icon, RarityStars } from "../components/ui";
 
 const ELEMENTS = ["Pyro", "Hydro", "Electro", "Cryo", "Anemo", "Geo", "Dendro"];
 const WEAPONS = ["Sword", "Claymore", "Polearm", "Bow", "Catalyst"];
@@ -55,6 +55,7 @@ export function Roster() {
               <ElementBadge element={c.element} />
               <RarityStars rarity={c.rarity} />
             </div>
+            <Icon src={c.icon} alt={c.name} size={64} className="char-card-icon" />
             <div className="char-name">{c.name}</div>
             <div className="muted small">{c.weaponType}</div>
           </Link>

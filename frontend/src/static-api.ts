@@ -31,7 +31,14 @@ export async function fetchCharacters(params: {
     .filter((c) => (params.element ? c.element === params.element : true))
     .filter((c) => (params.weaponType ? c.weaponType === params.weaponType : true))
     .filter((c) => (q ? c.name.toLowerCase().includes(q) || c.id.includes(q) : true))
-    .map((c) => ({ id: c.id, name: c.name, element: c.element, weaponType: c.weaponType, rarity: c.rarity }));
+    .map((c) => ({
+      id: c.id,
+      name: c.name,
+      element: c.element,
+      weaponType: c.weaponType,
+      rarity: c.rarity,
+      icon: c.icon,
+    }));
 }
 
 export async function fetchCharacterDetail(id: string): Promise<CharacterDetail> {
