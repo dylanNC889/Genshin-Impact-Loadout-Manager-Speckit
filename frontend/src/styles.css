@@ -403,6 +403,51 @@ select {
   font-size: 12px;
   min-width: 56px;
   text-align: right;
+  flex: 1;
+}
+
+.sub {
+  border-top: 1px solid var(--border);
+  padding: 8px 0;
+}
+
+.sub-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sub-head > select {
+  flex: 2;
+}
+
+.sub-rolls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.roll {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.roll select {
+  min-width: 64px;
+}
+
+.base-tag {
+  font-size: 10px;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.mini.xs {
+  padding: 2px 6px;
+  font-size: 11px;
 }
 
 .main-row select,

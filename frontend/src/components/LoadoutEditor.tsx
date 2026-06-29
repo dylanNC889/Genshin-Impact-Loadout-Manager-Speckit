@@ -1,6 +1,7 @@
 import type {
   ArtifactSet,
   ArtifactSlot,
+  ArtifactSubStat,
   Character,
   Dataset,
   GrowthCurve,
@@ -220,17 +221,20 @@ function ArtifactSlotEditor({
   // Substats are built from two factors: how many rolls, and the value of each roll (one of
   // the stat's canonical roll values). Line value = rolls × rollValue. A 5★ artifact has up
   // to 4 initial substats + 5 upgrade rolls = 9 total (max 6 per substat).
-  // Each existing substat has a base roll (+0). 4 "upgrade" rolls are shared across the
-  // artifact's substats — one substat can take all 4 (+4) while the others stay at base.
+  // Each substat has a base roll (+0); 4 upgrade rolls are shared across the artifact — one
+  // substat can take all 4 (+4) while others stay base. Each roll (base + each upgrade) can
+  // independently be any of the stat's canonical roll values; the line total is their sum.
   const MAX_UPGRADES = 4;
   const MAX_SUB_ROLLS = 5; // 1 base + up to 4 upgrades
   const round1 = (n: number) => Math.round(n * 10) / 10;
+  const sum = (xs: number[]) => round1(xs.reduce((a, b) => a + b, 0));
   const rollChoices = (key: StatKey): number[] => subStatValues[key] ?? [];
   const defaultRoll = (key: StatKey): number => {
     const a = rollChoices(key);
     return a[a.length - 1] ?? 0; // default to the high roll
   };
-  const totalUpgrades = (draft?.subStats ?? []).reduce((sum, s) => sum + (s.rolls - 1), 0);
+  const rollsOf = (s: ArtifactSubStat): number[] => (s.rollValues.length ? s.rollValues : [s.value]);
+  const totalUpgrades = (draft?.subStats ?? []).reduce((acc, s) => acc + (rollsOf(s).length - 1), 0);
 
   function onSetChange(value: string) {
     if (!value) return onChange(undefined);
@@ -243,34 +247,47 @@ function ArtifactSlotEditor({
   function onMainKey(key: StatKey) {
     if (draft) onChange({ ...draft, mainStat: { key, value: mainValue(key) } });
   }
+  function setSub(i: number, key: StatKey, rollValues: number[]) {
+    if (!draft) return;
+    onChange({
+      ...draft,
+      subStats: draft.subStats.map((s, idx) => (idx === i ? { key, rollValues, value: sum(rollValues) } : s)),
+    });
+  }
   function addSub() {
     if (!draft || draft.subStats.length >= 4) return; // base substats don't use upgrade budget
     const key = allowedSubs[0] ?? "ATK_PCT";
     const rv = defaultRoll(key);
-    onChange({ ...draft, subStats: [...draft.subStats, { key, rolls: 1, rollValue: rv, value: round1(rv) }] });
+    onChange({ ...draft, subStats: [...draft.subStats, { key, rollValues: [rv], value: round1(rv) }] });
   }
   function onSubKey(i: number, key: StatKey) {
     if (!draft) return;
-    const rolls = draft.subStats[i]?.rolls ?? 1;
-    const rv = defaultRoll(key); // reset per-roll value to a valid one for the new stat
-    onChange({
-      ...draft,
-      subStats: draft.subStats.map((s, idx) => (idx === i ? { key, rolls, rollValue: rv, value: round1(rolls * rv) } : s)),
-    });
+    const count = rollsOf(draft.subStats[i] ?? { key, value: 0, rollValues: [] }).length;
+    setSub(i, key, Array.from({ length: count }, () => defaultRoll(key)));
   }
-  function onSubRolls(i: number, rolls: number) {
+  function setRoll(i: number, j: number, value: number) {
     if (!draft) return;
-    onChange({
-      ...draft,
-      subStats: draft.subStats.map((s, idx) => (idx === i ? { ...s, rolls, value: round1(rolls * s.rollValue) } : s)),
-    });
+    const s = draft.subStats[i];
+    if (!s) return;
+    const rv = [...rollsOf(s)];
+    rv[j] = value;
+    setSub(i, s.key, rv);
   }
-  function onSubRollValue(i: number, rollValue: number) {
+  function addUpgrade(i: number) {
+    if (!draft || totalUpgrades >= MAX_UPGRADES) return;
+    const s = draft.subStats[i];
+    if (!s || rollsOf(s).length >= MAX_SUB_ROLLS) return;
+    setSub(i, s.key, [...rollsOf(s), defaultRoll(s.key)]);
+  }
+  function removeUpgrade(i: number, j: number) {
     if (!draft) return;
-    onChange({
-      ...draft,
-      subStats: draft.subStats.map((s, idx) => (idx === i ? { ...s, rollValue, value: round1(s.rolls * rollValue) } : s)),
-    });
+    const s = draft.subStats[i];
+    if (!s) return;
+    setSub(
+      i,
+      s.key,
+      rollsOf(s).filter((_, idx) => idx !== j),
+    );
   }
   function removeSub(i: number) {
     if (draft) onChange({ ...draft, subStats: draft.subStats.filter((_, idx) => idx !== i) });
@@ -311,39 +328,53 @@ function ArtifactSlotEditor({
           </div>
 
           {draft.subStats.map((s, i) => {
-            const maxN = Math.max(1, Math.min(MAX_SUB_ROLLS, s.rolls + (MAX_UPGRADES - totalUpgrades)));
+            const rolls = rollsOf(s);
+            const canUpgrade = totalUpgrades < MAX_UPGRADES && rolls.length < MAX_SUB_ROLLS;
             return (
-              <div className="sub-row" key={i}>
-                <select value={s.key} onChange={(e) => onSubKey(i, e.target.value as StatKey)} aria-label="substat">
-                  {allowedSubs.map((k) => (
-                    <option key={k} value={k}>
-                      {statLabel(k)}
-                    </option>
+              <div className="sub" key={i}>
+                <div className="sub-head">
+                  <select value={s.key} onChange={(e) => onSubKey(i, e.target.value as StatKey)} aria-label="substat">
+                    {allowedSubs.map((k) => (
+                      <option key={k} value={k}>
+                        {statLabel(k)}
+                      </option>
+                    ))}
+                  </select>
+                  <span className="sub-total">{formatStat(s.key, s.value)}</span>
+                  <button type="button" className="mini" onClick={() => removeSub(i)} aria-label="remove substat">
+                    ✕
+                  </button>
+                </div>
+                <div className="sub-rolls">
+                  {rolls.map((rv, j) => (
+                    <span className="roll" key={j}>
+                      <select
+                        value={String(rv)}
+                        onChange={(e) => setRoll(i, j, Number(e.target.value))}
+                        aria-label={j === 0 ? "base roll" : "upgrade roll"}
+                        title={j === 0 ? "base" : "upgrade"}
+                      >
+                        {rollChoices(s.key).map((v) => (
+                          <option key={v} value={String(v)}>
+                            {formatStat(s.key, v)}
+                          </option>
+                        ))}
+                      </select>
+                      {j > 0 ? (
+                        <button type="button" className="mini xs" onClick={() => removeUpgrade(i, j)} aria-label="remove upgrade">
+                          ×
+                        </button>
+                      ) : (
+                        <span className="base-tag">base</span>
+                      )}
+                    </span>
                   ))}
-                </select>
-                <select value={s.rolls} onChange={(e) => onSubRolls(i, Number(e.target.value))} aria-label="substat rolls" title="upgrades">
-                  {Array.from({ length: maxN }, (_, n) => n + 1).map((n) => (
-                    <option key={n} value={n}>
-                      +{n - 1}
-                    </option>
-                  ))}
-                </select>
-                <select
-                  value={String(s.rollValue)}
-                  onChange={(e) => onSubRollValue(i, Number(e.target.value))}
-                  aria-label="substat roll value"
-                  title="value per roll"
-                >
-                  {rollChoices(s.key).map((v) => (
-                    <option key={v} value={String(v)}>
-                      {formatStat(s.key, v)}
-                    </option>
-                  ))}
-                </select>
-                <span className="sub-total">{formatStat(s.key, s.value)}</span>
-                <button type="button" className="mini" onClick={() => removeSub(i)} aria-label="remove substat">
-                  ✕
-                </button>
+                  {canUpgrade ? (
+                    <button type="button" className="mini add" onClick={() => addUpgrade(i)} title="add an upgrade roll">
+                      + roll
+                    </button>
+                  ) : null}
+                </div>
               </div>
             );
           })}
