@@ -57,7 +57,7 @@ Monorepo (pnpm + Turborepo) per plan.md:
 - [X] T011 Create `stat-engine` skeleton with public signatures/types (`computeBaseStats`, `computeFinalStats`, `validateArtifact`, `assessSynergy`, `estimateTeamDamage`) in `packages/stat-engine/src/` per contracts/stat-engine.md (stubs throw "not implemented")
 - [ ] T012 Define Prisma schema for reference + user entities (Character, Skill, Weapon, ArtifactSet, rule tables, Loadout, Team, TeamSlot, User, DatasetMeta) in `backend/src/db/schema.prisma` per data-model.md
 - [ ] T013 Generate initial Prisma migration and DB client module in `backend/src/db/`
-- [ ] T014 Author curated reference dataset covering the full current roster (FR-021/SC-008) in `data/<game-version>/{characters,weapons,artifact-sets}.json` plus slot-stat/resonance/reaction rule tables; validate against `@app/contracts`
+- [X] T014 Author curated reference dataset covering the full current roster (FR-021/SC-008) in `data/<game-version>/{characters,weapons,artifact-sets}.json` plus slot-stat/resonance/reaction rule tables; validate against `@app/contracts`
 - [ ] T015 Implement dataset seed script `backend/src/db/seed.ts` loading `data/<game-version>/` into Postgres and stamping `DatasetMeta`
 - [X] T016 [P] Implement Fastify server skeleton (`/api/v1` prefix, health route, error-envelope handler, `GET /meta/dataset`) in `backend/src/api/`
 - [X] T017 [P] Scaffold frontend shell: Vite + React Router routes, base layout, shared component library + design tokens, typed API client base in `frontend/src/` (Principle III)
