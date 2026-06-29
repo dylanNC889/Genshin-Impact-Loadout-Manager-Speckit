@@ -215,11 +215,20 @@ export interface Dataset {
 // Loadout / artifact instance (user-entered)
 // ---------------------------------------------------------------------------
 
+/** A substat line: total `value` = `rolls` × `rollValue` (UI builds it; engine reads value). */
+export const ArtifactSubStatSchema = z.object({
+  key: StatKeySchema,
+  value: z.number(),
+  rolls: z.number().int().min(1).default(1),
+  rollValue: z.number().default(0),
+});
+export type ArtifactSubStat = z.infer<typeof ArtifactSubStatSchema>;
+
 export const ArtifactInstanceSchema = z.object({
   slot: ArtifactSlotSchema,
   setId: z.string(),
   mainStat: StatValueSchema,
-  subStats: z.array(StatValueSchema).max(4).default([]),
+  subStats: z.array(ArtifactSubStatSchema).max(4).default([]),
 });
 export type ArtifactInstance = z.infer<typeof ArtifactInstanceSchema>;
 

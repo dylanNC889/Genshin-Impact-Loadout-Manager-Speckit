@@ -217,21 +217,18 @@ function ArtifactSlotEditor({
   const firstMain: StatKey = allowedMains[0] ?? "HP";
   const mainValue = (key: StatKey): number => mainStatValues[key] ?? 0;
 
-  // Substats accumulate rolls: line value = rollCount × the stat's high single-roll value.
-  // A 5★ artifact has up to 4 initial substats + 5 upgrade rolls = 9 total (max 6 per substat).
+  // Substats are built from two factors: how many rolls, and the value of each roll (one of
+  // the stat's canonical roll values). Line value = rolls × rollValue. A 5★ artifact has up
+  // to 4 initial substats + 5 upgrade rolls = 9 total (max 6 per substat).
   const MAX_ROLLS = 9;
   const MAX_PER_SUB = 6;
   const round1 = (n: number) => Math.round(n * 10) / 10;
-  const highRoll = (key: StatKey): number => {
-    const arr = subStatValues[key] ?? [];
-    return arr.length ? Math.max(...arr) : 0;
+  const rollChoices = (key: StatKey): number[] => subStatValues[key] ?? [];
+  const defaultRoll = (key: StatKey): number => {
+    const a = rollChoices(key);
+    return a[a.length - 1] ?? 0; // default to the high roll
   };
-  const rollValue = (key: StatKey, count: number): number => round1(count * highRoll(key));
-  const rollCountOf = (sv: { key: StatKey; value: number }): number => {
-    const h = highRoll(sv.key);
-    return h ? Math.max(1, Math.round(sv.value / h)) : 1;
-  };
-  const totalRolls = (draft?.subStats ?? []).reduce((sum, sv) => sum + rollCountOf(sv), 0);
+  const totalRolls = (draft?.subStats ?? []).reduce((sum, s) => sum + s.rolls, 0);
 
   function onSetChange(value: string) {
     if (!value) return onChange(undefined);
@@ -247,22 +244,30 @@ function ArtifactSlotEditor({
   function addSub() {
     if (!draft || draft.subStats.length >= 4 || totalRolls >= MAX_ROLLS) return;
     const key = allowedSubs[0] ?? "ATK_PCT";
-    onChange({ ...draft, subStats: [...draft.subStats, { key, value: rollValue(key, 1) }] });
+    const rv = defaultRoll(key);
+    onChange({ ...draft, subStats: [...draft.subStats, { key, rolls: 1, rollValue: rv, value: round1(rv) }] });
   }
   function onSubKey(i: number, key: StatKey) {
     if (!draft) return;
-    const current = draft.subStats[i];
-    const count = current ? rollCountOf(current) : 1;
+    const rolls = draft.subStats[i]?.rolls ?? 1;
+    const rv = defaultRoll(key); // reset per-roll value to a valid one for the new stat
     onChange({
       ...draft,
-      subStats: draft.subStats.map((s, idx) => (idx === i ? { key, value: rollValue(key, count) } : s)),
+      subStats: draft.subStats.map((s, idx) => (idx === i ? { key, rolls, rollValue: rv, value: round1(rolls * rv) } : s)),
     });
   }
-  function onSubRolls(i: number, count: number) {
+  function onSubRolls(i: number, rolls: number) {
     if (!draft) return;
     onChange({
       ...draft,
-      subStats: draft.subStats.map((s, idx) => (idx === i ? { ...s, value: rollValue(s.key, count) } : s)),
+      subStats: draft.subStats.map((s, idx) => (idx === i ? { ...s, rolls, value: round1(rolls * s.rollValue) } : s)),
+    });
+  }
+  function onSubRollValue(i: number, rollValue: number) {
+    if (!draft) return;
+    onChange({
+      ...draft,
+      subStats: draft.subStats.map((s, idx) => (idx === i ? { ...s, rollValue, value: round1(s.rolls * rollValue) } : s)),
     });
   }
   function removeSub(i: number) {
@@ -304,8 +309,7 @@ function ArtifactSlotEditor({
           </div>
 
           {draft.subStats.map((s, i) => {
-            const count = rollCountOf(s);
-            const maxN = Math.max(1, Math.min(MAX_PER_SUB, MAX_ROLLS - (totalRolls - count)));
+            const maxN = Math.max(1, Math.min(MAX_PER_SUB, MAX_ROLLS - (totalRolls - s.rolls)));
             return (
               <div className="sub-row" key={i}>
                 <select value={s.key} onChange={(e) => onSubKey(i, e.target.value as StatKey)} aria-label="substat">
@@ -315,13 +319,26 @@ function ArtifactSlotEditor({
                     </option>
                   ))}
                 </select>
-                <select value={count} onChange={(e) => onSubRolls(i, Number(e.target.value))} aria-label="substat rolls">
+                <select value={s.rolls} onChange={(e) => onSubRolls(i, Number(e.target.value))} aria-label="substat rolls" title="rolls">
                   {Array.from({ length: maxN }, (_, n) => n + 1).map((n) => (
                     <option key={n} value={n}>
-                      {formatStat(s.key, rollValue(s.key, n))} · {n}×
+                      {n}×
                     </option>
                   ))}
                 </select>
+                <select
+                  value={String(s.rollValue)}
+                  onChange={(e) => onSubRollValue(i, Number(e.target.value))}
+                  aria-label="substat roll value"
+                  title="value per roll"
+                >
+                  {rollChoices(s.key).map((v) => (
+                    <option key={v} value={String(v)}>
+                      {formatStat(s.key, v)}
+                    </option>
+                  ))}
+                </select>
+                <span className="sub-total">{formatStat(s.key, s.value)}</span>
                 <button type="button" className="mini" onClick={() => removeSub(i)} aria-label="remove substat">
                   ✕
                 </button>

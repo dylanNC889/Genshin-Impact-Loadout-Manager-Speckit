@@ -386,6 +386,23 @@ select {
 .sub-row {
   display: flex;
   gap: 6px;
+  align-items: center;
+}
+
+.sub-row {
+  flex-wrap: wrap;
+}
+
+.sub-row select {
+  min-width: 64px;
+}
+
+.sub-total {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  font-size: 12px;
+  min-width: 56px;
+  text-align: right;
 }
 
 .main-row select,

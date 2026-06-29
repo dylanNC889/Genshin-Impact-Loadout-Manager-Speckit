@@ -1,11 +1,11 @@
 import { create } from "zustand";
-import type { ArtifactSlot, StatValue } from "@app/contracts";
+import type { ArtifactSlot, ArtifactSubStat, StatValue } from "@app/contracts";
 
 /** A single artifact being edited in the loadout (FR-006). */
 export interface ArtifactDraft {
   setId: string;
   mainStat: StatValue;
-  subStats: StatValue[];
+  subStats: ArtifactSubStat[];
 }
 
 interface LoadoutState {
