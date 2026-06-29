@@ -15,6 +15,9 @@ const here = dirname(fileURLToPath(import.meta.url));
 const OUT_DIR = join(here, "..", "..", "..", "data", "genshindb");
 
 const round = (n: number) => Math.round(n * 100) / 100;
+// enka.network hosts every game UI icon by its internal filename — complete + reliable
+// (mihoyo's CDN 404s on newer content and lacks many artifact icons).
+const enkaUrl = (filename?: string) => (filename ? `https://enka.network/ui/${filename}.png` : "");
 const slug = (s: string) =>
   s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
 
@@ -162,7 +165,7 @@ for (const name of charNames) {
       element: c.elementText,
       weaponType: c.weaponText,
       rarity: c.rarity,
-      icon: c.images?.mihoyo_icon ?? c.images?.["hoyolab-avatar"] ?? "",
+      icon: enkaUrl(c.images?.filename_icon),
       lv90: { hp: round(s90.hp), atk: round(s90.attack), def: round(s90.defense) },
       ascensionStat: { key, value: ascensionValue(key, s90.specialized) },
       levels,
@@ -189,7 +192,7 @@ for (const name of weaponNames) {
       name: w.name,
       weaponType: w.weaponText,
       rarity: w.rarity,
-      icon: w.images?.mihoyo_icon ?? w.images?.icon ?? "",
+      icon: enkaUrl(w.images?.filename_icon),
       baseATK: round(s90.attack),
       ...(secKey ? { secondaryStat: { key: secKey, value: ascensionValue(secKey, s90.specialized) } } : {}),
       passiveStatBonuses: [],
@@ -210,7 +213,7 @@ for (const name of artifactNames) {
     artifactSets.push({
       id: slug(a.name),
       name: a.name,
-      icon: a.images?.flower ?? a.images?.circlet ?? "",
+      icon: enkaUrl(a.images?.filename_flower ?? a.images?.filename_circlet),
       bonus2: { description: String(a.effect2Pc ?? ""), statBonuses: parse2pc(String(a.effect2Pc ?? "")) },
       bonus4: { description: String(a.effect4Pc ?? ""), statBonuses: [] },
     });

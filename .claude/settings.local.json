@@ -48,7 +48,8 @@
       "Bash(pkill -f vite)",
       "Bash(lsof -ti:3000 -ti:5173)",
       "Bash(xargs kill -9)",
-      "Bash(python3 -c \"import sys,json; b=[s for s in json.load\\(sys.stdin\\)['character']['skills'] if s['type']=='ElementalBurst'][0]; print\\(' ', ' | '.join\\(f\\\\\"{r['label']}: {r['valuesByLevel'][9]}{'%' if r['percent'] else ''}\\\\\" for r in b['scaling'][:3]\\)\\)\")"
+      "Bash(python3 -c \"import sys,json; b=[s for s in json.load\\(sys.stdin\\)['character']['skills'] if s['type']=='ElementalBurst'][0]; print\\(' ', ' | '.join\\(f\\\\\"{r['label']}: {r['valuesByLevel'][9]}{'%' if r['percent'] else ''}\\\\\" for r in b['scaling'][:3]\\)\\)\")",
+      "Bash(echo \"roster icons present: $\\(curl -s http://localhost:3000/api/v1/characters)"
     ]
   }
 }
