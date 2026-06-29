@@ -220,15 +220,17 @@ function ArtifactSlotEditor({
   // Substats are built from two factors: how many rolls, and the value of each roll (one of
   // the stat's canonical roll values). Line value = rolls × rollValue. A 5★ artifact has up
   // to 4 initial substats + 5 upgrade rolls = 9 total (max 6 per substat).
-  const MAX_ROLLS = 9;
-  const MAX_PER_SUB = 4;
+  // Each existing substat has a base roll (+0). 4 "upgrade" rolls are shared across the
+  // artifact's substats — one substat can take all 4 (+4) while the others stay at base.
+  const MAX_UPGRADES = 4;
+  const MAX_SUB_ROLLS = 5; // 1 base + up to 4 upgrades
   const round1 = (n: number) => Math.round(n * 10) / 10;
   const rollChoices = (key: StatKey): number[] => subStatValues[key] ?? [];
   const defaultRoll = (key: StatKey): number => {
     const a = rollChoices(key);
     return a[a.length - 1] ?? 0; // default to the high roll
   };
-  const totalRolls = (draft?.subStats ?? []).reduce((sum, s) => sum + s.rolls, 0);
+  const totalUpgrades = (draft?.subStats ?? []).reduce((sum, s) => sum + (s.rolls - 1), 0);
 
   function onSetChange(value: string) {
     if (!value) return onChange(undefined);
@@ -242,7 +244,7 @@ function ArtifactSlotEditor({
     if (draft) onChange({ ...draft, mainStat: { key, value: mainValue(key) } });
   }
   function addSub() {
-    if (!draft || draft.subStats.length >= 4 || totalRolls >= MAX_ROLLS) return;
+    if (!draft || draft.subStats.length >= 4) return; // base substats don't use upgrade budget
     const key = allowedSubs[0] ?? "ATK_PCT";
     const rv = defaultRoll(key);
     onChange({ ...draft, subStats: [...draft.subStats, { key, rolls: 1, rollValue: rv, value: round1(rv) }] });
@@ -309,7 +311,7 @@ function ArtifactSlotEditor({
           </div>
 
           {draft.subStats.map((s, i) => {
-            const maxN = Math.max(1, Math.min(MAX_PER_SUB, MAX_ROLLS - (totalRolls - s.rolls)));
+            const maxN = Math.max(1, Math.min(MAX_SUB_ROLLS, s.rolls + (MAX_UPGRADES - totalUpgrades)));
             return (
               <div className="sub-row" key={i}>
                 <select value={s.key} onChange={(e) => onSubKey(i, e.target.value as StatKey)} aria-label="substat">
@@ -319,10 +321,10 @@ function ArtifactSlotEditor({
                     </option>
                   ))}
                 </select>
-                <select value={s.rolls} onChange={(e) => onSubRolls(i, Number(e.target.value))} aria-label="substat rolls" title="rolls">
+                <select value={s.rolls} onChange={(e) => onSubRolls(i, Number(e.target.value))} aria-label="substat rolls" title="upgrades">
                   {Array.from({ length: maxN }, (_, n) => n + 1).map((n) => (
                     <option key={n} value={n}>
-                      {n}×
+                      +{n - 1}
                     </option>
                   ))}
                 </select>
@@ -345,10 +347,10 @@ function ArtifactSlotEditor({
               </div>
             );
           })}
-          <div className={`roll-budget${totalRolls > MAX_ROLLS ? " over" : ""}`}>
-            Rolls: {totalRolls}/{MAX_ROLLS}
+          <div className={`roll-budget${totalUpgrades > MAX_UPGRADES ? " over" : ""}`}>
+            Upgrades: {totalUpgrades}/{MAX_UPGRADES}
           </div>
-          {draft.subStats.length < 4 && totalRolls < MAX_ROLLS ? (
+          {draft.subStats.length < 4 ? (
             <button type="button" className="mini add" onClick={addSub}>
               + substat
             </button>
