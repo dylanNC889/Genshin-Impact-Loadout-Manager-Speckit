@@ -419,6 +419,17 @@ select {
   color: var(--accent);
 }
 
+.roll-budget {
+  font-size: 11px;
+  color: var(--muted);
+  margin: 2px 0;
+}
+
+.roll-budget.over {
+  color: #ff9b9b;
+  font-weight: 600;
+}
+
 .slot-errors {
   list-style: none;
   margin: 4px 0 0;
