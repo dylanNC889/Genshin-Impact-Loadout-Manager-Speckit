@@ -221,7 +221,7 @@ function ArtifactSlotEditor({
   // the stat's canonical roll values). Line value = rolls × rollValue. A 5★ artifact has up
   // to 4 initial substats + 5 upgrade rolls = 9 total (max 6 per substat).
   const MAX_ROLLS = 9;
-  const MAX_PER_SUB = 6;
+  const MAX_PER_SUB = 4;
   const round1 = (n: number) => Math.round(n * 10) / 10;
   const rollChoices = (key: StatKey): number[] => subStatValues[key] ?? [];
   const defaultRoll = (key: StatKey): number => {
