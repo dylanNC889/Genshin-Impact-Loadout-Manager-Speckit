@@ -421,6 +421,11 @@ select {
   flex: 2;
 }
 
+.sub-slider {
+  flex: 3;
+  min-width: 70px;
+}
+
 .sub-rolls {
   display: flex;
   flex-wrap: wrap;

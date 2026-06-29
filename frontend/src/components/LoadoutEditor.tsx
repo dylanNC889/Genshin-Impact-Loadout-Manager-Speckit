@@ -273,6 +273,16 @@ function ArtifactSlotEditor({
     rv[j] = value;
     setSub(i, s.key, rv);
   }
+  // For users who don't know exact rolls: pick a total and auto-fill N high rolls (FR-022).
+  function setTotal(i: number, total: number) {
+    if (!draft) return;
+    const s = draft.subStats[i];
+    if (!s) return;
+    const high = defaultRoll(s.key) || 1;
+    const maxRolls = Math.min(MAX_SUB_ROLLS, rollsOf(s).length + (MAX_UPGRADES - totalUpgrades));
+    const n = Math.min(maxRolls, Math.max(1, Math.round(total / high)));
+    setSub(i, s.key, Array.from({ length: n }, () => high));
+  }
   function addUpgrade(i: number) {
     if (!draft || totalUpgrades >= MAX_UPGRADES) return;
     const s = draft.subStats[i];
@@ -329,6 +339,8 @@ function ArtifactSlotEditor({
 
           {draft.subStats.map((s, i) => {
             const rolls = rollsOf(s);
+            const high = defaultRoll(s.key) || 1;
+            const maxRolls = Math.min(MAX_SUB_ROLLS, rolls.length + (MAX_UPGRADES - totalUpgrades));
             const canUpgrade = totalUpgrades < MAX_UPGRADES && rolls.length < MAX_SUB_ROLLS;
             return (
               <div className="sub" key={i}>
@@ -340,6 +352,17 @@ function ArtifactSlotEditor({
                       </option>
                     ))}
                   </select>
+                  <input
+                    type="range"
+                    className="sub-slider"
+                    min={high}
+                    max={Math.max(high, maxRolls * high)}
+                    step={high}
+                    value={Math.min(maxRolls * high, Math.max(high, s.value))}
+                    onChange={(e) => setTotal(i, Number(e.target.value))}
+                    aria-label="substat total"
+                    title="set total — auto-fills rolls"
+                  />
                   <span className="sub-total">{formatStat(s.key, s.value)}</span>
                   <button type="button" className="mini" onClick={() => removeSub(i)} aria-label="remove substat">
                     ✕
