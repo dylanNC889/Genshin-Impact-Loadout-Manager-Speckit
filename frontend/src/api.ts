@@ -28,7 +28,9 @@ async function getJson<T>(url: string): Promise<T> {
 async function sendJson<T>(method: string, url: string, body?: unknown): Promise<T> {
   const res = await fetch(url, {
     method,
-    headers: { "content-type": "application/json" },
+    // Only set the JSON content-type when there's a body — otherwise Fastify rejects an
+    // empty body with 400 (this broke bodyless POSTs like /duplicate).
+    headers: body === undefined ? undefined : { "content-type": "application/json" },
     body: body === undefined ? undefined : JSON.stringify(body),
   });
   if (!res.ok) throw new Error(await errorMessage(res));
