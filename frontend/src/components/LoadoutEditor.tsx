@@ -18,9 +18,19 @@ import { useLoadoutStore, type ArtifactDraft } from "../state/loadoutStore";
 import { createLoadout, updateLoadout } from "../api";
 import { Card, Icon, StatRow } from "./ui";
 import { formatStat, statLabel } from "../format";
+import { recommendedFor } from "../recommendations";
 
 const SLOTS: ArtifactSlot[] = ["Flower", "Plume", "Sands", "Goblet", "Circlet"];
 const FINAL_ORDER = ["HP", "ATK", "DEF", "CRIT_RATE", "CRIT_DMG", "EM", "ER"];
+
+/** Split a list into the recommended items (in `recIds` order) and everything else. */
+function splitByRec<T extends { id: string; name: string }>(items: T[], recIds: string[]): { rec: T[]; other: T[] } {
+  const recSet = new Set(recIds);
+  const byId = new Map(items.map((i) => [i.id, i]));
+  const rec = recIds.map((id) => byId.get(id)).filter((x): x is T => Boolean(x));
+  const other = items.filter((i) => !recSet.has(i.id));
+  return { rec, other };
+}
 
 interface Props {
   character: Character;
@@ -51,6 +61,10 @@ export function LoadoutEditor({
   const setWeapon = useLoadoutStore((s) => s.setWeapon);
   const setArtifact = useLoadoutStore((s) => s.setArtifact);
   const clearArtifact = useLoadoutStore((s) => s.clearArtifact);
+
+  // Recommended weapons/artifact sets (KQM-sourced) surfaced at the top of the pickers.
+  const recs = recommendedFor(character, weapons, artifactSets);
+  const weaponGroups = splitByRec(weapons, recs.weaponIds);
 
   // Assemble a client-side Dataset so computeFinalStats runs locally (instant recalc).
   const clientDataset: Dataset = {
@@ -89,6 +103,10 @@ export function LoadoutEditor({
     ([k, v]) => k.endsWith("_DMG") && v !== 0 && !FINAL_ORDER.includes(k),
   );
   const setName = (id: string) => artifactSets.find((s) => s.id === id)?.name ?? id;
+  const setBonusText = (id: string, pieces: number): string => {
+    const set = artifactSets.find((s) => s.id === id);
+    return (pieces === 2 ? set?.bonus2 : set?.bonus4)?.description ?? "";
+  };
 
   const qc = useQueryClient();
   const [saveName, setSaveName] = useState("");
@@ -113,11 +131,30 @@ export function LoadoutEditor({
               <Icon src={weapons.find((w) => w.id === weaponId)?.icon} alt="weapon" size={32} />
               <select id="weapon" value={weaponId ?? ""} onChange={(e) => setWeapon(e.target.value || null)}>
                 <option value="">— none —</option>
-                {weapons.map((w) => (
-                  <option key={w.id} value={w.id}>
-                    {w.name}
-                  </option>
-                ))}
+                {weaponGroups.rec.length ? (
+                  <>
+                    <optgroup label="★ Recommended (KQM)">
+                      {weaponGroups.rec.map((w) => (
+                        <option key={w.id} value={w.id}>
+                          {w.name}
+                        </option>
+                      ))}
+                    </optgroup>
+                    <optgroup label="All weapons">
+                      {weaponGroups.other.map((w) => (
+                        <option key={w.id} value={w.id}>
+                          {w.name}
+                        </option>
+                      ))}
+                    </optgroup>
+                  </>
+                ) : (
+                  weaponGroups.other.map((w) => (
+                    <option key={w.id} value={w.id}>
+                      {w.name}
+                    </option>
+                  ))
+                )}
               </select>
             </div>
           </div>
@@ -128,6 +165,7 @@ export function LoadoutEditor({
               slot={slot}
               draft={artifacts[slot]}
               sets={artifactSets}
+              recommendedSetIds={recs.setIds}
               allowedMains={rules.allowedMainStats[slot] ?? []}
               allowedSubs={rules.allowedSubStats}
               mainStatValues={statValues.mainStatValues}
@@ -154,7 +192,12 @@ export function LoadoutEditor({
             <ul className="set-bonuses">
               {activeSetBonuses.map((b) => (
                 <li key={`${b.setId}-${b.pieces}`}>
-                  {setName(b.setId)} · {b.pieces}-piece
+                  <div className="set-bonus-title">
+                    {setName(b.setId)} · {b.pieces}-piece
+                  </div>
+                  {setBonusText(b.setId, b.pieces) ? (
+                    <div className="set-bonus-effect">{setBonusText(b.setId, b.pieces)}</div>
+                  ) : null}
                 </li>
               ))}
             </ul>
@@ -196,6 +239,7 @@ interface SlotProps {
   slot: ArtifactSlot;
   draft: ArtifactDraft | undefined;
   sets: ArtifactSet[];
+  recommendedSetIds: string[];
   allowedMains: StatKey[];
   allowedSubs: StatKey[];
   mainStatValues: StatValuesTable["mainStatValues"];
@@ -208,6 +252,7 @@ function ArtifactSlotEditor({
   slot,
   draft,
   sets,
+  recommendedSetIds,
   allowedMains,
   allowedSubs,
   mainStatValues,
@@ -215,6 +260,7 @@ function ArtifactSlotEditor({
   rules,
   onChange,
 }: SlotProps) {
+  const setGroups = splitByRec(sets, recommendedSetIds);
   const firstMain: StatKey = allowedMains[0] ?? "HP";
   const mainValue = (key: StatKey): number => mainStatValues[key] ?? 0;
 
@@ -314,11 +360,30 @@ function ArtifactSlotEditor({
         <Icon src={sets.find((s) => s.id === draft?.setId)?.icon} alt="set" size={28} />
         <select value={draft?.setId ?? ""} onChange={(e) => onSetChange(e.target.value)} aria-label={`${slot} set`}>
           <option value="">— empty —</option>
-          {sets.map((s) => (
-            <option key={s.id} value={s.id}>
-              {s.name}
-            </option>
-          ))}
+          {setGroups.rec.length ? (
+            <>
+              <optgroup label="★ Recommended (KQM)">
+                {setGroups.rec.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.name}
+                  </option>
+                ))}
+              </optgroup>
+              <optgroup label="All sets">
+                {setGroups.other.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.name}
+                  </option>
+                ))}
+              </optgroup>
+            </>
+          ) : (
+            setGroups.other.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.name}
+              </option>
+            ))
+          )}
         </select>
       </div>
 

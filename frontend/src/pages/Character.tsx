@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useSearchParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { computeBaseSheet, statRecord, LEVEL_ANCHORS } from "@app/stat-engine";
+import { computeBaseSheet, statRecord } from "@app/stat-engine";
 import {
   fetchArtifactSets,
   fetchCharacterDetail,
@@ -13,6 +13,7 @@ import {
 import { Card, StatRow, ElementBadge, Icon, RarityStars } from "../components/ui";
 import { LoadoutEditor } from "../components/LoadoutEditor";
 import { formatStat, statLabel } from "../format";
+import { playstyleFor } from "../playstyle";
 import { useLoadoutStore } from "../state/loadoutStore";
 
 const PRIMARY_ORDER = ["HP", "ATK", "DEF", "CRIT_RATE", "CRIT_DMG", "EM", "ER"];
@@ -21,6 +22,27 @@ const PRIMARY_ORDER = ["HP", "ATK", "DEF", "CRIT_RATE", "CRIT_DMG", "EM", "ER"];
 function fmtScale(row: { valuesByLevel: number[]; percent: boolean }, level: number): string {
   const v = row.valuesByLevel[level - 1] ?? row.valuesByLevel[row.valuesByLevel.length - 1] ?? 0;
   return row.percent ? `${v.toFixed(1)}%` : String(v);
+}
+
+// genshin-db appends the scaling stat to a row's label for non-ATK scalers ("Skill DMG Max HP",
+// "… DMG DEF"); ATK-scaling DMG rows carry no suffix. Extract that trailing stat (or default a
+// DMG row to ATK) so a row can read "Skill DMG: 46.6% of Max HP" (#7).
+const SCALE_STAT_RX = /\s*:?\s*(Max HP|HP|DEF|ATK|Elemental Mastery|EM)\s*[+/]*\s*$/i;
+function normScaleStat(s: string): string {
+  const u = s.toUpperCase();
+  if (u.includes("HP")) return "Max HP";
+  if (u === "DEF") return "DEF";
+  if (u === "ATK") return "ATK";
+  return "EM";
+}
+function describeScaling(label: string, percent: boolean): { label: string; stat: string | null } {
+  if (!percent || !/DMG/i.test(label)) return { label, stat: null };
+  const m = label.match(SCALE_STAT_RX);
+  if (m) {
+    const cleaned = label.slice(0, m.index).replace(/[\s:/+]+$/, "").trim();
+    return { label: cleaned || label, stat: normScaleStat(m[1] ?? "") };
+  }
+  return { label, stat: "ATK" };
 }
 
 export function CharacterPage() {
@@ -103,60 +125,39 @@ export function CharacterPage() {
         {char.roles.length ? <div className="muted small">Roles: {char.roles.join(", ")}</div> : null}
       </div>
 
-      <div className="char-body">
-        <Card title="Base Stats">
-          <div className="ascension-control">
-            <label htmlFor="level">Level</label>
-            <select id="level" value={level} onChange={(e) => setLevel(Number(e.target.value))}>
-              {LEVEL_ANCHORS.map((l) => (
-                <option key={l} value={l}>
-                  Lv {l}
-                </option>
-              ))}
-            </select>
-          </div>
-          {PRIMARY_ORDER.map((key) => (
-            <StatRow key={key} label={statLabel(key)} value={formatStat(key, sheet[key] ?? 0)} />
-          ))}
-          {extras.map(([key, value]) => (
-            <StatRow key={key} label={statLabel(key)} value={formatStat(key, value)} />
-          ))}
-        </Card>
-
-        <Card title="Skills">
-          <div className="talent-control">
-            <label htmlFor="talent">Talent level</label>
-            <select id="talent" value={talentLevel} onChange={(e) => setTalentLevel(Number(e.target.value))}>
-              {Array.from({ length: 15 }, (_, i) => i + 1).map((l) => (
-                <option key={l} value={l}>
-                  Lv {l}
-                </option>
-              ))}
-            </select>
-          </div>
-          <ul className="skills">
-            {char.skills.map((s) => (
-              <li key={s.id}>
-                <span className="skill-type">{s.type}</span>
-                <span className="skill-name">{s.name}</span>
-                {s.description ? <span className="skill-desc">{s.description}</span> : null}
-                {s.scaling.length ? (
-                  <table className="scaling">
-                    <tbody>
-                      {s.scaling.map((row, i) => (
-                        <tr key={i}>
-                          <td>{row.label}</td>
-                          <td>{fmtScale(row, talentLevel)}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                ) : null}
-              </li>
-            ))}
-          </ul>
-        </Card>
-      </div>
+      <section className="card char-intro">
+        {char.title ? <div className="intro-title">“{char.title}”</div> : null}
+        <p className="intro-playstyle">{playstyleFor(char)}</p>
+        {char.description ? <p className="intro-lore">{char.description}</p> : null}
+        {char.region || char.affiliation || char.constellation || char.cv ? (
+          <dl className="intro-meta">
+            {char.region ? (
+              <div>
+                <dt>Region</dt>
+                <dd>{char.region}</dd>
+              </div>
+            ) : null}
+            {char.affiliation ? (
+              <div>
+                <dt>Affiliation</dt>
+                <dd>{char.affiliation}</dd>
+              </div>
+            ) : null}
+            {char.constellation ? (
+              <div>
+                <dt>Constellation</dt>
+                <dd>{char.constellation}</dd>
+              </div>
+            ) : null}
+            {char.cv ? (
+              <div>
+                <dt>CV (EN)</dt>
+                <dd>{char.cv}</dd>
+              </div>
+            ) : null}
+          </dl>
+        ) : null}
+      </section>
 
       {gearReady ? (
         <LoadoutEditor
@@ -172,6 +173,80 @@ export function CharacterPage() {
       ) : (
         <p className="muted">Loading gear options…</p>
       )}
+
+      <div className="char-body">
+        <Card title="Base Stats">
+          <div className="ascension-control">
+            <label htmlFor="level">Level</label>
+            <input
+              id="level"
+              className="slider"
+              type="range"
+              min={1}
+              max={90}
+              step={1}
+              value={level}
+              onChange={(e) => setLevel(Number(e.target.value))}
+            />
+            <span className="slider-value">Lv {level}</span>
+          </div>
+          {PRIMARY_ORDER.map((key) => (
+            <StatRow key={key} label={statLabel(key)} value={formatStat(key, sheet[key] ?? 0)} />
+          ))}
+          {extras.map(([key, value]) => (
+            <StatRow key={key} label={statLabel(key)} value={formatStat(key, value)} />
+          ))}
+        </Card>
+
+        <Card title="Skills">
+          <div className="talent-control">
+            <label htmlFor="talent">Talent level</label>
+            <input
+              id="talent"
+              className="slider"
+              type="range"
+              min={1}
+              max={15}
+              step={1}
+              value={talentLevel}
+              onChange={(e) => setTalentLevel(Number(e.target.value))}
+            />
+            <span className="slider-value">Lv {talentLevel}</span>
+          </div>
+          <ul className="skills">
+            {char.skills.map((s) => (
+              <li key={s.id}>
+                <div className="skill-head">
+                  <Icon src={s.icon} alt="" size={32} className="skill-icon" />
+                  <div className="skill-head-text">
+                    <span className="skill-type">{s.type}</span>
+                    <span className="skill-name">{s.name}</span>
+                  </div>
+                </div>
+                {s.description ? <span className="skill-desc">{s.description}</span> : null}
+                {s.scaling.length ? (
+                  <table className="scaling">
+                    <tbody>
+                      {s.scaling.map((row, i) => {
+                        const { label, stat } = describeScaling(row.label, row.percent);
+                        return (
+                          <tr key={i}>
+                            <td>{label}</td>
+                            <td>
+                              {fmtScale(row, talentLevel)}
+                              {stat ? <span className="scale-stat"> of {stat}</span> : null}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+        </Card>
+      </div>
     </div>
   );
 }

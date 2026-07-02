@@ -14,7 +14,8 @@ export default defineConfig({
     port: 5173,
     proxy: {
       // Proxy API calls to the backend (Docker-free local dev) — avoids CORS.
-      "/api": { target: "http://localhost:3000", changeOrigin: true },
+      // Override the target with VITE_PROXY_TARGET when the backend runs on a non-default port.
+      "/api": { target: process.env.VITE_PROXY_TARGET ?? "http://localhost:3000", changeOrigin: true },
     },
   },
 });

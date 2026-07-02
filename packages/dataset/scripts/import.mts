@@ -150,14 +150,20 @@ for (const name of charNames) {
       return { level: lvl, hp: round(s.hp), atk: round(s.attack), def: round(s.defense), ascensionStat: ascensionValue(key, s.specialized) };
     });
     const t = genshindb.talents(name) as any;
-    const skill = (combat: any, type: string) =>
+    const skill = (combat: any, type: string, iconFile?: string) =>
       combat
-        ? { type, name: combat.name as string, desc: firstContentLine(combat.description), scaling: scalingOf(combat) }
+        ? {
+            type,
+            name: combat.name as string,
+            icon: enkaUrl(iconFile),
+            desc: firstContentLine(combat.description),
+            scaling: scalingOf(combat),
+          }
         : null;
     const skills = [
-      skill(t?.combat1, "NormalAttack"),
-      skill(t?.combat2, "ElementalSkill"),
-      skill(t?.combat3, "ElementalBurst"),
+      skill(t?.combat1, "NormalAttack", t?.images?.filename_combat1),
+      skill(t?.combat2, "ElementalSkill", t?.images?.filename_combat2),
+      skill(t?.combat3, "ElementalBurst", t?.images?.filename_combat3),
     ].filter(Boolean);
     characters.push({
       id,
@@ -171,6 +177,14 @@ for (const name of charNames) {
       levels,
       roles: ROLE_OVERRIDES[id] ?? ["MainDPS"],
       skills,
+      title: c.title ?? "",
+      description: c.description ?? "",
+      affiliation: c.affiliation ?? "",
+      region: c.region ?? "",
+      constellation: c.constellation ?? "",
+      cv: c.cv?.english ?? "",
+      // Vertical wish-preview art (320x1024) — ideal for team-builder portrait columns.
+      splashArt: enkaUrl(c.images?.filename_gachaSlice),
     });
   } catch {
     /* skip non-importable entries (e.g. unreleased/variant) */

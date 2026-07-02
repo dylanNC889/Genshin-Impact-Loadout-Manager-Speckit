@@ -48,9 +48,17 @@ interface RawCharacter {
   skills: {
     type: TalentType;
     name: string;
+    icon?: string;
     desc?: string;
     scaling?: { label: string; valuesByLevel: number[]; percent: boolean }[];
   }[];
+  title?: string;
+  description?: string;
+  affiliation?: string;
+  region?: string;
+  constellation?: string;
+  cv?: string;
+  splashArt?: string;
 }
 
 interface MetaFile {
@@ -105,9 +113,17 @@ function normalizeCharacter(raw: RawCharacter): Character {
       id: slug(s.name),
       type: s.type,
       name: s.name,
+      icon: s.icon ?? "",
       description: s.desc ?? "",
       scaling: s.scaling ?? [],
     })),
+    title: raw.title ?? "",
+    description: raw.description ?? "",
+    affiliation: raw.affiliation ?? "",
+    region: raw.region ?? "",
+    constellation: raw.constellation ?? "",
+    cv: raw.cv ?? "",
+    splashArt: raw.splashArt ?? "",
   };
   // Validate the assembled record against the contract (single source of truth).
   return CharacterSchema.parse(candidate);
