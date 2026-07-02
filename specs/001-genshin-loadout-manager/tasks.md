@@ -78,7 +78,7 @@ Monorepo (pnpm + Turborepo) per plan.md:
 - [X] T019 [P] [US1] Golden-value unit tests for `computeBaseStats` (incl. ascension breakpoints) in `packages/stat-engine/tests/base-stats.test.ts` (SC-003)
 - [X] T020 [P] [US1] Contract tests for `GET /characters` and `GET /characters/{id}` in `backend/tests/contract/characters.contract.test.ts`
 - [ ] T021 [P] [US1] Integration test for character list/detail against seeded Postgres in `backend/tests/integration/characters.int.test.ts`
-- [ ] T022 [P] [US1] Playwright E2E: roster browse → select → view stats/skills → change level/ascension in `frontend/tests/e2e/us1-character.spec.ts`
+- [X] T022 [P] [US1] Playwright E2E: roster browse → select → view stats/skills → change level/ascension in `frontend/tests/e2e/us1-character.spec.ts`
 
 ### Implementation for User Story 1
 
@@ -104,7 +104,7 @@ Monorepo (pnpm + Turborepo) per plan.md:
 - [X] T029 [P] [US2] Unit tests for `validateArtifact` per-slot rules in `packages/stat-engine/tests/validate-artifact.test.ts` (FR-007)
 - [X] T030 [P] [US2] Bench: `computeFinalStats` <200ms for a full loadout in `packages/stat-engine/tests/final-stats.bench.ts` (Principle IV/SC-002)
 - [X] T031 [P] [US2] Contract tests for `GET /weapons` and `GET /artifact-sets` in `backend/tests/contract/reference.contract.test.ts`
-- [ ] T032 [P] [US2] Playwright E2E: equip weapon + 5 artifacts, invalid-stat rejection, swap/remove recalculation, partial-loadout display (missing weapon/slots, FR-011) in `frontend/tests/e2e/us2-loadout.spec.ts`
+- [X] T032 [P] [US2] Playwright E2E: equip weapon + 5 artifacts, invalid-stat rejection, swap/remove recalculation, partial-loadout display (missing weapon/slots, FR-011) in `frontend/tests/e2e/us2-loadout.spec.ts`
 
 ### Implementation for User Story 2
 
@@ -129,7 +129,7 @@ Monorepo (pnpm + Turborepo) per plan.md:
 - [X] T038 [P] [US3] Golden tests for `assessSynergy` resonance + reaction matrix (full coverage) in `packages/stat-engine/tests/synergy.test.ts` (SC-005)
 - [X] T039 [P] [US3] Unit tests for role-coverage gaps, non-empty assessment, and partial team in `packages/stat-engine/tests/role-coverage.test.ts` (FR-015)
 - [X] T040 [P] [US3] Tests + bench for `estimateTeamDamage` (<5s, returns assumptions) in `packages/stat-engine/tests/damage.test.ts` (SC-009/FR-016)
-- [ ] T041 [P] [US3] Playwright E2E: add 4 distinct (reject 5th/duplicate), resonance/reactions, gaps, partial team, per-slot loadout association (FR-017), Calculate shows estimate+assumptions in `frontend/tests/e2e/us3-team.spec.ts`
+- [X] T041 [P] [US3] Playwright E2E: add 4 distinct (reject 5th/duplicate), resonance/reactions, gaps, partial team, per-slot loadout association (FR-017), Calculate shows estimate+assumptions in `frontend/tests/e2e/us3-team.spec.ts`
 
 ### Implementation for User Story 3
 
@@ -153,7 +153,7 @@ Monorepo (pnpm + Turborepo) per plan.md:
 - [X] T046 [P] [US4] Contract tests for loadouts CRUD + `/duplicate` in `backend/tests/contract/loadouts.contract.test.ts`
 - [X] T047 [P] [US4] Contract tests for teams CRUD + server `/calculate` in `backend/tests/contract/teams.contract.test.ts`
 - [X] T048 [P] [US4] Integration tests: save → reopen across sessions, duplicate independence, delete (loadouts & teams) in `backend/tests/integration/persistence.int.test.ts` (SC-006)
-- [ ] T049 [P] [US4] Playwright E2E: save loadout+team, reload session, restore intact, duplicate, delete in `frontend/tests/e2e/us4-manage.spec.ts`
+- [X] T049 [P] [US4] Playwright E2E: save loadout+team, reload session, restore intact, duplicate, delete in `frontend/tests/e2e/us4-manage.spec.ts`
 
 ### Implementation for User Story 4
 
