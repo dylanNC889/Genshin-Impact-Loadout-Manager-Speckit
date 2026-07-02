@@ -142,6 +142,44 @@ select {
   font-weight: 600;
 }
 
+/* --- Reference list cards (weapons / artifact sets) --- */
+.grid.wide {
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+}
+
+.ref-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 4px;
+}
+
+.set-card {
+  text-align: left;
+}
+
+.set-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.set-bonus {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.set-bonus-label {
+  display: inline-block;
+  font-weight: 700;
+  font-size: 11px;
+  color: var(--accent);
+  margin-right: 4px;
+}
+
 .badge {
   color: #1a1a1a;
   font-size: 11px;
@@ -270,6 +308,67 @@ select {
   color: var(--muted);
 }
 
+.slider {
+  flex: 1;
+  min-width: 120px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+/* --- Character intro panel (#4) --- */
+.char-intro {
+  margin-bottom: 16px;
+}
+
+.intro-title {
+  font-style: italic;
+  color: var(--accent);
+  font-size: 15px;
+  margin-bottom: 6px;
+}
+
+.intro-playstyle {
+  margin: 0 0 8px;
+  line-height: 1.5;
+}
+
+.intro-lore {
+  margin: 0 0 12px;
+  color: var(--muted);
+  line-height: 1.5;
+  font-size: 14px;
+}
+
+.intro-meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 6px 16px;
+  margin: 0;
+}
+
+.intro-meta div {
+  display: flex;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.intro-meta dt {
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.intro-meta dd {
+  margin: 0;
+}
+
+.slider-value {
+  min-width: 52px;
+  text-align: right;
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
 .scaling {
   width: 100%;
   margin: 6px 0 2px;
@@ -290,6 +389,11 @@ select {
   text-align: right;
   font-variant-numeric: tabular-nums;
   font-weight: 600;
+}
+
+.scale-stat {
+  color: var(--muted);
+  font-weight: 400;
 }
 
 .skills {
@@ -313,6 +417,23 @@ select {
 
 .skill-name {
   font-weight: 600;
+}
+
+.skill-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.skill-head-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.skill-icon {
+  background: var(--surface-2);
+  border-radius: 6px;
+  padding: 2px;
 }
 
 .skill-desc {
@@ -537,6 +658,17 @@ select {
   padding: 4px 0;
 }
 
+.set-bonus-title {
+  font-weight: 600;
+}
+
+.set-bonus-effect {
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
 /* --- Nav --- */
 .nav {
   display: flex;
@@ -560,42 +692,154 @@ select {
 }
 
 /* --- Team builder (US3) --- */
-.team-slots {
+/* --- Team builder: picker grid (left) + portraits (right) (#5) --- */
+.team-builder {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 12px;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 16px;
   margin: 18px 0;
 }
 
-.team-slot {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+.team-picker {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 8px;
-  padding: 10px 12px;
+  padding: 12px;
 }
 
-.team-slot select {
-  flex: 1;
+.team-picker .search {
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 12px;
 }
 
-.team-slot.col {
+.picker-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+  gap: 8px;
+  max-height: 440px;
+  overflow-y: auto;
+}
+
+.picker-cell {
   display: flex;
   flex-direction: column;
-  align-items: stretch;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 4px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  cursor: pointer;
+  transition: border-color 0.15s, transform 0.15s;
+}
+
+.picker-cell:hover:not(:disabled) {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+
+.picker-cell.selected {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+.picker-cell:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.picker-name {
+  max-width: 100%;
+  font-size: 11px;
+  text-align: center;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.team-portraits {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
   gap: 8px;
 }
 
-.team-slot-row {
+.portrait-slot {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 260px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.portrait-slot.filled {
+  border-color: var(--accent);
+}
+
+.portrait-img {
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  object-fit: cover;
+  object-position: top center;
+  background: var(--surface-2);
+}
+
+.portrait-fallback {
+  flex: 1;
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
+  background: var(--surface-2);
 }
 
-.team-slot-row select {
+.portrait-remove {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  z-index: 1;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.portrait-foot {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+}
+
+.portrait-name {
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.portrait-foot select {
+  width: 100%;
+  box-sizing: border-box;
+  font-size: 12px;
+}
+
+.portrait-empty {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  color: var(--muted);
 }
 
 .slot-num {
@@ -617,6 +861,12 @@ select {
 @media (max-width: 760px) {
   .synergy-grid {
     grid-template-columns: 1fr;
+  }
+  .team-builder {
+    grid-template-columns: 1fr;
+  }
+  .team-portraits {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 

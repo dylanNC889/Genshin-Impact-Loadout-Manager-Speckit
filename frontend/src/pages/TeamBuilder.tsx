@@ -63,6 +63,7 @@ export function TeamBuilder() {
     { characterId: null, loadoutId: null },
   ]);
   const [damage, setDamage] = useState<DamageEstimate | null>(null);
+  const [pickerQ, setPickerQ] = useState("");
 
   const [searchParams] = useSearchParams();
   const teamParam = searchParams.get("team");
@@ -118,9 +119,31 @@ export function TeamBuilder() {
   const members = details.map((d) => ({ element: d.character.element, roles: d.character.roles }));
   const synergy: SynergyAssessment = assessSynergy(members);
   const nameById = (id: string) => roster.find((c) => c.id === id)?.name ?? id;
+  // Full character records (with splash art) for the selected slots, keyed by id.
+  const detailByCharId = new Map(details.map((d) => [d.character.id, d.character]));
 
-  function setSlotCharacter(i: number, id: string) {
-    setSlots((prev) => prev.map((s, idx) => (idx === i ? { characterId: id || null, loadoutId: null } : s)));
+  const teamIds = new Set(slots.filter((s) => s.characterId).map((s) => s.characterId));
+  const teamFull = teamIds.size >= 4;
+  const pickerNeedle = pickerQ.trim().toLowerCase();
+  const pickerRoster = roster.filter((c) =>
+    pickerNeedle ? c.name.toLowerCase().includes(pickerNeedle) || c.id.includes(pickerNeedle) : true,
+  );
+
+  // Click a roster character: add to the first empty slot, or remove it if already picked
+  // (keeps the distinct-character rule — a character can occupy at most one slot).
+  function toggleCharacter(id: string) {
+    setSlots((prev) => {
+      const existing = prev.findIndex((s) => s.characterId === id);
+      if (existing >= 0) {
+        return prev.map((s, idx) => (idx === existing ? { characterId: null, loadoutId: null } : s));
+      }
+      const empty = prev.findIndex((s) => !s.characterId);
+      if (empty < 0) return prev; // team already full
+      return prev.map((s, idx) => (idx === empty ? { characterId: id, loadoutId: null } : s));
+    });
+  }
+  function removeSlot(i: number) {
+    setSlots((prev) => prev.map((s, idx) => (idx === i ? { characterId: null, loadoutId: null } : s)));
   }
   function setSlotLoadout(i: number, loadoutId: string) {
     setSlots((prev) => prev.map((s, idx) => (idx === i ? { ...s, loadoutId: loadoutId || null } : s)));
@@ -147,53 +170,91 @@ export function TeamBuilder() {
         on-demand.
       </p>
 
-      <div className="team-slots">
-        {slots.map((slot, i) => {
-          const taken = new Set(slots.filter((s, idx) => s.characterId && idx !== i).map((s) => s.characterId));
-          const slotLoadouts = savedLoadouts.filter((l) => l.characterId === slot.characterId);
-          return (
-            <div className="team-slot col" key={i}>
-              <div className="team-slot-row">
-                <span className="slot-num">{i + 1}</span>
-                <Icon src={roster.find((c) => c.id === slot.characterId)?.icon} alt="" size={32} />
-                <select
-                  value={slot.characterId ?? ""}
-                  onChange={(e) => setSlotCharacter(i, e.target.value)}
-                  aria-label={`Team slot ${i + 1} character`}
+      <div className="team-builder">
+        <div className="team-picker">
+          <input
+            className="search"
+            placeholder="Search characters…"
+            value={pickerQ}
+            onChange={(e) => setPickerQ(e.target.value)}
+            aria-label="Search characters to add"
+          />
+          <div className="picker-grid">
+            {pickerRoster.map((c) => {
+              const inTeam = teamIds.has(c.id);
+              return (
+                <button
+                  key={c.id}
+                  type="button"
+                  className={`picker-cell${inTeam ? " selected" : ""}`}
+                  onClick={() => toggleCharacter(c.id)}
+                  disabled={!inTeam && teamFull}
+                  aria-pressed={inTeam}
+                  title={inTeam ? `Remove ${c.name}` : `Add ${c.name}`}
                 >
-                  <option value="">— empty —</option>
-                  {roster
-                    .filter((c) => !taken.has(c.id))
-                    .map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.name} ({c.element})
-                      </option>
-                    ))}
-                </select>
+                  <Icon src={c.icon} alt={c.name} size={52} />
+                  <span className="picker-name">{c.name}</span>
+                </button>
+              );
+            })}
+            {pickerRoster.length === 0 ? <p className="muted small">No characters match.</p> : null}
+          </div>
+        </div>
+
+        <div className="team-portraits">
+          {slots.map((slot, i) => {
+            const summary = roster.find((c) => c.id === slot.characterId);
+            const char = slot.characterId ? detailByCharId.get(slot.characterId) : undefined;
+            const slotLoadouts = savedLoadouts.filter((l) => l.characterId === slot.characterId);
+            return (
+              <div className={`portrait-slot${slot.characterId ? " filled" : ""}`} key={i}>
+                {slot.characterId ? (
+                  <>
+                    <button
+                      type="button"
+                      className="portrait-remove"
+                      onClick={() => removeSlot(i)}
+                      aria-label={`Remove ${summary?.name ?? "character"} from team`}
+                    >
+                      ×
+                    </button>
+                    {char?.splashArt ? (
+                      <img className="portrait-img" src={char.splashArt} alt={summary?.name ?? ""} loading="lazy" />
+                    ) : (
+                      <div className="portrait-fallback">
+                        <Icon src={summary?.icon} alt={summary?.name ?? ""} size={72} />
+                      </div>
+                    )}
+                    <div className="portrait-foot">
+                      <div className="portrait-name">{summary?.name}</div>
+                      <select
+                        value={slot.loadoutId ?? ""}
+                        onChange={(e) => setSlotLoadout(i, e.target.value)}
+                        aria-label={`${summary?.name ?? `Slot ${i + 1}`} loadout`}
+                        disabled={slotLoadouts.length === 0}
+                      >
+                        <option value="">— base stats —</option>
+                        {slotLoadouts.map((l) => (
+                          <option key={l.id} value={l.id}>
+                            {l.name} (geared)
+                          </option>
+                        ))}
+                      </select>
+                      <Link className="slot-link" to={`/character/${slot.characterId}`}>
+                        view
+                      </Link>
+                    </div>
+                  </>
+                ) : (
+                  <div className="portrait-empty">
+                    <span className="slot-num">{i + 1}</span>
+                    <span className="muted small">Empty</span>
+                  </div>
+                )}
               </div>
-              {slot.characterId ? (
-                <div className="team-slot-row">
-                  <select
-                    value={slot.loadoutId ?? ""}
-                    onChange={(e) => setSlotLoadout(i, e.target.value)}
-                    aria-label={`Team slot ${i + 1} loadout`}
-                    disabled={slotLoadouts.length === 0}
-                  >
-                    <option value="">— base stats —</option>
-                    {slotLoadouts.map((l) => (
-                      <option key={l.id} value={l.id}>
-                        {l.name} (geared)
-                      </option>
-                    ))}
-                  </select>
-                  <Link className="slot-link" to={`/character/${slot.characterId}`}>
-                    view
-                  </Link>
-                </div>
-              ) : null}
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
 
       <div className="save-bar">

@@ -1,6 +1,8 @@
 import { Routes, Route, Link, NavLink } from "react-router-dom";
 import { Roster } from "./pages/Roster";
 import { CharacterPage } from "./pages/Character";
+import { Weapons } from "./pages/Weapons";
+import { Artifacts } from "./pages/Artifacts";
 import { TeamBuilder } from "./pages/TeamBuilder";
 import { SavedPage } from "./pages/Saved";
 
@@ -15,6 +17,8 @@ export function App() {
           <NavLink to="/" end>
             Roster
           </NavLink>
+          <NavLink to="/weapons">Weapons</NavLink>
+          <NavLink to="/artifacts">Artifacts</NavLink>
           <NavLink to="/team">Team</NavLink>
           <NavLink to="/saved">Saved</NavLink>
         </nav>
@@ -23,6 +27,8 @@ export function App() {
       <main className="main">
         <Routes>
           <Route path="/" element={<Roster />} />
+          <Route path="/weapons" element={<Weapons />} />
+          <Route path="/artifacts" element={<Artifacts />} />
           <Route path="/character/:id" element={<CharacterPage />} />
           <Route path="/team" element={<TeamBuilder />} />
           <Route path="/saved" element={<SavedPage />} />

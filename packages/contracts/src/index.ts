@@ -116,6 +116,8 @@ export const SkillSchema = z.object({
   id: z.string(),
   type: TalentTypeSchema,
   name: z.string(),
+  /** Talent icon URL (enka); shown next to the skill name. */
+  icon: z.string().default(""),
   description: z.string().default(""),
   /** Scaling values per talent level (1..N); each entry is a labeled multiplier (FR-004). */
   scaling: z
@@ -152,6 +154,15 @@ export const CharacterSchema = z.object({
   levels: z.array(LevelStatSchema).default([]),
   roles: z.array(RoleSchema).default([]),
   skills: z.array(SkillSchema).default([]),
+  /** Lore/profile fields (from genshin-db) for the character intro panel. */
+  title: z.string().default(""),
+  description: z.string().default(""),
+  affiliation: z.string().default(""),
+  region: z.string().default(""),
+  constellation: z.string().default(""),
+  cv: z.string().default(""),
+  /** Vertical gacha portrait URL (enka, 320x1024); used for team-builder portraits. */
+  splashArt: z.string().default(""),
 });
 export type Character = z.infer<typeof CharacterSchema>;
 
