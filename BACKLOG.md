@@ -8,6 +8,12 @@ than improvements** — fix bugs first, and add any new bug at the top of the Bu
 _None open._
 
 ### Fixed
+- **"Prized Isshin Blade" duplicated on the Weapons page** — genshin-db lists the story-variant
+  sword 3× under the same id, so the importer wrote 3 identical entries. On the Weapons grid the
+  shared React `key={w.id}` made the stale card mis-reconcile and linger under the wrong filters.
+  Fixed by de-duplicating by id in the loader (`packages/dataset/src/index.ts`, the single funnel)
+  and the importer, + a dataset test asserting no duplicate weapon/set ids. Data regenerated
+  (202 → 200 weapons).
 - **Substat values / multi-roll** — substats now model a base roll + 4 shared upgrade rolls
   (`Upgrades: X/4`), each roll independently any canonical value (line total = sum), plus a
   "set total" slider that auto-fills rolls. Fixed CRIT DMG showing twice in Final Stats.

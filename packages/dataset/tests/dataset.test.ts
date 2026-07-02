@@ -28,7 +28,11 @@ describe("full genshin-db dataset loads and validates against @app/contracts (T0
     }
     for (const e of ELEMENTS) expect(byElement.get(e) ?? 0).toBeGreaterThanOrEqual(2);
     for (const w of WEAPON_TYPES) expect(byWeapon.get(w) ?? 0).toBeGreaterThanOrEqual(2);
+    // No duplicate ids in any reference list — genshin-db lists some entries (e.g. the
+    // story-variant "Prized Isshin Blade") multiple times; the loader must de-dupe them.
     expect(new Set(dataset.characters.map((c) => c.id)).size).toBe(dataset.characters.length);
+    expect(new Set(dataset.weapons.map((w) => w.id)).size).toBe(dataset.weapons.length);
+    expect(new Set(dataset.artifactSets.map((s) => s.id)).size).toBe(dataset.artifactSets.length);
   });
 
   it("characters have real skill descriptions + talent scaling (FR-004)", () => {

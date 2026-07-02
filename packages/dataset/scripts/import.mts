@@ -267,11 +267,20 @@ const meta = {
 
 mkdirSync(OUT_DIR, { recursive: true });
 const write = (file: string, data: unknown) => writeFileSync(join(OUT_DIR, file), JSON.stringify(data, null, 0));
+// genshin-db can list the same entry more than once (e.g. story-variant swords like the
+// "Prized Isshin Blade" appear 3x); keep the first of each id so the app never shows dupes.
+const dedupeById = (arr: any[]) => {
+  const seen = new Set<string>();
+  return arr.filter((x) => (seen.has(x.id) ? false : (seen.add(x.id), true)));
+};
 characters.sort((a, b) => a.name.localeCompare(b.name));
 weapons.sort((a, b) => a.name.localeCompare(b.name));
 artifactSets.sort((a, b) => a.name.localeCompare(b.name));
-write("characters.json", characters);
-write("weapons.json", weapons);
-write("artifact-sets.json", artifactSets);
+const outChars = dedupeById(characters);
+const outWeapons = dedupeById(weapons);
+const outSets = dedupeById(artifactSets);
+write("characters.json", outChars);
+write("weapons.json", outWeapons);
+write("artifact-sets.json", outSets);
 write("meta.json", meta);
-console.log(`Imported ${characters.length} characters, ${weapons.length} weapons, ${artifactSets.length} artifact sets -> ${OUT_DIR}`);
+console.log(`Imported ${outChars.length} characters, ${outWeapons.length} weapons, ${outSets.length} artifact sets -> ${OUT_DIR}`);
