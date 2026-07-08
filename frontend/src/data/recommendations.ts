@@ -32,8 +32,8 @@ export const RECOMMENDATIONS: Record<string, BuildRec> = {
       "peak-patrol-song",
       "cinnabar-spindle",
       "flute-of-ezpitzal",
-      "wolf-fang",
-      "primordial-jade-cutter"
+      "harbinger-of-dawn",
+      "wolf-fang"
     ],
     "sets": [
       "husk-of-opulent-dreams",
@@ -131,7 +131,7 @@ export const RECOMMENDATIONS: Record<string, BuildRec> = {
       "favonius-codex",
       "everlasting-moonglow",
       "hakushin-ring",
-      "a-thousand-floating-dreams"
+      "thrilling-tales-of-dragon-slayers"
     ],
     "sets": [
       "deepwood-memories",
@@ -142,12 +142,12 @@ export const RECOMMENDATIONS: Record<string, BuildRec> = {
   },
   "barbara": {
     "weapons": [
+      "thrilling-tales-of-dragon-slayers",
       "everlasting-moonglow",
       "prototype-amber",
       "hakushin-ring",
       "skyward-atlas",
-      "lost-prayer-to-the-sacred-winds",
-      "a-thousand-floating-dreams"
+      "lost-prayer-to-the-sacred-winds"
     ],
     "sets": [
       "maiden-beloved",
@@ -212,10 +212,10 @@ export const RECOMMENDATIONS: Record<string, BuildRec> = {
     "weapons": [
       "prototype-amber",
       "favonius-codex",
+      "thrilling-tales-of-dragon-slayers",
       "oathsworn-eye",
       "ballad-of-the-boundless-blue",
-      "kagura-s-verity",
-      "tome-of-the-eternal-flow"
+      "kagura-s-verity"
     ],
     "sets": [
       "noblesse-oblige",
@@ -246,10 +246,10 @@ export const RECOMMENDATIONS: Record<string, BuildRec> = {
     "weapons": [
       "symphonist-of-scents",
       "favonius-lance",
+      "black-tassel",
       "dialogues-of-the-desert-sages",
       "rightful-reward",
-      "engulfing-lightning",
-      "skyward-spine"
+      "engulfing-lightning"
     ],
     "sets": [
       "noblesse-oblige",
@@ -263,10 +263,10 @@ export const RECOMMENDATIONS: Record<string, BuildRec> = {
     "weapons": [
       "uraku-misugiri",
       "primordial-jade-cutter",
+      "harbinger-of-dawn",
       "cinnabar-spindle",
       "wolf-fang",
-      "light-of-foliar-incision",
-      "haran-geppaku-futsu"
+      "light-of-foliar-incision"
     ],
     "sets": [
       "golden-troupe",
@@ -293,11 +293,11 @@ export const RECOMMENDATIONS: Record<string, BuildRec> = {
   "citlali": {
     "weapons": [
       "starcaller-s-watch",
+      "thrilling-tales-of-dragon-slayers",
       "wandering-evenstar",
       "a-thousand-floating-dreams",
       "favonius-codex",
-      "mappa-mare",
-      "sacrificial-fragments"
+      "mappa-mare"
     ],
     "sets": [
       "scroll-of-the-hero-of-cinder-city",
@@ -362,8 +362,8 @@ export const RECOMMENDATIONS: Record<string, BuildRec> = {
       "ballad-of-the-fjords",
       "primordial-jade-winged-spear",
       "kitain-cross-spear",
-      "deathmatch",
-      "missive-windspear"
+      "white-tassel",
+      "deathmatch"
     ],
     "sets": [
       "thundering-fury",
@@ -426,7 +426,8 @@ export const RECOMMENDATIONS: Record<string, BuildRec> = {
       "favonius-warbow",
       "sacrificial-bow",
       "elegy-for-the-end",
-      "silvershower-heartstrings"
+      "silvershower-heartstrings",
+      "recurve-bow"
     ],
     "sets": [
       "noblesse-oblige",
@@ -656,7 +657,8 @@ export const RECOMMENDATIONS: Record<string, BuildRec> = {
       "staff-of-the-scarlet-sands",
       "primordial-jade-winged-spear",
       "deathmatch",
-      "dragon-s-bane"
+      "dragon-s-bane",
+      "white-tassel"
     ],
     "sets": [
       "crimson-witch-of-flames",
@@ -838,8 +840,8 @@ export const RECOMMENDATIONS: Record<string, BuildRec> = {
       "makhaira-aquamarine",
       "mailed-flower",
       "rainslasher",
-      "sacrificial-greatsword",
-      "forest-regalia"
+      "bloodtainted-greatsword",
+      "sacrificial-greatsword"
     ],
     "sets": [
       "deepwood-memories",
@@ -946,11 +948,11 @@ export const RECOMMENDATIONS: Record<string, BuildRec> = {
   "lan-yan": {
     "weapons": [
       "starcaller-s-watch",
+      "thrilling-tales-of-dragon-slayers",
       "hakushin-ring",
       "wandering-evenstar",
       "favonius-codex",
-      "prototype-amber",
-      "sacrificial-fragments"
+      "prototype-amber"
     ],
     "sets": [
       "viridescent-venerer",
@@ -996,6 +998,7 @@ export const RECOMMENDATIONS: Record<string, BuildRec> = {
       "golden-frostbound-oath",
       "aqua-simulacra",
       "elegy-for-the-end",
+      "slingshot",
       "snare-hook",
       "favonius-warbow"
     ],
@@ -1096,7 +1099,8 @@ export const RECOMMENDATIONS: Record<string, BuildRec> = {
       "favonius-lance",
       "dialogues-of-the-desert-sages",
       "rightful-reward",
-      "prototype-starglitter"
+      "prototype-starglitter",
+      "black-tassel"
     ],
     "sets": [
       "noblesse-oblige",
@@ -1108,10 +1112,10 @@ export const RECOMMENDATIONS: Record<string, BuildRec> = {
     "weapons": [
       "favonius-codex",
       "prototype-amber",
+      "thrilling-tales-of-dragon-slayers",
       "oathsworn-eye",
       "lost-prayer-to-the-sacred-winds",
-      "kagura-s-verity",
-      "memory-of-dust"
+      "kagura-s-verity"
     ],
     "sets": [
       "noblesse-oblige",
@@ -1354,7 +1358,7 @@ export const RECOMMENDATIONS: Record<string, BuildRec> = {
       "prototype-amber",
       "ash-graven-drinking-horn",
       "hakushin-ring",
-      "favonius-codex"
+      "thrilling-tales-of-dragon-slayers"
     ],
     "sets": [
       "ocean-hued-clam",
@@ -1383,6 +1387,7 @@ export const RECOMMENDATIONS: Record<string, BuildRec> = {
   "sethos": {
     "weapons": [
       "hunter-s-path",
+      "slingshot",
       "aqua-simulacra",
       "the-first-great-magic"
     ],
@@ -1427,6 +1432,7 @@ export const RECOMMENDATIONS: Record<string, BuildRec> = {
       "silvershower-heartstrings",
       "elegy-for-the-end",
       "aqua-simulacra",
+      "recurve-bow",
       "sacrificial-bow"
     ],
     "sets": [
@@ -1491,7 +1497,7 @@ export const RECOMMENDATIONS: Record<string, BuildRec> = {
       "rightful-reward",
       "favonius-lance",
       "ballad-of-the-fjords",
-      "dialogues-of-the-desert-sages"
+      "black-tassel"
     ],
     "sets": [
       "gilded-dreams",
@@ -1622,8 +1628,8 @@ export const RECOMMENDATIONS: Record<string, BuildRec> = {
       "favonius-codex",
       "oathsworn-eye",
       "flowing-purity",
-      "memory-of-dust",
-      "skyward-atlas"
+      "thrilling-tales-of-dragon-slayers",
+      "memory-of-dust"
     ],
     "sets": [
       "viridescent-venerer",
@@ -1734,11 +1740,11 @@ export const RECOMMENDATIONS: Record<string, BuildRec> = {
   "yaoyao": {
     "weapons": [
       "dialogues-of-the-desert-sages",
+      "black-tassel",
       "kitain-cross-spear",
       "favonius-lance",
       "moonpiercer",
-      "rightful-reward",
-      "dragon-s-bane"
+      "rightful-reward"
     ],
     "sets": [
       "deepwood-memories",
@@ -1769,9 +1775,9 @@ export const RECOMMENDATIONS: Record<string, BuildRec> = {
       "thundering-pulse",
       "aqua-simulacra",
       "rust",
+      "slingshot",
       "the-first-great-magic",
-      "skyward-harp",
-      "hunter-s-path"
+      "skyward-harp"
     ],
     "sets": [
       "shimenawa-s-reminiscence",
@@ -1812,7 +1818,8 @@ export const RECOMMENDATIONS: Record<string, BuildRec> = {
   },
   "zhongli": {
     "weapons": [
-      "favonius-lance"
+      "favonius-lance",
+      "black-tassel"
     ],
     "sets": [
       "tenacity-of-the-millelith",
@@ -1826,10 +1833,10 @@ export const RECOMMENDATIONS: Record<string, BuildRec> = {
     "weapons": [
       "lightbearing-moonshard",
       "uraku-misugiri",
+      "harbinger-of-dawn",
       "peak-patrol-song",
       "light-of-foliar-incision",
-      "splendor-of-tranquil-waters",
-      "flute-of-ezpitzal"
+      "splendor-of-tranquil-waters"
     ],
     "sets": [
       "night-of-the-sky-s-unveiling",

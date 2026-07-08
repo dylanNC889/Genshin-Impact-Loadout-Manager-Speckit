@@ -77,7 +77,8 @@ export const ROLES = [
 export const RoleSchema = z.enum(ROLES);
 export type Role = z.infer<typeof RoleSchema>;
 
-export const RaritySchema = z.union([z.literal(4), z.literal(5)]);
+// 3★ applies to budget weapons; characters are only ever 4★/5★.
+export const RaritySchema = z.union([z.literal(3), z.literal(4), z.literal(5)]);
 export type Rarity = z.infer<typeof RaritySchema>;
 
 // ---------------------------------------------------------------------------
