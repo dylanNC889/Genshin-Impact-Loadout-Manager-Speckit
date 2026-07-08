@@ -1,11 +1,18 @@
 import { test, expect } from "@playwright/test";
 
-// US3 — build a team; live synergy; on-demand damage (FR-012..016).
+// US3 — build a team via the icon-grid picker (#5 redesign); live synergy; on-demand damage
+// (FR-012..016). The old slot dropdowns were replaced by a searchable picker + portrait slots.
 test("build a team and evaluate synergy + damage", async ({ page }) => {
   await page.goto("/team");
 
-  await page.getByLabel("Team slot 1 character").selectOption("hu-tao");
-  await page.getByLabel("Team slot 2 character").selectOption("xingqiu");
+  const search = page.getByLabel("Search characters to add");
+  await search.fill("Hu Tao");
+  await page.locator(".picker-cell", { hasText: "Hu Tao" }).first().click();
+  await search.fill("Xingqiu");
+  await page.locator(".picker-cell", { hasText: "Xingqiu" }).first().click();
+
+  // Both picks now occupy portrait slots.
+  await expect(page.locator(".portrait-slot.filled")).toHaveCount(2);
 
   // Pyro + Hydro enables Vaporize.
   await expect(page.getByText("Vaporize")).toBeVisible();

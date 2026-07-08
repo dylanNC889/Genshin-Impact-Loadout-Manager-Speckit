@@ -21,3 +21,18 @@ jobs:
       # `pnpm test` includes the stat-engine performance assertion (Constitution Principle IV).
       - run: pnpm test
       - run: pnpm --filter @app/frontend build
+
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm rebuild esbuild
+      - run: pnpm --filter @app/frontend exec playwright install --with-deps chromium
+      # Playwright boots the backend (:3100) + frontend (:5199) itself via its webServer config.
+      - run: pnpm --filter @app/frontend test:e2e
