@@ -44,26 +44,124 @@ const SUBSTAT_TO_KEY: Record<string, string> = {
 const ELEMENTS = new Set(["Pyro", "Hydro", "Electro", "Cryo", "Anemo", "Geo", "Dendro"]);
 const WEAPON_TYPES = new Set(["Sword", "Claymore", "Polearm", "Bow", "Catalyst"]);
 
-// genshin-db has no role data; curate the popular picks, default the rest to MainDPS.
+// genshin-db has no role data — curate the archetype per character (community consensus).
+// Anyone missing falls back to MainDPS; a few post-cutoff/beta units are best-effort.
 const ROLE_OVERRIDES: Record<string, string[]> = {
-  bennett: ["Buffer", "Healer"],
-  xingqiu: ["SubDPS"],
-  yelan: ["SubDPS"],
-  xiangling: ["SubDPS"],
-  fischl: ["SubDPS"],
-  "sangonomiya-kokomi": ["Healer", "SubDPS"],
-  zhongli: ["Shielder", "SubDPS"],
-  "kaedehara-kazuha": ["Buffer", "SubDPS"],
-  sucrose: ["Buffer"],
-  venti: ["Buffer", "Battery"],
-  jean: ["Healer", "Buffer"],
-  nahida: ["SubDPS", "Buffer"],
-  "raiden-shogun": ["SubDPS", "Battery"],
-  "yae-miko": ["SubDPS"],
-  mona: ["SubDPS", "Buffer"],
-  diona: ["Healer", "Shielder"],
+  aino: ["SubDPS", "Buffer"],
   albedo: ["SubDPS"],
+  alhaitham: ["MainDPS"],
+  aloy: ["MainDPS"],
+  amber: ["MainDPS"],
+  "arataki-itto": ["MainDPS"],
+  arlecchino: ["MainDPS"],
+  baizhu: ["Healer", "SubDPS"],
+  barbara: ["Healer", "SubDPS"],
+  beidou: ["SubDPS"],
+  bennett: ["Buffer", "Healer"],
+  candace: ["Buffer", "SubDPS"],
+  charlotte: ["Healer", "Buffer"],
+  chasca: ["MainDPS"],
+  chevreuse: ["Buffer", "Healer"],
+  chiori: ["SubDPS"],
+  chongyun: ["SubDPS"],
+  citlali: ["Buffer", "SubDPS"],
+  clorinde: ["MainDPS"],
+  collei: ["SubDPS"],
+  columbina: ["SubDPS", "Buffer"],
+  cyno: ["MainDPS"],
+  dahlia: ["Shielder", "Buffer"],
+  dehya: ["SubDPS"],
+  diluc: ["MainDPS"],
+  diona: ["Healer", "Shielder"],
+  dori: ["Healer", "Battery"],
+  durin: ["SubDPS"],
+  emilie: ["SubDPS"],
+  escoffier: ["SubDPS", "Buffer"],
+  eula: ["MainDPS"],
+  faruzan: ["Buffer", "SubDPS"],
+  fischl: ["SubDPS"],
+  flins: ["MainDPS"],
+  freminet: ["SubDPS"],
+  furina: ["Buffer", "SubDPS"],
+  gaming: ["MainDPS"],
+  ganyu: ["MainDPS"],
+  gorou: ["Buffer"],
+  "hu-tao": ["MainDPS"],
+  iansan: ["Buffer", "Battery"],
+  ifa: ["Buffer", "SubDPS"],
+  illuga: ["SubDPS"],
+  ineffa: ["SubDPS", "Buffer"],
+  jahoda: ["Buffer"],
+  jean: ["Healer", "Buffer"],
+  kachina: ["SubDPS"],
+  "kaedehara-kazuha": ["Buffer", "SubDPS"],
+  kaeya: ["SubDPS"],
+  "kamisato-ayaka": ["MainDPS"],
+  "kamisato-ayato": ["MainDPS"],
+  kaveh: ["MainDPS"],
+  keqing: ["MainDPS"],
+  kinich: ["MainDPS"],
+  kirara: ["Shielder", "SubDPS"],
+  klee: ["MainDPS"],
+  "kujou-sara": ["Buffer", "SubDPS"],
+  "kuki-shinobu": ["Healer", "SubDPS"],
+  "lan-yan": ["Shielder", "Buffer"],
+  lauma: ["SubDPS", "Buffer"],
+  layla: ["Shielder", "SubDPS"],
+  linnea: ["SubDPS"],
+  lisa: ["SubDPS"],
+  lohen: ["MainDPS"],
+  lynette: ["SubDPS"],
+  lyney: ["MainDPS"],
+  mavuika: ["MainDPS"],
+  mika: ["Buffer", "Healer"],
+  mona: ["SubDPS", "Buffer"],
+  mualani: ["MainDPS"],
+  nahida: ["SubDPS", "Buffer"],
+  navia: ["MainDPS"],
+  nefer: ["SubDPS"],
+  neuvillette: ["MainDPS"],
+  nicole: ["SubDPS"],
+  nilou: ["SubDPS", "Buffer"],
   ningguang: ["SubDPS"],
+  noelle: ["MainDPS", "Healer"],
+  ororon: ["SubDPS", "Buffer"],
+  prune: ["Buffer", "Healer"],
+  qiqi: ["Healer"],
+  "raiden-shogun": ["SubDPS", "Battery"],
+  razor: ["MainDPS"],
+  rosaria: ["SubDPS", "Buffer"],
+  "sangonomiya-kokomi": ["Healer", "SubDPS"],
+  sayu: ["Healer", "Buffer"],
+  sethos: ["SubDPS"],
+  shenhe: ["Buffer", "SubDPS"],
+  "shikanoin-heizou": ["MainDPS"],
+  sigewinne: ["Healer", "SubDPS"],
+  skirk: ["MainDPS"],
+  sucrose: ["Buffer", "Battery"],
+  tartaglia: ["MainDPS"],
+  thoma: ["Shielder", "SubDPS"],
+  tighnari: ["MainDPS"],
+  varesa: ["MainDPS"],
+  varka: ["MainDPS"],
+  venti: ["Buffer", "Battery"],
+  wanderer: ["MainDPS"],
+  wriothesley: ["MainDPS"],
+  xiangling: ["SubDPS"],
+  xianyun: ["Buffer", "Healer"],
+  xiao: ["MainDPS"],
+  xilonen: ["Buffer", "Healer"],
+  xingqiu: ["SubDPS"],
+  xinyan: ["SubDPS", "Shielder"],
+  "yae-miko": ["SubDPS"],
+  yanfei: ["MainDPS"],
+  yaoyao: ["Healer", "SubDPS"],
+  yelan: ["SubDPS"],
+  yoimiya: ["MainDPS"],
+  "yumemizuki-mizuki": ["Buffer", "SubDPS"],
+  "yun-jin": ["Buffer", "SubDPS"],
+  zhongli: ["Shielder", "SubDPS"],
+  zibai: ["SubDPS"],
 };
 
 // Stat-granting 2-piece artifact bonuses (DMG bonuses first so "Pyro DMG" wins over "ATK").
@@ -197,7 +295,8 @@ const weapons: any[] = [];
 for (const name of weaponNames) {
   try {
     const w = genshindb.weapons(name) as any;
-    if (!w || (w.rarity !== 4 && w.rarity !== 5)) continue;
+    // Include 3–5★ weapons (3★ are valid budget/early options; skip 1–2★ trash).
+    if (!w || w.rarity < 3 || w.rarity > 5) continue;
     if (!WEAPON_TYPES.has(w.weaponText)) continue;
     const s90 = w.stats(90, "6");
     const secKey = SUBSTAT_TO_KEY[w.mainStatText];
@@ -267,11 +366,20 @@ const meta = {
 
 mkdirSync(OUT_DIR, { recursive: true });
 const write = (file: string, data: unknown) => writeFileSync(join(OUT_DIR, file), JSON.stringify(data, null, 0));
+// genshin-db can list the same entry more than once (e.g. story-variant swords like the
+// "Prized Isshin Blade" appear 3x); keep the first of each id so the app never shows dupes.
+const dedupeById = (arr: any[]) => {
+  const seen = new Set<string>();
+  return arr.filter((x) => (seen.has(x.id) ? false : (seen.add(x.id), true)));
+};
 characters.sort((a, b) => a.name.localeCompare(b.name));
 weapons.sort((a, b) => a.name.localeCompare(b.name));
 artifactSets.sort((a, b) => a.name.localeCompare(b.name));
-write("characters.json", characters);
-write("weapons.json", weapons);
-write("artifact-sets.json", artifactSets);
+const outChars = dedupeById(characters);
+const outWeapons = dedupeById(weapons);
+const outSets = dedupeById(artifactSets);
+write("characters.json", outChars);
+write("weapons.json", outWeapons);
+write("artifact-sets.json", outSets);
 write("meta.json", meta);
-console.log(`Imported ${characters.length} characters, ${weapons.length} weapons, ${artifactSets.length} artifact sets -> ${OUT_DIR}`);
+console.log(`Imported ${outChars.length} characters, ${outWeapons.length} weapons, ${outSets.length} artifact sets -> ${OUT_DIR}`);

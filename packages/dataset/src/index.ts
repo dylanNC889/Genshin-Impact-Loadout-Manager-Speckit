@@ -133,13 +133,20 @@ function readJson(dir: string, file: string): unknown {
   return JSON.parse(readFileSync(join(dir, file), "utf8"));
 }
 
+/** Drop entries with a duplicate id, keeping the first — guards against source data that
+ * lists the same entry more than once (e.g. genshin-db's story-variant weapons). */
+function dedupeById<T extends { id: string }>(arr: T[]): T[] {
+  const seen = new Set<string>();
+  return arr.filter((x) => (seen.has(x.id) ? false : (seen.add(x.id), true)));
+}
+
 export function loadDatasetFromDir(dir: string): Dataset {
   const metaFile = readJson(dir, "meta.json") as MetaFile;
   const rawCharacters = readJson(dir, "characters.json") as RawCharacter[];
 
-  const characters = rawCharacters.map(normalizeCharacter);
-  const weapons = z.array(WeaponSchema).parse(readJson(dir, "weapons.json"));
-  const artifactSets = z.array(ArtifactSetSchema).parse(readJson(dir, "artifact-sets.json"));
+  const characters = dedupeById(rawCharacters.map(normalizeCharacter));
+  const weapons = dedupeById(z.array(WeaponSchema).parse(readJson(dir, "weapons.json")));
+  const artifactSets = dedupeById(z.array(ArtifactSetSchema).parse(readJson(dir, "artifact-sets.json")));
   const slotStatRules = SlotStatRulesSchema.parse(metaFile.slotStatRules);
   const statValues = StatValuesTableSchema.parse(metaFile.statValues);
   const meta = DatasetMetaSchema.parse(metaFile.meta);

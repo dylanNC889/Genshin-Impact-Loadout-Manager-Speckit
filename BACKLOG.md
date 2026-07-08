@@ -8,6 +8,20 @@ than improvements** — fix bugs first, and add any new bug at the top of the Bu
 _None open._
 
 ### Fixed
+- **Character roles inaccurate (everyone defaulted to Main DPS)** — the importer's
+  `ROLE_OVERRIDES` only curated ~17 characters and defaulted the rest to `["MainDPS"]`, so
+  supports/healers like Barbara showed as Main DPS. Expanded to a full 115-character role map
+  (e.g. Barbara → Healer/Sub-DPS, Qiqi → Healer, Gorou → Buffer). Data regenerated.
+- **3★ weapons missing from the db** — the importer excluded rarity 3, so the Weapons page's
+  3★ filter was empty and 3★ build options (Thrilling Tales, Harbinger of Dawn, etc.) weren't
+  selectable. Now imports 3–5★ weapons (skips 1–2★ trash); `RaritySchema` accepts 3; +24 weapons
+  (200 → 224). Recommendations regenerated so 3★ budget picks map through.
+- **"Prized Isshin Blade" duplicated on the Weapons page** — genshin-db lists the story-variant
+  sword 3× under the same id, so the importer wrote 3 identical entries. On the Weapons grid the
+  shared React `key={w.id}` made the stale card mis-reconcile and linger under the wrong filters.
+  Fixed by de-duplicating by id in the loader (`packages/dataset/src/index.ts`, the single funnel)
+  and the importer, + a dataset test asserting no duplicate weapon/set ids. Data regenerated
+  (202 → 200 weapons).
 - **Substat values / multi-roll** — substats now model a base roll + 4 shared upgrade rolls
   (`Upgrades: X/4`), each roll independently any canonical value (line total = sum), plus a
   "set total" slider that auto-fills rolls. Fixed CRIT DMG showing twice in Final Stats.
