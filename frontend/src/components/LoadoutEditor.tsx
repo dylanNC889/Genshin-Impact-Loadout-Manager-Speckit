@@ -34,6 +34,27 @@ function splitByRec<T extends { id: string; name: string }>(items: T[], recIds: 
   return { rec, other };
 }
 
+/** Crit Value (2×CRIT Rate + CRIT DMG from substats) + how many substat rolls hit CRIT (B4). */
+function artifactQuality(artifacts: { subStats: { key: string; value: number; rollValues: number[] }[] }[]) {
+  let cv = 0;
+  let critRolls = 0;
+  let totalRolls = 0;
+  for (const a of artifacts) {
+    for (const s of a.subStats ?? []) {
+      const rolls = s.rollValues?.length || 1;
+      totalRolls += rolls;
+      if (s.key === "CRIT_RATE") {
+        cv += 2 * s.value;
+        critRolls += rolls;
+      } else if (s.key === "CRIT_DMG") {
+        cv += s.value;
+        critRolls += rolls;
+      }
+    }
+  }
+  return { cv, critRolls, totalRolls };
+}
+
 interface Props {
   character: Character;
   curves: Record<string, GrowthCurve>;
@@ -104,6 +125,7 @@ export function LoadoutEditor({
   const extraDmg = Object.entries(finalStats).filter(
     ([k, v]) => k.endsWith("_DMG") && v !== 0 && !FINAL_ORDER.includes(k),
   );
+  const quality = artifactQuality(loadout.artifacts);
   const setName = (id: string) => artifactSets.find((s) => s.id === id)?.name ?? id;
   const setBonusText = (id: string, pieces: number): string => {
     const set = artifactSets.find((s) => s.id === id);
@@ -196,6 +218,14 @@ export function LoadoutEditor({
           {extraDmg.map(([k, v]) => (
             <StatRow key={k} label={statLabel(k)} value={formatStat(k, v)} />
           ))}
+          {quality.totalRolls > 0 ? (
+            <>
+              <StatRow label="Crit Value" value={`${quality.cv.toFixed(1)} CV`} />
+              <p className="muted small">
+                {quality.critRolls}/{quality.totalRolls} substat rolls into CRIT
+              </p>
+            </>
+          ) : null}
           <h4>Active set bonuses</h4>
           {activeSetBonuses.length === 0 ? (
             <p className="muted small">None — equip 2+ pieces of a set.</p>
