@@ -6,6 +6,13 @@ import { RECOMMENDATIONS } from "./data/recommendations";
  * with an element-based heuristic fallback for any character KQM didn't cover.
  */
 
+/** Reverse lookup: character ids that recommend this weapon or artifact-set id. */
+export function recommendingCharacters(id: string): string[] {
+  return Object.entries(RECOMMENDATIONS)
+    .filter(([, r]) => r.weapons.includes(id) || r.sets.includes(id))
+    .map(([charId]) => charId);
+}
+
 /** Element → signature artifact-set ids, for the heuristic fallback only. */
 const ELEMENT_SET_HINTS: Record<string, string[]> = {
   Pyro: ["crimson-witch-of-flames"],

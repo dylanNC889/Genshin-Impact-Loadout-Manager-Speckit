@@ -10,6 +10,12 @@ test("browse the weapons page", async ({ page }) => {
   const card = page.locator(".char-card", { hasText: "Staff of Homa" });
   await expect(card).toHaveCount(1);
   await expect(card.getByText(/Base ATK/)).toBeVisible();
+
+  // Click through to the weapon detail page (B3) with a "recommended by" reverse lookup.
+  await card.click();
+  await expect(page).toHaveURL(/\/weapon\/staff-of-homa$/);
+  await expect(page.getByRole("heading", { name: "Staff of Homa", level: 1 })).toBeVisible();
+  await expect(page.locator(".used-by-chip", { hasText: "Hu Tao" })).toBeVisible();
 });
 
 test("browse the artifacts page and see set bonuses", async ({ page }) => {
