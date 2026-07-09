@@ -247,6 +247,25 @@ export function CharacterPage() {
           </ul>
         </Card>
       </div>
+
+      {char.constellations.length ? (
+        <Card title="Constellations">
+          <ul className="skills">
+            {char.constellations.map((con) => (
+              <li key={con.level}>
+                <div className="skill-head">
+                  <Icon src={con.icon} alt="" size={32} className="skill-icon" />
+                  <div className="skill-head-text">
+                    <span className="skill-type">C{con.level}</span>
+                    <span className="skill-name">{con.name}</span>
+                  </div>
+                </div>
+                {con.description ? <span className="skill-desc">{con.description}</span> : null}
+              </li>
+            ))}
+          </ul>
+        </Card>
+      ) : null}
     </div>
   );
 }
