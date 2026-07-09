@@ -1,0 +1,72 @@
+{
+  "wolfs-gravestone": {
+    "1": [{ "key": "ATK_PCT", "value": 20 }],
+    "2": [{ "key": "ATK_PCT", "value": 25 }],
+    "3": [{ "key": "ATK_PCT", "value": 30 }],
+    "4": [{ "key": "ATK_PCT", "value": 35 }],
+    "5": [{ "key": "ATK_PCT", "value": 40 }]
+  },
+  "the-unforged": {
+    "1": [{ "key": "ATK_PCT", "value": 20 }],
+    "2": [{ "key": "ATK_PCT", "value": 25 }],
+    "3": [{ "key": "ATK_PCT", "value": 30 }],
+    "4": [{ "key": "ATK_PCT", "value": 35 }],
+    "5": [{ "key": "ATK_PCT", "value": 40 }]
+  },
+  "summit-shaper": {
+    "1": [{ "key": "ATK_PCT", "value": 20 }],
+    "2": [{ "key": "ATK_PCT", "value": 25 }],
+    "3": [{ "key": "ATK_PCT", "value": 30 }],
+    "4": [{ "key": "ATK_PCT", "value": 35 }],
+    "5": [{ "key": "ATK_PCT", "value": 40 }]
+  },
+  "aquila-favonia": {
+    "1": [{ "key": "ATK_PCT", "value": 20 }],
+    "2": [{ "key": "ATK_PCT", "value": 25 }],
+    "3": [{ "key": "ATK_PCT", "value": 30 }],
+    "4": [{ "key": "ATK_PCT", "value": 35 }],
+    "5": [{ "key": "ATK_PCT", "value": 40 }]
+  },
+  "vortex-vanquisher": {
+    "1": [{ "key": "ATK_PCT", "value": 20 }],
+    "2": [{ "key": "ATK_PCT", "value": 24 }],
+    "3": [{ "key": "ATK_PCT", "value": 28 }],
+    "4": [{ "key": "ATK_PCT", "value": 32 }],
+    "5": [{ "key": "ATK_PCT", "value": 36 }]
+  },
+  "song-of-broken-pines": {
+    "1": [{ "key": "ATK_PCT", "value": 16 }],
+    "2": [{ "key": "ATK_PCT", "value": 20 }],
+    "3": [{ "key": "ATK_PCT", "value": 24 }],
+    "4": [{ "key": "ATK_PCT", "value": 28 }],
+    "5": [{ "key": "ATK_PCT", "value": 32 }]
+  },
+  "staff-of-homa": {
+    "1": [{ "key": "HP_PCT", "value": 20 }],
+    "2": [{ "key": "HP_PCT", "value": 25 }],
+    "3": [{ "key": "HP_PCT", "value": 30 }],
+    "4": [{ "key": "HP_PCT", "value": 35 }],
+    "5": [{ "key": "HP_PCT", "value": 40 }]
+  },
+  "harbinger-of-dawn": {
+    "1": [{ "key": "CRIT_RATE", "value": 14.4 }],
+    "2": [{ "key": "CRIT_RATE", "value": 18 }],
+    "3": [{ "key": "CRIT_RATE", "value": 21.6 }],
+    "4": [{ "key": "CRIT_RATE", "value": 25.2 }],
+    "5": [{ "key": "CRIT_RATE", "value": 28.8 }]
+  },
+  "the-black-sword": {
+    "1": [{ "key": "CRIT_RATE", "value": 20 }],
+    "2": [{ "key": "CRIT_RATE", "value": 25 }],
+    "3": [{ "key": "CRIT_RATE", "value": 30 }],
+    "4": [{ "key": "CRIT_RATE", "value": 35 }],
+    "5": [{ "key": "CRIT_RATE", "value": 40 }]
+  },
+  "deathmatch": {
+    "1": [{ "key": "ATK_PCT", "value": 16 }],
+    "2": [{ "key": "ATK_PCT", "value": 20 }],
+    "3": [{ "key": "ATK_PCT", "value": 24 }],
+    "4": [{ "key": "ATK_PCT", "value": 28 }],
+    "5": [{ "key": "ATK_PCT", "value": 32 }]
+  }
+}

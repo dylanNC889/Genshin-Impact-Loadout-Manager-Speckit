@@ -90,4 +90,25 @@ describe("end-to-end loadout with real data (US2 integration)", () => {
     expect(r.ATK).toBeGreaterThan(700); // character 106 + weapon base ~608
     expect(r.PYRO_DMG).toBeCloseTo(46.6 + 15, 1); // goblet main + Crimson Witch 2pc
   });
+
+  it("applies weapon-refinement and constellation stat bonuses (A1)", () => {
+    const homa: LoadoutInput = {
+      name: "t",
+      characterId: "hu-tao",
+      level: 90,
+      ascensionPhase: 6,
+      weaponId: "staff-of-homa",
+      artifacts: [],
+    };
+    // Staff of Homa refinement gives HP% 20→40 (R1→R5).
+    const r1 = statRecord(computeFinalStats({ ...homa, refinement: 1 }, dataset).stats);
+    const r5 = statRecord(computeFinalStats({ ...homa, refinement: 5 }, dataset).stats);
+    expect(r5.HP).toBeGreaterThan(r1.HP);
+
+    // Faruzan C6 grants CRIT DMG in our curated table.
+    const far: LoadoutInput = { name: "t", characterId: "faruzan", level: 90, ascensionPhase: 6, artifacts: [] };
+    const c0 = statRecord(computeFinalStats({ ...far, constellation: 0 }, dataset).stats);
+    const c6 = statRecord(computeFinalStats({ ...far, constellation: 6 }, dataset).stats);
+    expect(c6.CRIT_DMG - c0.CRIT_DMG).toBeCloseTo(40, 1);
+  });
 });

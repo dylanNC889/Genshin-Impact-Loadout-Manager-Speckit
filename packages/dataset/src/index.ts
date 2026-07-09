@@ -136,6 +136,20 @@ function readJson(dir: string, file: string): unknown {
   return JSON.parse(readFileSync(join(dir, file), "utf8"));
 }
 
+/** Load a version-independent modifier table (A1); drops non-object keys like `_note`. */
+function readModifierTable(file: string): Record<string, Record<string, StatValue[]>> {
+  try {
+    const raw = JSON.parse(readFileSync(join(REPO_ROOT, "data", "modifiers", file), "utf8")) as Record<string, unknown>;
+    const out: Record<string, Record<string, StatValue[]>> = {};
+    for (const [k, v] of Object.entries(raw)) {
+      if (v && typeof v === "object" && !Array.isArray(v)) out[k] = v as Record<string, StatValue[]>;
+    }
+    return out;
+  } catch {
+    return {};
+  }
+}
+
 /** Drop entries with a duplicate id, keeping the first — guards against source data that
  * lists the same entry more than once (e.g. genshin-db's story-variant weapons). */
 function dedupeById<T extends { id: string }>(arr: T[]): T[] {
@@ -153,8 +167,20 @@ export function loadDatasetFromDir(dir: string): Dataset {
   const slotStatRules = SlotStatRulesSchema.parse(metaFile.slotStatRules);
   const statValues = StatValuesTableSchema.parse(metaFile.statValues);
   const meta = DatasetMetaSchema.parse(metaFile.meta);
+  const constellationBonuses = readModifierTable("constellations.json");
+  const weaponRefinements = readModifierTable("weapon-refinements.json");
 
-  return { meta, curves: metaFile.curves, characters, weapons, artifactSets, slotStatRules, statValues };
+  return {
+    meta,
+    curves: metaFile.curves,
+    characters,
+    weapons,
+    artifactSets,
+    slotStatRules,
+    statValues,
+    constellationBonuses,
+    weaponRefinements,
+  };
 }
 
 export function loadBundledDataset(): Dataset {

@@ -1,0 +1,12 @@
+{
+  "_note": "Static, always-on constellation stat bonuses only (A1). Most constellations are talent-level increases or conditional effects and are intentionally NOT modeled here.",
+  "faruzan": {
+    "6": [{ "key": "CRIT_DMG", "value": 40 }]
+  },
+  "shenhe": {
+    "1": [{ "key": "CRIT_RATE", "value": 15 }]
+  },
+  "yae-miko": {
+    "2": [{ "key": "CRIT_DMG", "value": 60 }]
+  }
+}

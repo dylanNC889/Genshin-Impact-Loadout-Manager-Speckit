@@ -233,6 +233,10 @@ export interface Dataset {
   slotStatRules: SlotStatRules;
   /** Canonical equipment stat values for build dropdowns (FR-022). Optional for engine-only use. */
   statValues?: StatValuesTable;
+  /** Static constellation stat bonuses (A1): charId → level ("1".."6") → StatValue[]. */
+  constellationBonuses?: Record<string, Record<string, StatValue[]>>;
+  /** Static weapon refinement stat bonuses (A1): weaponId → rank ("1".."5") → StatValue[]. */
+  weaponRefinements?: Record<string, Record<string, StatValue[]>>;
 }
 
 // ---------------------------------------------------------------------------
@@ -262,6 +266,9 @@ export const LoadoutInputSchema = z.object({
   ascensionPhase: z.number().int().min(0).max(6),
   weaponId: z.string().nullable().optional(),
   artifacts: z.array(ArtifactInstanceSchema).max(5).default([]),
+  /** Constellation level 0–6 and weapon refinement rank 1–5 (A1; static bonuses only). */
+  constellation: z.number().int().min(0).max(6).default(0),
+  refinement: z.number().int().min(1).max(5).default(1),
 });
 export type LoadoutInput = z.infer<typeof LoadoutInputSchema>;
 

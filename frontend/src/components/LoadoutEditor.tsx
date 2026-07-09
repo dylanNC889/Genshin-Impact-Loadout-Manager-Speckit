@@ -63,6 +63,8 @@ interface Props {
   artifactSets: ArtifactSet[];
   rules: SlotStatRules;
   statValues: StatValuesTable;
+  /** Static constellation/weapon-refinement stat bonuses (A1). */
+  modifiers: Pick<Dataset, "constellationBonuses" | "weaponRefinements">;
   level: number;
   /** When set, the editor was opened on an existing saved loadout (FR-018 edit). */
   editingLoadoutId?: string | null;
@@ -77,14 +79,19 @@ export function LoadoutEditor({
   artifactSets,
   rules,
   statValues,
+  modifiers,
   level,
   editingLoadoutId,
 }: Props) {
   const weaponId = useLoadoutStore((s) => s.weaponId);
   const artifacts = useLoadoutStore((s) => s.artifacts);
+  const constellation = useLoadoutStore((s) => s.constellation);
+  const refinement = useLoadoutStore((s) => s.refinement);
   const setWeapon = useLoadoutStore((s) => s.setWeapon);
   const setArtifact = useLoadoutStore((s) => s.setArtifact);
   const clearArtifact = useLoadoutStore((s) => s.clearArtifact);
+  const setConstellation = useLoadoutStore((s) => s.setConstellation);
+  const setRefinement = useLoadoutStore((s) => s.setRefinement);
 
   // Recommended weapons/artifact sets (KQM-sourced) surfaced at the top of the pickers.
   const recs = recommendedFor(character, weapons, artifactSets);
@@ -113,6 +120,8 @@ export function LoadoutEditor({
     weapons,
     artifactSets,
     slotStatRules: rules,
+    constellationBonuses: modifiers.constellationBonuses,
+    weaponRefinements: modifiers.weaponRefinements,
   };
 
   const loadout: LoadoutInput = {
@@ -121,6 +130,8 @@ export function LoadoutEditor({
     level,
     ascensionPhase: ASCENSION_FOR_LEVEL[level] ?? 6,
     weaponId,
+    constellation,
+    refinement,
     artifacts: SLOTS.flatMap((slot) => {
       const d = artifacts[slot];
       return d ? [{ slot, setId: d.setId, mainStat: d.mainStat, subStats: d.subStats }] : [];
@@ -154,7 +165,13 @@ export function LoadoutEditor({
 
   // Shareable build link (B3): encode the current build into the URL — no save needed.
   const [copied, setCopied] = useState(false);
-  const shareCode = encodeShare({ level: loadout.level, weaponId: loadout.weaponId, artifacts: loadout.artifacts });
+  const shareCode = encodeShare({
+    level: loadout.level,
+    weaponId: loadout.weaponId,
+    constellation: loadout.constellation,
+    refinement: loadout.refinement,
+    artifacts: loadout.artifacts,
+  });
   const shareHref = useHref({ pathname: `/character/${character.id}`, search: `build=${shareCode}` });
   function copyLink() {
     void navigator.clipboard?.writeText(window.location.origin + shareHref);
@@ -236,6 +253,30 @@ export function LoadoutEditor({
                 )}
               </select>
             </div>
+          </div>
+
+          <div className="cr-controls">
+            <label>
+              Constellation
+              <select value={constellation} onChange={(e) => setConstellation(Number(e.target.value))} aria-label="Constellation">
+                {[0, 1, 2, 3, 4, 5, 6].map((c) => (
+                  <option key={c} value={c}>
+                    C{c}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Refinement
+              <select value={refinement} onChange={(e) => setRefinement(Number(e.target.value))} aria-label="Refinement">
+                {[1, 2, 3, 4, 5].map((r) => (
+                  <option key={r} value={r}>
+                    R{r}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <span className="muted small">Static bonuses only; conditional effects aren’t modeled.</span>
           </div>
 
           {SLOTS.map((slot) => (

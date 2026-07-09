@@ -44,3 +44,17 @@ test("optimised build suggestion applies to the editor", async ({ page }) => {
   // …with well-rolled substats (4 shared upgrade rolls per artifact).
   await expect(page.getByText("Upgrades: 4/4").first()).toBeVisible();
 });
+
+// A1 — weapon refinement feeds the final stats (Staff of Homa gives HP%).
+test("weapon refinement changes final stats", async ({ page }) => {
+  await page.goto("/character/hu-tao");
+  await page.getByLabel(/^Weapon/).selectOption({ label: "Staff of Homa" });
+
+  const maxHp = () =>
+    page.locator(".final-stats .stat-row", { hasText: "Max HP" }).locator(".stat-value");
+  await page.getByLabel("Refinement").selectOption("1");
+  const hp1 = Number((await maxHp().textContent())!.replace(/,/g, ""));
+  await page.getByLabel("Refinement").selectOption("5");
+  const hp5 = Number((await maxHp().textContent())!.replace(/,/g, ""));
+  expect(hp5).toBeGreaterThan(hp1);
+});
