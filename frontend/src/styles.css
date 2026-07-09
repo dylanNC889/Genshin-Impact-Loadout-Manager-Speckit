@@ -224,6 +224,47 @@ select {
   border-color: var(--accent);
 }
 
+/* --- Compare page (B2) --- */
+.compare-pickers {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 16px 0;
+  flex-wrap: wrap;
+}
+
+.compare-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+
+.compare-table th,
+.compare-table td {
+  text-align: right;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.compare-table th:first-child,
+.compare-table td:first-child {
+  text-align: left;
+  color: var(--muted);
+}
+
+.compare-table th {
+  color: var(--accent);
+  font-size: 13px;
+}
+
+.delta.up {
+  color: #6be675;
+}
+
+.delta.down {
+  color: #ff6b6b;
+}
+
 .badge {
   color: #1a1a1a;
   font-size: 11px;

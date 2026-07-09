@@ -11,6 +11,7 @@ const Artifacts = lazy(() => import("./pages/Artifacts").then((m) => ({ default:
 const ArtifactPage = lazy(() => import("./pages/Artifact").then((m) => ({ default: m.ArtifactPage })));
 const TeamBuilder = lazy(() => import("./pages/TeamBuilder").then((m) => ({ default: m.TeamBuilder })));
 const SavedPage = lazy(() => import("./pages/Saved").then((m) => ({ default: m.SavedPage })));
+const ComparePage = lazy(() => import("./pages/Compare").then((m) => ({ default: m.ComparePage })));
 
 export function App() {
   return (
@@ -26,6 +27,7 @@ export function App() {
           <NavLink to="/weapons">Weapons</NavLink>
           <NavLink to="/artifacts">Artifacts</NavLink>
           <NavLink to="/team">Team</NavLink>
+          <NavLink to="/compare">Compare</NavLink>
           <NavLink to="/saved">Saved</NavLink>
         </nav>
         <span className="tag">slice</span>
@@ -40,6 +42,7 @@ export function App() {
             <Route path="/artifact/:id" element={<ArtifactPage />} />
             <Route path="/character/:id" element={<CharacterPage />} />
             <Route path="/team" element={<TeamBuilder />} />
+            <Route path="/compare" element={<ComparePage />} />
             <Route path="/saved" element={<SavedPage />} />
           </Routes>
         </Suspense>
