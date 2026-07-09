@@ -20,6 +20,7 @@ import { createLoadout, updateLoadout } from "../api";
 import { Card, Icon, StatRow } from "./ui";
 import { formatStat, statLabel } from "../format";
 import { recommendedFor } from "../recommendations";
+import { suggestBuild } from "../suggestBuild";
 import { encodeShare } from "../share";
 
 const SLOTS: ArtifactSlot[] = ["Flower", "Plume", "Sands", "Goblet", "Circlet"];
@@ -89,6 +90,17 @@ export function LoadoutEditor({
   const recs = recommendedFor(character, weapons, artifactSets);
   const weaponGroups = splitByRec(weapons, recs.weaponIds);
 
+  // One-click "optimised" build suggestion (weapon + set + main stats).
+  const suggestion = suggestBuild(character, weapons, artifactSets, rules);
+  function applySuggestion() {
+    if (suggestion.weaponId) setWeapon(suggestion.weaponId);
+    for (const slot of SLOTS) {
+      if (!suggestion.setId) continue;
+      const key = suggestion.mains[slot];
+      setArtifact(slot, { setId: suggestion.setId, mainStat: { key, value: statValues.mainStatValues[key] ?? 0 }, subStats: [] });
+    }
+  }
+
   // Assemble a client-side Dataset so computeFinalStats runs locally (instant recalc).
   const clientDataset: Dataset = {
     meta: { gameVersion: "client", datasetVersion: "client", generatedAt: "" },
@@ -156,6 +168,36 @@ export function LoadoutEditor({
 
   return (
     <Card title="Loadout">
+      {suggestion.weaponId || suggestion.setId ? (
+        <div className="suggest-build">
+          <div className="suggest-head">
+            <strong>Suggested build</strong>
+            <span className="badge muted-badge">{suggestion.curated ? "KQM-based" : "heuristic"}</span>
+            <button type="button" className="mini" onClick={applySuggestion} title="Apply this build to the editor below">
+              Apply
+            </button>
+          </div>
+          <div className="suggest-body">
+            {suggestion.weaponName ? (
+              <span>
+                <b>Weapon:</b> {suggestion.weaponName}
+              </span>
+            ) : null}
+            {suggestion.setName ? (
+              <span>
+                <b>Artifacts:</b> 4pc {suggestion.setName}
+              </span>
+            ) : null}
+            <span>
+              <b>Main stats:</b> Sands {statLabel(suggestion.mains.Sands)} · Goblet {statLabel(suggestion.mains.Goblet)} ·
+              Circlet {statLabel(suggestion.mains.Circlet)}
+            </span>
+            <span>
+              <b>Substats:</b> {suggestion.substats.join(" › ")}
+            </span>
+          </div>
+        </div>
+      ) : null}
       <div className="loadout-grid">
         <div className="loadout-editor">
           <div className="field">
