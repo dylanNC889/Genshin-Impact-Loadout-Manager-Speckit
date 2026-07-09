@@ -3,19 +3,46 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { fetchCharacters } from "../api";
 import { ElementBadge, Icon, RarityStars } from "../components/ui";
+import { getFavorites, toggleFavorite } from "../favorites";
 
 const ELEMENTS = ["Pyro", "Hydro", "Electro", "Cryo", "Anemo", "Geo", "Dendro"];
 const WEAPONS = ["Sword", "Claymore", "Polearm", "Bow", "Catalyst"];
+const RARITIES = [5, 4];
+const REGIONS = ["Mondstadt", "Liyue", "Inazuma", "Sumeru", "Fontaine", "Natlan", "Snezhnaya"];
 
 export function Roster() {
   const [q, setQ] = useState("");
   const [element, setElement] = useState("");
   const [weaponType, setWeaponType] = useState("");
+  const [rarity, setRarity] = useState("");
+  const [region, setRegion] = useState("");
+  const [sort, setSort] = useState("name");
+  const [favs, setFavs] = useState(() => getFavorites());
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["characters", q, element, weaponType],
     queryFn: () => fetchCharacters({ q, element, weaponType }),
   });
+
+  function onToggleFav(e: React.MouseEvent, id: string) {
+    e.preventDefault();
+    e.stopPropagation();
+    setFavs(new Set(toggleFavorite(id)));
+  }
+
+  // rarity/region filtering + sort are client-side; favourites always float to the top.
+  const rows = (data ?? [])
+    .filter((c) => (rarity ? c.rarity === Number(rarity) : true))
+    .filter((c) => (region ? c.region === region : true))
+    .slice()
+    .sort((a, b) => {
+      const fa = favs.has(a.id);
+      const fb = favs.has(b.id);
+      if (fa !== fb) return fa ? -1 : 1;
+      if (sort === "rarity") return b.rarity - a.rarity || a.name.localeCompare(b.name);
+      if (sort === "element") return a.element.localeCompare(b.element) || a.name.localeCompare(b.name);
+      return a.name.localeCompare(b.name);
+    });
 
   return (
     <div className="roster">
@@ -43,17 +70,49 @@ export function Roster() {
             </option>
           ))}
         </select>
+        <select value={rarity} onChange={(e) => setRarity(e.target.value)} aria-label="Filter by rarity">
+          <option value="">All rarities</option>
+          {RARITIES.map((r) => (
+            <option key={r} value={String(r)}>
+              {r}★
+            </option>
+          ))}
+        </select>
+        <select value={region} onChange={(e) => setRegion(e.target.value)} aria-label="Filter by region">
+          <option value="">All regions</option>
+          {REGIONS.map((r) => (
+            <option key={r} value={r}>
+              {r}
+            </option>
+          ))}
+        </select>
+        <select value={sort} onChange={(e) => setSort(e.target.value)} aria-label="Sort by">
+          <option value="name">Sort: Name</option>
+          <option value="rarity">Sort: Rarity</option>
+          <option value="element">Sort: Element</option>
+        </select>
       </div>
 
       {isLoading ? <p className="muted">Loading roster…</p> : null}
       {error ? <p className="error">Failed to load: {(error as Error).message}</p> : null}
 
       <div className="grid">
-        {data?.map((c) => (
+        {rows.map((c) => (
           <Link key={c.id} to={`/character/${c.id}`} className="char-card">
             <div className="char-card-head">
               <ElementBadge element={c.element} />
-              <RarityStars rarity={c.rarity} />
+              <div className="card-head-right">
+                <RarityStars rarity={c.rarity} />
+                <button
+                  type="button"
+                  className="fav-btn"
+                  onClick={(e) => onToggleFav(e, c.id)}
+                  aria-pressed={favs.has(c.id)}
+                  aria-label={favs.has(c.id) ? `Unfavourite ${c.name}` : `Favourite ${c.name}`}
+                >
+                  {favs.has(c.id) ? "★" : "☆"}
+                </button>
+              </div>
             </div>
             <Icon src={c.icon} alt={c.name} size={64} className="char-card-icon" />
             <div className="char-name">{c.name}</div>
@@ -61,7 +120,7 @@ export function Roster() {
           </Link>
         ))}
       </div>
-      {data && data.length === 0 ? <p className="muted">No characters match those filters.</p> : null}
+      {rows.length === 0 && !isLoading ? <p className="muted">No characters match those filters.</p> : null}
     </div>
   );
 }
