@@ -1,4 +1,13 @@
-import type { ArtifactSet, ArtifactSlot, Character, SlotStatRules, StatKey, Weapon } from "@app/contracts";
+import type {
+  ArtifactSet,
+  ArtifactSlot,
+  ArtifactSubStat,
+  Character,
+  SlotStatRules,
+  StatKey,
+  StatValuesTable,
+  Weapon,
+} from "@app/contracts";
 import { recommendedFor } from "./recommendations";
 
 /**
@@ -41,6 +50,8 @@ export interface BuildSuggestion {
   mains: Record<ArtifactSlot, StatKey>;
   /** Ordered substat priority (display only). */
   substats: string[];
+  /** Same priority as stat keys, for auto-filling artifact substats on Apply. */
+  substatKeys: StatKey[];
   curated: boolean;
 }
 
@@ -84,6 +95,13 @@ export function suggestBuild(
       ? ["Elemental Mastery", crit, "Energy Recharge"]
       : [crit, scale, "Energy Recharge"];
 
+  const scaleSub: StatKey = PCT[bs];
+  const substatKeys: StatKey[] = pureHealer
+    ? ["HP_PCT", "ER", "CRIT_RATE", "CRIT_DMG", "EM"]
+    : bs === "EM"
+      ? ["EM", "CRIT_RATE", "CRIT_DMG", "ER", "ATK_PCT"]
+      : ["CRIT_RATE", "CRIT_DMG", scaleSub, "ER", "EM"];
+
   return {
     weaponId,
     weaponName: weapons.find((w) => w.id === weaponId)?.name ?? null,
@@ -91,6 +109,42 @@ export function suggestBuild(
     setName: sets.find((s) => s.id === setId)?.name ?? null,
     mains,
     substats,
+    substatKeys,
     curated: recs.curated,
   };
+}
+
+/**
+ * Build four well-rolled substats for a slot: one base roll each, then the artifact's four
+ * shared upgrade rolls loaded onto CRIT (or the scaling stat when there's no CRIT). Skips the
+ * slot's main stat (a substat can't duplicate it).
+ */
+export function buildSubStats(
+  substatKeys: StatKey[],
+  mainKey: StatKey,
+  subStatValues: StatValuesTable["subStatValues"],
+): ArtifactSubStat[] {
+  const round1 = (n: number) => Math.round(n * 10) / 10;
+  const high = (k: StatKey) => {
+    const rolls = subStatValues[k] ?? [];
+    return rolls[rolls.length - 1] ?? 0;
+  };
+  const chosen = substatKeys
+    .filter((k) => k !== mainKey && (subStatValues[k]?.length ?? 0) > 0)
+    .slice(0, 4);
+  const subs: ArtifactSubStat[] = chosen.map((k) => ({ key: k, rollValues: [high(k)], value: round1(high(k)) }));
+
+  // Distribute the 4 shared upgrade rolls: CRIT first, then whatever's chosen, 2 at a time.
+  const order: StatKey[] = ["CRIT_DMG", "CRIT_RATE", ...chosen].filter((k, i, a) => a.indexOf(k) === i);
+  let upgrades = 4;
+  for (const k of order) {
+    if (upgrades <= 0) break;
+    const sub = subs.find((s) => s.key === k);
+    if (!sub) continue;
+    const add = Math.min(2, upgrades);
+    for (let n = 0; n < add; n++) sub.rollValues.push(high(k));
+    sub.value = round1(sub.rollValues.reduce((a, b) => a + b, 0));
+    upgrades -= add;
+  }
+  return subs;
 }

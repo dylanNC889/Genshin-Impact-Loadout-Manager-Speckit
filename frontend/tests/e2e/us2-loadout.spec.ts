@@ -41,4 +41,6 @@ test("optimised build suggestion applies to the editor", async ({ page }) => {
   // Apply populates the weapon (Hu Tao → Staff of Homa) and all five artifact slots.
   await expect(page.getByLabel(/^Weapon/)).toHaveValue("staff-of-homa");
   await expect(page.getByLabel("Goblet set")).toHaveValue("crimson-witch-of-flames");
+  // …with well-rolled substats (4 shared upgrade rolls per artifact).
+  await expect(page.getByText("Upgrades: 4/4").first()).toBeVisible();
 });
