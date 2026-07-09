@@ -1134,6 +1134,15 @@ select {
   color: var(--muted);
 }
 
+.team-buffs {
+  margin-top: 6px;
+}
+
+.team-buffs ul {
+  margin: 2px 0 0;
+  padding-left: 16px;
+}
+
 /* --- Damage estimate options (B2) --- */
 .dmg-opts {
   display: flex;

@@ -30,3 +30,20 @@ test("build a team and evaluate synergy + damage", async ({ page }) => {
   // The team is shareable via a link (B3).
   await expect(page.getByRole("button", { name: /Copy link/ })).toBeVisible();
 });
+
+// A2 — team-wide buffs from enablers fold into the estimate.
+test("team buffs from enablers are applied", async ({ page }) => {
+  await page.goto("/team");
+  const search = page.getByLabel("Search characters to add");
+  await search.fill("Hu Tao");
+  await page.locator(".picker-cell", { hasText: "Hu Tao" }).first().click();
+  await search.fill("Bennett");
+  await page.locator(".picker-cell", { hasText: "Bennett" }).first().click();
+
+  // Wait for details to load (double-Pyro resonance) before the on-demand calc.
+  await expect(page.locator(".chip", { hasText: "Fervent Flames" })).toBeVisible();
+  await page.getByRole("button", { name: /Calculate/ }).click();
+  await expect(page.getByText("est. total")).toBeVisible();
+  await expect(page.getByText("Team buffs (approx)")).toBeVisible();
+  await expect(page.getByText(/Bennett: ATK field/)).toBeVisible();
+});
