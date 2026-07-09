@@ -1055,11 +1055,36 @@ select {
 }
 
 .per-char li {
-  display: flex;
-  justify-content: space-between;
   padding: 4px 0;
   border-bottom: 1px solid var(--border);
   font-variant-numeric: tabular-nums;
+}
+
+/* --- Damage breakdown (A4) --- */
+.dmg-detail summary {
+  display: flex;
+  justify-content: space-between;
+  cursor: pointer;
+  list-style: none;
+}
+
+.dmg-detail summary::-webkit-details-marker {
+  display: none;
+}
+
+.instances {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 0 0 0 12px;
+}
+
+.instances li {
+  display: flex;
+  justify-content: space-between;
+  padding: 2px 0;
+  border: none;
+  font-size: 12px;
+  color: var(--muted);
 }
 
 .assumptions {

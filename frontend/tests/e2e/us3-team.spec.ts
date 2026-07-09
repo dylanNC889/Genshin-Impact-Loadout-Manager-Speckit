@@ -23,6 +23,10 @@ test("build a team and evaluate synergy + damage", async ({ page }) => {
   await page.getByRole("button", { name: /Calculate/ }).click();
   await expect(page.getByText("est. total")).toBeVisible();
 
+  // Per-character damage breakdown expands to labeled instances (A4).
+  await page.locator(".dmg-detail summary").first().click();
+  await expect(page.locator(".instances li").first()).toBeVisible();
+
   // The team is shareable via a link (B3).
   await expect(page.getByRole("button", { name: /Copy link/ })).toBeVisible();
 });

@@ -48,6 +48,16 @@ describe("estimateTeamDamage (T040 / FR-016, SC-009)", () => {
     expect(withEm.totalEstimated).toBeGreaterThan(noEm.totalEstimated);
   });
 
+  it("breaks damage into per-instance rows that sum to the total (A4)", () => {
+    const est = estimateTeamDamage([
+      { ...member, instances: [{ label: "Skill", multiplier: 300 }, { label: "Burst", multiplier: 500 }] },
+    ]);
+    const p = est.perCharacter[0];
+    expect(p?.instances.map((i) => i.label)).toEqual(["Skill", "Burst"]);
+    const sum = (p?.instances ?? []).reduce((s, i) => s + i.estimated, 0);
+    expect(sum).toBeCloseTo(p?.estimated ?? 0, 3);
+  });
+
   it("collects distinct reaction types into the assumptions", () => {
     const est = estimateTeamDamage([
       { ...member, reactionType: "Vaporize", reactionMultiplier: 1.5 },
