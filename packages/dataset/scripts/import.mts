@@ -44,8 +44,8 @@ const SUBSTAT_TO_KEY: Record<string, string> = {
 const ELEMENTS = new Set(["Pyro", "Hydro", "Electro", "Cryo", "Anemo", "Geo", "Dendro"]);
 const WEAPON_TYPES = new Set(["Sword", "Claymore", "Polearm", "Bow", "Catalyst"]);
 
-// genshin-db has no role data — curate the archetype per character (community consensus).
-// Anyone missing falls back to MainDPS; a few post-cutoff/beta units are best-effort.
+// genshin-db has no role data — curate the archetype per character (community consensus,
+// cross-checked against KeqingMains). Anyone missing falls back to MainDPS.
 const ROLE_OVERRIDES: Record<string, string[]> = {
   aino: ["SubDPS", "Buffer"],
   albedo: ["SubDPS"],
@@ -74,9 +74,9 @@ const ROLE_OVERRIDES: Record<string, string[]> = {
   diluc: ["MainDPS"],
   diona: ["Healer", "Shielder"],
   dori: ["Healer", "Battery"],
-  durin: ["SubDPS"],
+  durin: ["SubDPS", "Buffer"],
   emilie: ["SubDPS"],
-  escoffier: ["SubDPS", "Buffer"],
+  escoffier: ["SubDPS", "Healer"],
   eula: ["MainDPS"],
   faruzan: ["Buffer", "SubDPS"],
   fischl: ["SubDPS"],
@@ -88,10 +88,10 @@ const ROLE_OVERRIDES: Record<string, string[]> = {
   gorou: ["Buffer"],
   "hu-tao": ["MainDPS"],
   iansan: ["Buffer", "Battery"],
-  ifa: ["Buffer", "SubDPS"],
-  illuga: ["SubDPS"],
-  ineffa: ["SubDPS", "Buffer"],
-  jahoda: ["Buffer"],
+  ifa: ["MainDPS", "Healer"],
+  illuga: ["Buffer"],
+  ineffa: ["SubDPS", "Shielder"],
+  jahoda: ["Healer", "Buffer"],
   jean: ["Healer", "Buffer"],
   kachina: ["SubDPS"],
   "kaedehara-kazuha": ["Buffer", "SubDPS"],
@@ -108,7 +108,7 @@ const ROLE_OVERRIDES: Record<string, string[]> = {
   "lan-yan": ["Shielder", "Buffer"],
   lauma: ["SubDPS", "Buffer"],
   layla: ["Shielder", "SubDPS"],
-  linnea: ["SubDPS"],
+  linnea: ["SubDPS", "Healer"],
   lisa: ["SubDPS"],
   lohen: ["MainDPS"],
   lynette: ["SubDPS"],
@@ -119,14 +119,14 @@ const ROLE_OVERRIDES: Record<string, string[]> = {
   mualani: ["MainDPS"],
   nahida: ["SubDPS", "Buffer"],
   navia: ["MainDPS"],
-  nefer: ["SubDPS"],
+  nefer: ["MainDPS"],
   neuvillette: ["MainDPS"],
-  nicole: ["SubDPS"],
+  nicole: ["Shielder", "Buffer"],
   nilou: ["SubDPS", "Buffer"],
   ningguang: ["SubDPS"],
   noelle: ["MainDPS", "Healer"],
-  ororon: ["SubDPS", "Buffer"],
-  prune: ["Buffer", "Healer"],
+  ororon: ["SubDPS", "Battery"],
+  prune: ["Buffer"],
   qiqi: ["Healer"],
   "raiden-shogun": ["SubDPS", "Battery"],
   razor: ["MainDPS"],
@@ -161,7 +161,7 @@ const ROLE_OVERRIDES: Record<string, string[]> = {
   "yumemizuki-mizuki": ["Buffer", "SubDPS"],
   "yun-jin": ["Buffer", "SubDPS"],
   zhongli: ["Shielder", "SubDPS"],
-  zibai: ["SubDPS"],
+  zibai: ["MainDPS"],
 };
 
 // Stat-granting 2-piece artifact bonuses (DMG bonuses first so "Pyro DMG" wins over "ATK").
