@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams, useHref } from "react-router-dom";
 import { assessSynergy, computeBaseStats, estimateTeamDamage } from "@app/stat-engine";
 import type { DamageMember } from "@app/stat-engine";
 import type { DamageEstimate, SynergyAssessment } from "@app/contracts";
@@ -15,6 +15,7 @@ import {
   type SavedLoadout,
 } from "../api";
 import { Card, Icon } from "../components/ui";
+import { encodeShare, decodeShare } from "../share";
 
 interface Slot {
   characterId: string | null;
@@ -80,7 +81,9 @@ export function TeamBuilder() {
 
   const [searchParams] = useSearchParams();
   const teamParam = searchParams.get("team");
+  const shareParam = searchParams.get("t");
   const editing = Boolean(teamParam);
+  const [copied, setCopied] = useState(false);
 
   const rosterQ = useQuery({ queryKey: ["characters", "team"], queryFn: () => fetchCharacters({}) });
   const loadoutsQ = useQuery({ queryKey: ["loadouts"], queryFn: listLoadouts });
@@ -110,6 +113,14 @@ export function TeamBuilder() {
     onSuccess: onTeamSaved,
   });
 
+  // Shareable team link (B3).
+  const shareCode = encodeShare(teamPayload());
+  const shareHref = useHref({ pathname: "/team", search: `t=${shareCode}` });
+  function copyLink() {
+    void navigator.clipboard?.writeText(window.location.origin + shareHref);
+    setCopied(true);
+  }
+
   // Damage is on-demand (FR-016): clear it whenever the team or assumptions change.
   useEffect(() => {
     setDamage(null);
@@ -125,6 +136,18 @@ export function TeamBuilder() {
     }));
     setTeamName(t.name);
   }, [savedTeamQ.data]);
+
+  // Hydrate from a shared team link (?t=<code>, B3) — no backend needed.
+  useEffect(() => {
+    if (!shareParam) return;
+    const t = decodeShare<{ name?: string; slots?: { characterId: string; loadoutId: string | null }[] }>(shareParam);
+    if (!t) return;
+    setSlots([0, 1, 2, 3].map((i) => {
+      const s = t.slots?.[i];
+      return s ? { characterId: s.characterId, loadoutId: s.loadoutId ?? null } : { characterId: null, loadoutId: null };
+    }));
+    if (t.name) setTeamName(t.name);
+  }, [shareParam]);
 
   const roster = rosterQ.data ?? [];
   const savedLoadouts = loadoutsQ.data ?? [];
@@ -302,8 +325,18 @@ export function TeamBuilder() {
             Save team
           </button>
         )}
+        <button
+          type="button"
+          className="mini"
+          onClick={copyLink}
+          disabled={selected.length === 0}
+          title="Copy a shareable link to this team"
+        >
+          🔗 Copy link
+        </button>
         {saveMut.isSuccess ? <span className="saved-ok">Saved ✓</span> : null}
         {updateMut.isSuccess ? <span className="saved-ok">Updated ✓</span> : null}
+        {copied ? <span className="saved-ok">Link copied ✓</span> : null}
       </div>
 
       <div className="synergy-grid">

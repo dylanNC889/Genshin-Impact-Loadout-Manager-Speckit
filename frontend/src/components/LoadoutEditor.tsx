@@ -12,6 +12,7 @@ import type {
   Weapon,
 } from "@app/contracts";
 import { useState } from "react";
+import { useHref } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { computeFinalStats, statRecord, validateArtifact } from "@app/stat-engine";
 import { useLoadoutStore, type ArtifactDraft } from "../state/loadoutStore";
@@ -19,6 +20,7 @@ import { createLoadout, updateLoadout } from "../api";
 import { Card, Icon, StatRow } from "./ui";
 import { formatStat, statLabel } from "../format";
 import { recommendedFor } from "../recommendations";
+import { encodeShare } from "../share";
 
 const SLOTS: ArtifactSlot[] = ["Flower", "Plume", "Sands", "Goblet", "Circlet"];
 const FINAL_ORDER = ["HP", "ATK", "DEF", "CRIT_RATE", "CRIT_DMG", "EM", "ER"];
@@ -111,6 +113,15 @@ export function LoadoutEditor({
   const qc = useQueryClient();
   const [saveName, setSaveName] = useState("");
   const named = () => ({ ...loadout, name: saveName.trim() || `${character.name} build` });
+
+  // Shareable build link (B3): encode the current build into the URL — no save needed.
+  const [copied, setCopied] = useState(false);
+  const shareCode = encodeShare({ level: loadout.level, weaponId: loadout.weaponId, artifacts: loadout.artifacts });
+  const shareHref = useHref({ pathname: `/character/${character.id}`, search: `build=${shareCode}` });
+  function copyLink() {
+    void navigator.clipboard?.writeText(window.location.origin + shareHref);
+    setCopied(true);
+  }
   const onSaved = () => {
     qc.invalidateQueries({ queryKey: ["loadouts"] });
     qc.invalidateQueries({ queryKey: ["saved-loadout"] });
@@ -226,8 +237,12 @@ export function LoadoutEditor({
             Save loadout
           </button>
         )}
+        <button type="button" className="mini" onClick={copyLink} title="Copy a shareable link to this build">
+          🔗 Copy link
+        </button>
         {saveMut.isSuccess ? <span className="saved-ok">Saved ✓</span> : null}
         {updateMut.isSuccess ? <span className="saved-ok">Updated ✓</span> : null}
+        {copied ? <span className="saved-ok">Link copied ✓</span> : null}
         {saveMut.isError ? <span className="error">{(saveMut.error as Error).message}</span> : null}
         {updateMut.isError ? <span className="error">{(updateMut.error as Error).message}</span> : null}
       </div>

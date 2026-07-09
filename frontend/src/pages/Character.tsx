@@ -14,7 +14,9 @@ import { Card, StatRow, ElementBadge, Icon, RarityStars } from "../components/ui
 import { LoadoutEditor } from "../components/LoadoutEditor";
 import { formatStat, statLabel } from "../format";
 import { playstyleFor } from "../playstyle";
+import { decodeShare } from "../share";
 import { useLoadoutStore } from "../state/loadoutStore";
+import type { LoadoutInput } from "@app/contracts";
 
 const PRIMARY_ORDER = ["HP", "ATK", "DEF", "CRIT_RATE", "CRIT_DMG", "EM", "ER"];
 
@@ -49,6 +51,7 @@ export function CharacterPage() {
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
   const loadoutParam = searchParams.get("loadout");
+  const buildParam = searchParams.get("build");
   const [level, setLevel] = useState(90);
   const [talentLevel, setTalentLevel] = useState(10);
   const resetLoadout = useLoadoutStore((s) => s.reset);
@@ -80,6 +83,19 @@ export function CharacterPage() {
   useEffect(() => {
     resetLoadout();
   }, [id, resetLoadout]);
+
+  // Hydrate the editor from a shared build link (?build=<code>, B3) — no backend needed.
+  useEffect(() => {
+    if (!buildParam) return;
+    const b = decodeShare<Partial<LoadoutInput>>(buildParam);
+    if (!b) return;
+    resetLoadout();
+    if (typeof b.level === "number") setLevel(b.level);
+    setWeapon(b.weaponId ?? null);
+    for (const a of b.artifacts ?? []) {
+      setArtifact(a.slot, { setId: a.setId, mainStat: a.mainStat, subStats: a.subStats });
+    }
+  }, [buildParam, resetLoadout, setWeapon, setArtifact]);
 
   // Hydrate the editor from a saved loadout when opened via ?loadout=<id> (FR-018 reopen).
   useEffect(() => {
