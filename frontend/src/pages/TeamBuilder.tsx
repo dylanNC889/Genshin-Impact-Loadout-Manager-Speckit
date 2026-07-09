@@ -55,6 +55,15 @@ function deriveFromLoadout(lo: SavedLoadout): DamageMember {
   };
 }
 
+/** Amplifying-reaction presets applied to every member as a rough estimate assumption. */
+const REACTIONS: Record<string, { label: string; mult: number; type?: string }> = {
+  none: { label: "No reaction", mult: 1 },
+  "vaporize-2": { label: "Vaporize (2×)", mult: 2, type: "Vaporize" },
+  "vaporize-1.5": { label: "Vaporize (1.5×)", mult: 1.5, type: "Vaporize" },
+  "melt-2": { label: "Melt (2×)", mult: 2, type: "Melt" },
+  "melt-1.5": { label: "Melt (1.5×)", mult: 1.5, type: "Melt" },
+};
+
 export function TeamBuilder() {
   const [slots, setSlots] = useState<Slot[]>([
     { characterId: null, loadoutId: null },
@@ -64,6 +73,10 @@ export function TeamBuilder() {
   ]);
   const [damage, setDamage] = useState<DamageEstimate | null>(null);
   const [pickerQ, setPickerQ] = useState("");
+  // Configurable damage-estimate assumptions (B2).
+  const [enemyLevel, setEnemyLevel] = useState(90);
+  const [enemyRes, setEnemyRes] = useState(10);
+  const [reaction, setReaction] = useState("none");
 
   const [searchParams] = useSearchParams();
   const teamParam = searchParams.get("team");
@@ -97,10 +110,10 @@ export function TeamBuilder() {
     onSuccess: onTeamSaved,
   });
 
-  // Damage is on-demand (FR-016): clear it whenever the team changes.
+  // Damage is on-demand (FR-016): clear it whenever the team or assumptions change.
   useEffect(() => {
     setDamage(null);
-  }, [slots]);
+  }, [slots, enemyLevel, enemyRes, reaction]);
 
   // Hydrate from a saved team when opened via ?team=<id> (FR-019 reopen).
   useEffect(() => {
@@ -150,16 +163,19 @@ export function TeamBuilder() {
   }
 
   function onCalculate() {
-    const dmg = selected.flatMap((s, i) => {
-      const detail = details[i];
-      if (!detail) return [];
-      if (s.loadoutId) {
-        const lo = savedLoadouts.find((l) => l.id === s.loadoutId);
-        if (lo) return [deriveFromLoadout(lo)];
-      }
-      return [deriveFromBase(detail)];
-    });
-    if (dmg.length) setDamage(estimateTeamDamage(dmg));
+    const r = REACTIONS[reaction] ?? { mult: 1, type: undefined };
+    const dmg = selected
+      .flatMap((s, i) => {
+        const detail = details[i];
+        if (!detail) return [];
+        if (s.loadoutId) {
+          const lo = savedLoadouts.find((l) => l.id === s.loadoutId);
+          if (lo) return [deriveFromLoadout(lo)];
+        }
+        return [deriveFromBase(detail)];
+      })
+      .map((m) => ({ ...m, reactionMultiplier: r.mult, reactionType: r.type }));
+    if (dmg.length) setDamage(estimateTeamDamage(dmg, { enemyLevel, enemyResistancePct: enemyRes }));
   }
 
   return (
@@ -350,6 +366,40 @@ export function TeamBuilder() {
         </Card>
 
         <Card title="On-demand Damage Estimate">
+          <div className="dmg-opts">
+            <label>
+              Enemy Lv
+              <input
+                type="number"
+                min={1}
+                max={110}
+                value={enemyLevel}
+                onChange={(e) => setEnemyLevel(Number(e.target.value))}
+                aria-label="Enemy level"
+              />
+            </label>
+            <label>
+              RES %
+              <input
+                type="number"
+                min={-100}
+                max={90}
+                value={enemyRes}
+                onChange={(e) => setEnemyRes(Number(e.target.value))}
+                aria-label="Enemy resistance percent"
+              />
+            </label>
+            <label>
+              Reaction
+              <select value={reaction} onChange={(e) => setReaction(e.target.value)} aria-label="Reaction">
+                {Object.entries(REACTIONS).map(([k, v]) => (
+                  <option key={k} value={k}>
+                    {v.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
           <button className="calc-btn" onClick={onCalculate} disabled={selected.length === 0}>
             ⚔️ Calculate
           </button>
@@ -369,8 +419,10 @@ export function TeamBuilder() {
               </ul>
               <div className="assumptions">
                 <strong>Assumptions:</strong> Lv {damage.assumptions.enemyLevel} enemy,{" "}
-                {damage.assumptions.enemyResistancePct}% RES, rotation “{damage.assumptions.rotation}”. Slots with a
-                saved loadout use geared stats; others use base stats.
+                {damage.assumptions.enemyResistancePct}% RES
+                {damage.assumptions.reactionTypes.length ? `, ${damage.assumptions.reactionTypes.join("/")}` : ""},
+                rotation “{damage.assumptions.rotation}”. Slots with a saved loadout use geared stats; others use base
+                stats.
               </div>
             </div>
           ) : (
