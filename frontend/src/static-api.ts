@@ -38,6 +38,7 @@ export async function fetchCharacters(params: {
       weaponType: c.weaponType,
       rarity: c.rarity,
       icon: c.icon,
+      region: c.region,
     }));
 }
 

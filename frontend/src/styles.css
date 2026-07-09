@@ -97,6 +97,26 @@ select {
   margin-bottom: 10px;
 }
 
+.card-head-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.fav-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-size: 15px;
+  line-height: 1;
+  color: var(--muted);
+}
+
+.fav-btn[aria-pressed="true"] {
+  color: var(--accent);
+}
+
 /* --- Game asset icons --- */
 .icon-img {
   object-fit: contain;
