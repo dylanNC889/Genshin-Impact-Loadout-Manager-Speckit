@@ -69,6 +69,9 @@ importers:
       '@app/contracts':
         specifier: workspace:*
         version: link:../packages/contracts
+      '@app/optimizer':
+        specifier: workspace:*
+        version: link:../packages/optimizer
       '@app/stat-engine':
         specifier: workspace:*
         version: link:../packages/stat-engine
@@ -128,6 +131,19 @@ importers:
       genshin-db:
         specifier: ^5.2.12
         version: 5.2.12
+
+  packages/optimizer:
+    dependencies:
+      '@app/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      '@app/stat-engine':
+        specifier: workspace:*
+        version: link:../stat-engine
+    devDependencies:
+      '@app/dataset':
+        specifier: workspace:*
+        version: link:../dataset
 
   packages/stat-engine:
     dependencies:
