@@ -53,6 +53,7 @@ interface RawCharacter {
     desc?: string;
     scaling?: { label: string; valuesByLevel: number[]; percent: boolean }[];
   }[];
+  constellations?: { level: number; name: string; icon?: string; description?: string }[];
   title?: string;
   description?: string;
   affiliation?: string;
@@ -118,6 +119,7 @@ function normalizeCharacter(raw: RawCharacter): Character {
       description: s.desc ?? "",
       scaling: s.scaling ?? [],
     })),
+    constellations: raw.constellations ?? [],
     title: raw.title ?? "",
     description: raw.description ?? "",
     affiliation: raw.affiliation ?? "",

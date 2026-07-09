@@ -992,6 +992,27 @@ select {
   color: var(--muted);
 }
 
+/* --- Damage estimate options (B2) --- */
+.dmg-opts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.dmg-opts label {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.dmg-opts input,
+.dmg-opts select {
+  width: 96px;
+}
+
 /* --- Save bar + Saved page (US4) --- */
 .save-bar {
   display: flex;

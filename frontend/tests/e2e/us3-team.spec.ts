@@ -14,9 +14,15 @@ test("build a team and evaluate synergy + damage", async ({ page }) => {
   // Both picks now occupy portrait slots.
   await expect(page.locator(".portrait-slot.filled")).toHaveCount(2);
 
-  // Pyro + Hydro enables Vaporize.
-  await expect(page.getByText("Vaporize")).toBeVisible();
+  // Pyro + Hydro enables Vaporize (scoped to the synergy chip — the reaction dropdown also
+  // lists "Vaporize (2×)" etc.).
+  await expect(page.locator(".chip", { hasText: "Vaporize" })).toBeVisible();
 
+  // Damage assumptions are configurable (B2).
+  await expect(page.getByLabel("Enemy level")).toBeVisible();
   await page.getByRole("button", { name: /Calculate/ }).click();
   await expect(page.getByText("est. total")).toBeVisible();
+
+  // The team is shareable via a link (B3).
+  await expect(page.getByRole("button", { name: /Copy link/ })).toBeVisible();
 });

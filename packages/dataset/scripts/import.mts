@@ -21,6 +21,12 @@ const enkaUrl = (filename?: string) => (filename ? `https://enka.network/ui/${fi
 const slug = (s: string) =>
   s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
 
+/** Collapse whitespace and cap a constellation/effect description for display. */
+const conText = (d: unknown) => {
+  const s = String(d ?? "").replace(/\s+/g, " ").trim();
+  return s.length > 400 ? `${s.slice(0, 397)}…` : s;
+};
+
 // genshin-db stat text -> our StatKey
 const SUBSTAT_TO_KEY: Record<string, string> = {
   "CRIT DMG": "CRIT_DMG",
@@ -263,6 +269,17 @@ for (const name of charNames) {
       skill(t?.combat2, "ElementalSkill", t?.images?.filename_combat2),
       skill(t?.combat3, "ElementalBurst", t?.images?.filename_combat3),
     ].filter(Boolean);
+    const con = genshindb.constellations(name) as any;
+    const constellations = con
+      ? [1, 2, 3, 4, 5, 6]
+          .map((n) => {
+            const node = con[`c${n}`];
+            return node
+              ? { level: n, name: node.name as string, icon: enkaUrl(con.images?.[`filename_c${n}`]), description: conText(node.description) }
+              : null;
+          })
+          .filter(Boolean)
+      : [];
     characters.push({
       id,
       name: c.name,
@@ -275,6 +292,7 @@ for (const name of charNames) {
       levels,
       roles: ROLE_OVERRIDES[id] ?? ["MainDPS"],
       skills,
+      constellations,
       title: c.title ?? "",
       description: c.description ?? "",
       affiliation: c.affiliation ?? "",

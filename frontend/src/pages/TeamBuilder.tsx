@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams, useHref } from "react-router-dom";
 import { assessSynergy, computeBaseStats, estimateTeamDamage } from "@app/stat-engine";
 import type { DamageMember } from "@app/stat-engine";
 import type { DamageEstimate, SynergyAssessment } from "@app/contracts";
@@ -15,6 +15,7 @@ import {
   type SavedLoadout,
 } from "../api";
 import { Card, Icon } from "../components/ui";
+import { encodeShare, decodeShare } from "../share";
 
 interface Slot {
   characterId: string | null;
@@ -55,6 +56,15 @@ function deriveFromLoadout(lo: SavedLoadout): DamageMember {
   };
 }
 
+/** Amplifying-reaction presets applied to every member as a rough estimate assumption. */
+const REACTIONS: Record<string, { label: string; mult: number; type?: string }> = {
+  none: { label: "No reaction", mult: 1 },
+  "vaporize-2": { label: "Vaporize (2×)", mult: 2, type: "Vaporize" },
+  "vaporize-1.5": { label: "Vaporize (1.5×)", mult: 1.5, type: "Vaporize" },
+  "melt-2": { label: "Melt (2×)", mult: 2, type: "Melt" },
+  "melt-1.5": { label: "Melt (1.5×)", mult: 1.5, type: "Melt" },
+};
+
 export function TeamBuilder() {
   const [slots, setSlots] = useState<Slot[]>([
     { characterId: null, loadoutId: null },
@@ -64,10 +74,16 @@ export function TeamBuilder() {
   ]);
   const [damage, setDamage] = useState<DamageEstimate | null>(null);
   const [pickerQ, setPickerQ] = useState("");
+  // Configurable damage-estimate assumptions (B2).
+  const [enemyLevel, setEnemyLevel] = useState(90);
+  const [enemyRes, setEnemyRes] = useState(10);
+  const [reaction, setReaction] = useState("none");
 
   const [searchParams] = useSearchParams();
   const teamParam = searchParams.get("team");
+  const shareParam = searchParams.get("t");
   const editing = Boolean(teamParam);
+  const [copied, setCopied] = useState(false);
 
   const rosterQ = useQuery({ queryKey: ["characters", "team"], queryFn: () => fetchCharacters({}) });
   const loadoutsQ = useQuery({ queryKey: ["loadouts"], queryFn: listLoadouts });
@@ -97,10 +113,18 @@ export function TeamBuilder() {
     onSuccess: onTeamSaved,
   });
 
-  // Damage is on-demand (FR-016): clear it whenever the team changes.
+  // Shareable team link (B3).
+  const shareCode = encodeShare(teamPayload());
+  const shareHref = useHref({ pathname: "/team", search: `t=${shareCode}` });
+  function copyLink() {
+    void navigator.clipboard?.writeText(window.location.origin + shareHref);
+    setCopied(true);
+  }
+
+  // Damage is on-demand (FR-016): clear it whenever the team or assumptions change.
   useEffect(() => {
     setDamage(null);
-  }, [slots]);
+  }, [slots, enemyLevel, enemyRes, reaction]);
 
   // Hydrate from a saved team when opened via ?team=<id> (FR-019 reopen).
   useEffect(() => {
@@ -112,6 +136,18 @@ export function TeamBuilder() {
     }));
     setTeamName(t.name);
   }, [savedTeamQ.data]);
+
+  // Hydrate from a shared team link (?t=<code>, B3) — no backend needed.
+  useEffect(() => {
+    if (!shareParam) return;
+    const t = decodeShare<{ name?: string; slots?: { characterId: string; loadoutId: string | null }[] }>(shareParam);
+    if (!t) return;
+    setSlots([0, 1, 2, 3].map((i) => {
+      const s = t.slots?.[i];
+      return s ? { characterId: s.characterId, loadoutId: s.loadoutId ?? null } : { characterId: null, loadoutId: null };
+    }));
+    if (t.name) setTeamName(t.name);
+  }, [shareParam]);
 
   const roster = rosterQ.data ?? [];
   const savedLoadouts = loadoutsQ.data ?? [];
@@ -150,16 +186,19 @@ export function TeamBuilder() {
   }
 
   function onCalculate() {
-    const dmg = selected.flatMap((s, i) => {
-      const detail = details[i];
-      if (!detail) return [];
-      if (s.loadoutId) {
-        const lo = savedLoadouts.find((l) => l.id === s.loadoutId);
-        if (lo) return [deriveFromLoadout(lo)];
-      }
-      return [deriveFromBase(detail)];
-    });
-    if (dmg.length) setDamage(estimateTeamDamage(dmg));
+    const r = REACTIONS[reaction] ?? { mult: 1, type: undefined };
+    const dmg = selected
+      .flatMap((s, i) => {
+        const detail = details[i];
+        if (!detail) return [];
+        if (s.loadoutId) {
+          const lo = savedLoadouts.find((l) => l.id === s.loadoutId);
+          if (lo) return [deriveFromLoadout(lo)];
+        }
+        return [deriveFromBase(detail)];
+      })
+      .map((m) => ({ ...m, reactionMultiplier: r.mult, reactionType: r.type }));
+    if (dmg.length) setDamage(estimateTeamDamage(dmg, { enemyLevel, enemyResistancePct: enemyRes }));
   }
 
   return (
@@ -286,8 +325,18 @@ export function TeamBuilder() {
             Save team
           </button>
         )}
+        <button
+          type="button"
+          className="mini"
+          onClick={copyLink}
+          disabled={selected.length === 0}
+          title="Copy a shareable link to this team"
+        >
+          🔗 Copy link
+        </button>
         {saveMut.isSuccess ? <span className="saved-ok">Saved ✓</span> : null}
         {updateMut.isSuccess ? <span className="saved-ok">Updated ✓</span> : null}
+        {copied ? <span className="saved-ok">Link copied ✓</span> : null}
       </div>
 
       <div className="synergy-grid">
@@ -350,6 +399,40 @@ export function TeamBuilder() {
         </Card>
 
         <Card title="On-demand Damage Estimate">
+          <div className="dmg-opts">
+            <label>
+              Enemy Lv
+              <input
+                type="number"
+                min={1}
+                max={110}
+                value={enemyLevel}
+                onChange={(e) => setEnemyLevel(Number(e.target.value))}
+                aria-label="Enemy level"
+              />
+            </label>
+            <label>
+              RES %
+              <input
+                type="number"
+                min={-100}
+                max={90}
+                value={enemyRes}
+                onChange={(e) => setEnemyRes(Number(e.target.value))}
+                aria-label="Enemy resistance percent"
+              />
+            </label>
+            <label>
+              Reaction
+              <select value={reaction} onChange={(e) => setReaction(e.target.value)} aria-label="Reaction">
+                {Object.entries(REACTIONS).map(([k, v]) => (
+                  <option key={k} value={k}>
+                    {v.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
           <button className="calc-btn" onClick={onCalculate} disabled={selected.length === 0}>
             ⚔️ Calculate
           </button>
@@ -369,8 +452,10 @@ export function TeamBuilder() {
               </ul>
               <div className="assumptions">
                 <strong>Assumptions:</strong> Lv {damage.assumptions.enemyLevel} enemy,{" "}
-                {damage.assumptions.enemyResistancePct}% RES, rotation “{damage.assumptions.rotation}”. Slots with a
-                saved loadout use geared stats; others use base stats.
+                {damage.assumptions.enemyResistancePct}% RES
+                {damage.assumptions.reactionTypes.length ? `, ${damage.assumptions.reactionTypes.join("/")}` : ""},
+                rotation “{damage.assumptions.rotation}”. Slots with a saved loadout use geared stats; others use base
+                stats.
               </div>
             </div>
           ) : (

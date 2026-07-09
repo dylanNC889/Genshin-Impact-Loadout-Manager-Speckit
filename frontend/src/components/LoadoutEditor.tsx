@@ -12,6 +12,7 @@ import type {
   Weapon,
 } from "@app/contracts";
 import { useState } from "react";
+import { useHref } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { computeFinalStats, statRecord, validateArtifact } from "@app/stat-engine";
 import { useLoadoutStore, type ArtifactDraft } from "../state/loadoutStore";
@@ -19,6 +20,7 @@ import { createLoadout, updateLoadout } from "../api";
 import { Card, Icon, StatRow } from "./ui";
 import { formatStat, statLabel } from "../format";
 import { recommendedFor } from "../recommendations";
+import { encodeShare } from "../share";
 
 const SLOTS: ArtifactSlot[] = ["Flower", "Plume", "Sands", "Goblet", "Circlet"];
 const FINAL_ORDER = ["HP", "ATK", "DEF", "CRIT_RATE", "CRIT_DMG", "EM", "ER"];
@@ -30,6 +32,27 @@ function splitByRec<T extends { id: string; name: string }>(items: T[], recIds: 
   const rec = recIds.map((id) => byId.get(id)).filter((x): x is T => Boolean(x));
   const other = items.filter((i) => !recSet.has(i.id));
   return { rec, other };
+}
+
+/** Crit Value (2×CRIT Rate + CRIT DMG from substats) + how many substat rolls hit CRIT (B4). */
+function artifactQuality(artifacts: { subStats: { key: string; value: number; rollValues: number[] }[] }[]) {
+  let cv = 0;
+  let critRolls = 0;
+  let totalRolls = 0;
+  for (const a of artifacts) {
+    for (const s of a.subStats ?? []) {
+      const rolls = s.rollValues?.length || 1;
+      totalRolls += rolls;
+      if (s.key === "CRIT_RATE") {
+        cv += 2 * s.value;
+        critRolls += rolls;
+      } else if (s.key === "CRIT_DMG") {
+        cv += s.value;
+        critRolls += rolls;
+      }
+    }
+  }
+  return { cv, critRolls, totalRolls };
 }
 
 interface Props {
@@ -102,6 +125,7 @@ export function LoadoutEditor({
   const extraDmg = Object.entries(finalStats).filter(
     ([k, v]) => k.endsWith("_DMG") && v !== 0 && !FINAL_ORDER.includes(k),
   );
+  const quality = artifactQuality(loadout.artifacts);
   const setName = (id: string) => artifactSets.find((s) => s.id === id)?.name ?? id;
   const setBonusText = (id: string, pieces: number): string => {
     const set = artifactSets.find((s) => s.id === id);
@@ -111,6 +135,15 @@ export function LoadoutEditor({
   const qc = useQueryClient();
   const [saveName, setSaveName] = useState("");
   const named = () => ({ ...loadout, name: saveName.trim() || `${character.name} build` });
+
+  // Shareable build link (B3): encode the current build into the URL — no save needed.
+  const [copied, setCopied] = useState(false);
+  const shareCode = encodeShare({ level: loadout.level, weaponId: loadout.weaponId, artifacts: loadout.artifacts });
+  const shareHref = useHref({ pathname: `/character/${character.id}`, search: `build=${shareCode}` });
+  function copyLink() {
+    void navigator.clipboard?.writeText(window.location.origin + shareHref);
+    setCopied(true);
+  }
   const onSaved = () => {
     qc.invalidateQueries({ queryKey: ["loadouts"] });
     qc.invalidateQueries({ queryKey: ["saved-loadout"] });
@@ -185,6 +218,14 @@ export function LoadoutEditor({
           {extraDmg.map(([k, v]) => (
             <StatRow key={k} label={statLabel(k)} value={formatStat(k, v)} />
           ))}
+          {quality.totalRolls > 0 ? (
+            <>
+              <StatRow label="Crit Value" value={`${quality.cv.toFixed(1)} CV`} />
+              <p className="muted small">
+                {quality.critRolls}/{quality.totalRolls} substat rolls into CRIT
+              </p>
+            </>
+          ) : null}
           <h4>Active set bonuses</h4>
           {activeSetBonuses.length === 0 ? (
             <p className="muted small">None — equip 2+ pieces of a set.</p>
@@ -226,8 +267,12 @@ export function LoadoutEditor({
             Save loadout
           </button>
         )}
+        <button type="button" className="mini" onClick={copyLink} title="Copy a shareable link to this build">
+          🔗 Copy link
+        </button>
         {saveMut.isSuccess ? <span className="saved-ok">Saved ✓</span> : null}
         {updateMut.isSuccess ? <span className="saved-ok">Updated ✓</span> : null}
+        {copied ? <span className="saved-ok">Link copied ✓</span> : null}
         {saveMut.isError ? <span className="error">{(saveMut.error as Error).message}</span> : null}
         {updateMut.isError ? <span className="error">{(updateMut.error as Error).message}</span> : null}
       </div>

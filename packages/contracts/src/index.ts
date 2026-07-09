@@ -127,6 +127,16 @@ export const SkillSchema = z.object({
 });
 export type Skill = z.infer<typeof SkillSchema>;
 
+/** A single constellation node (C1–C6) with its effect text. */
+export const ConstellationSchema = z.object({
+  level: z.number().int().min(1).max(6),
+  name: z.string(),
+  /** Constellation icon URL (enka). */
+  icon: z.string().default(""),
+  description: z.string().default(""),
+});
+export type Constellation = z.infer<typeof ConstellationSchema>;
+
 /** Base stats at a specific level anchor (FR-003). `ascensionStat` is the dedicated stat value. */
 export const LevelStatSchema = z.object({
   level: z.number().int(),
@@ -155,6 +165,8 @@ export const CharacterSchema = z.object({
   levels: z.array(LevelStatSchema).default([]),
   roles: z.array(RoleSchema).default([]),
   skills: z.array(SkillSchema).default([]),
+  /** Constellations C1–C6 (from genshin-db); display-only, not applied to stats. */
+  constellations: z.array(ConstellationSchema).default([]),
   /** Lore/profile fields (from genshin-db) for the character intro panel. */
   title: z.string().default(""),
   description: z.string().default(""),

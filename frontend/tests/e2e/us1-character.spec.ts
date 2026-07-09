@@ -21,7 +21,13 @@ test("browse roster and inspect a character", async ({ page }) => {
   await expect(page.locator("#level")).toHaveAttribute("type", "range");
 
   // Skills are listed, each with an icon (#8) and a scaling row annotated with its stat (#7).
-  await expect(page.getByText("Guide to Afterlife")).toBeVisible();
-  await expect(page.locator(".skill-icon").first()).toBeVisible();
+  // (Scoped to the Skills card — the C1 constellation description also names this skill.)
+  const skills = page.locator(".card").filter({ has: page.getByRole("heading", { name: "Skills" }) });
+  await expect(skills.locator(".skill-name", { hasText: "Guide to Afterlife" })).toBeVisible();
+  await expect(skills.locator(".skill-icon").first()).toBeVisible();
   await expect(page.locator(".scaling .scale-stat").first()).toContainText(/of (ATK|Max HP|DEF|EM)/);
+
+  // Constellations section is present (B1).
+  const cons = page.locator(".card").filter({ has: page.getByRole("heading", { name: "Constellations" }) });
+  await expect(cons.getByText("C1", { exact: true })).toBeVisible();
 });
