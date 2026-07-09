@@ -12,6 +12,8 @@ export interface DamageMember {
   dmgBonusPct: number;
   /** talent scaling as a percent (e.g., 400 = 400% of ATK) */
   talentMultiplier: number;
+  /** Optional per-instance rotation (NA/Skill/Burst); if given, overrides talentMultiplier. */
+  instances?: { label: string; multiplier: number }[];
   reactionMultiplier?: number;
   reactionType?: string;
   /** Elemental Mastery — powers the amplifying-reaction EM bonus. */
@@ -53,9 +55,15 @@ export function estimateTeamDamage(
     // Amplifying reactions scale with the triggerer's EM (A3).
     const reaction = m.reactionMultiplier ? m.reactionMultiplier * emReactionBonus(m.em ?? 0) : 1;
     if (m.reactionType) reactionTypes.add(m.reactionType);
-    const base = (m.talentMultiplier / 100) * m.finalATK;
-    const estimated = base * dmgMult * avgCrit * defFactor * resFactor * reaction;
-    return { characterId: m.characterId, estimated };
+    const common = dmgMult * avgCrit * defFactor * resFactor * reaction;
+    // Per-instance rotation (A4) when provided, else a single generic-rotation instance.
+    const rotation = m.instances?.length ? m.instances : [{ label: "Rotation", multiplier: m.talentMultiplier }];
+    const instances = rotation.map((ins) => ({
+      label: ins.label,
+      estimated: (ins.multiplier / 100) * m.finalATK * common,
+    }));
+    const estimated = instances.reduce((sum, ins) => sum + ins.estimated, 0);
+    return { characterId: m.characterId, estimated, instances };
   });
 
   const totalEstimated = perCharacter.reduce((sum, p) => sum + p.estimated, 0);

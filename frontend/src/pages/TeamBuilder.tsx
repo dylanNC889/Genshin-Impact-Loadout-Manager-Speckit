@@ -22,6 +22,25 @@ interface Slot {
   loadoutId: string | null;
 }
 
+/** An illustrative rotation (A4): the strongest %-DMG instance of each combat talent, at Lv10. */
+function rotationInstances(character: CharacterDetail["character"]): { label: string; multiplier: number }[] {
+  const LABELS: Record<string, string> = {
+    NormalAttack: "Normal Attack",
+    ElementalSkill: "Elemental Skill",
+    ElementalBurst: "Elemental Burst",
+  };
+  const valueAt = (row: { valuesByLevel: number[] }) =>
+    row.valuesByLevel[9] ?? row.valuesByLevel[row.valuesByLevel.length - 1] ?? 0;
+  const out: { label: string; multiplier: number }[] = [];
+  for (const s of character.skills) {
+    const dmgRows = s.scaling.filter((r) => r.percent && /DMG/i.test(r.label));
+    if (!dmgRows.length) continue;
+    const best = dmgRows.reduce((a, b) => (valueAt(b) > valueAt(a) ? b : a));
+    out.push({ label: LABELS[s.type] ?? s.name, multiplier: valueAt(best) });
+  }
+  return out.length ? out : [{ label: "Rotation", multiplier: 200 }];
+}
+
 /** Damage inputs from a character's base stats (no gear). */
 function deriveFromBase(detail: CharacterDetail): DamageMember {
   const base = computeBaseStats(detail.character, 90, 6, detail.curves);
@@ -36,12 +55,13 @@ function deriveFromBase(detail: CharacterDetail): DamageMember {
     dmgBonusPct,
     em: base.sheet.EM ?? 0,
     talentMultiplier: 200,
+    instances: rotationInstances(detail.character),
     characterLevel: 90,
   };
 }
 
 /** Damage inputs from a saved loadout's geared final stats (FR-017). */
-function deriveFromLoadout(lo: SavedLoadout): DamageMember {
+function deriveFromLoadout(lo: SavedLoadout, character: CharacterDetail["character"]): DamageMember {
   const get = (k: string) => lo.computedFinalStats.find((s) => s.key === k)?.value ?? 0;
   const dmgBonusPct = lo.computedFinalStats
     .filter((s) => s.key.endsWith("_DMG"))
@@ -54,6 +74,7 @@ function deriveFromLoadout(lo: SavedLoadout): DamageMember {
     dmgBonusPct,
     em: get("EM"),
     talentMultiplier: 200,
+    instances: rotationInstances(character),
     characterLevel: 90,
   };
 }
@@ -195,7 +216,7 @@ export function TeamBuilder() {
         if (!detail) return [];
         if (s.loadoutId) {
           const lo = savedLoadouts.find((l) => l.id === s.loadoutId);
-          if (lo) return [deriveFromLoadout(lo)];
+          if (lo) return [deriveFromLoadout(lo, detail.character)];
         }
         return [deriveFromBase(detail)];
       })
@@ -447,8 +468,20 @@ export function TeamBuilder() {
               <ul className="per-char">
                 {damage.perCharacter.map((p) => (
                   <li key={p.characterId}>
-                    <span>{nameById(p.characterId)}</span>
-                    <span>{Math.round(p.estimated).toLocaleString()}</span>
+                    <details className="dmg-detail">
+                      <summary>
+                        <span>{nameById(p.characterId)}</span>
+                        <span>{Math.round(p.estimated).toLocaleString()}</span>
+                      </summary>
+                      <ul className="instances">
+                        {p.instances.map((ins, i) => (
+                          <li key={i}>
+                            <span>{ins.label}</span>
+                            <span>{Math.round(ins.estimated).toLocaleString()}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </details>
                   </li>
                 ))}
               </ul>

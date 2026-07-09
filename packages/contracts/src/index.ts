@@ -310,7 +310,14 @@ export type DamageCalcOptions = z.infer<typeof DamageCalcOptionsSchema>;
 
 export const DamageEstimateSchema = z.object({
   totalEstimated: z.number(),
-  perCharacter: z.array(z.object({ characterId: z.string(), estimated: z.number() })),
+  perCharacter: z.array(
+    z.object({
+      characterId: z.string(),
+      estimated: z.number(),
+      /** Per-instance breakdown (NA / Skill / Burst …) that sums to `estimated`. */
+      instances: z.array(z.object({ label: z.string(), estimated: z.number() })).default([]),
+    }),
+  ),
   assumptions: z.object({
     enemyLevel: z.number(),
     enemyResistancePct: z.number(),
