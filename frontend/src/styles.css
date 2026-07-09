@@ -851,6 +851,10 @@ select {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
   gap: 8px;
+  max-height: 440px;
+  overflow-y: auto;
+  /* Keep the wheel inside the picker box — no scroll-chaining to the page at the edges. */
+  overscroll-behavior: contain;
 }
 
 .picker-cell {
