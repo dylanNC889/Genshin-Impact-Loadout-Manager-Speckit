@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "react-router-dom";
 import { fetchArtifactSets } from "../api";
 import { Icon } from "../components/ui";
 import { formatStat, statLabel } from "../format";
@@ -46,7 +47,7 @@ export function Artifacts() {
           const two = bonusText(s.bonus2);
           const four = bonusText(s.bonus4);
           return (
-            <div key={s.id} className="char-card set-card">
+            <Link key={s.id} to={`/artifact/${s.id}`} className="char-card set-card">
               <div className="set-head">
                 <Icon src={s.icon} alt={s.name} size={48} />
                 <div className="char-name">{s.name}</div>
@@ -61,7 +62,7 @@ export function Artifacts() {
                   <span className="set-bonus-label">4-Piece</span> {four}
                 </p>
               ) : null}
-            </div>
+            </Link>
           );
         })}
       </div>

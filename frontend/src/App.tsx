@@ -6,7 +6,9 @@ import { Routes, Route, Link, NavLink } from "react-router-dom";
 const Roster = lazy(() => import("./pages/Roster").then((m) => ({ default: m.Roster })));
 const CharacterPage = lazy(() => import("./pages/Character").then((m) => ({ default: m.CharacterPage })));
 const Weapons = lazy(() => import("./pages/Weapons").then((m) => ({ default: m.Weapons })));
+const WeaponPage = lazy(() => import("./pages/Weapon").then((m) => ({ default: m.WeaponPage })));
 const Artifacts = lazy(() => import("./pages/Artifacts").then((m) => ({ default: m.Artifacts })));
+const ArtifactPage = lazy(() => import("./pages/Artifact").then((m) => ({ default: m.ArtifactPage })));
 const TeamBuilder = lazy(() => import("./pages/TeamBuilder").then((m) => ({ default: m.TeamBuilder })));
 const SavedPage = lazy(() => import("./pages/Saved").then((m) => ({ default: m.SavedPage })));
 
@@ -33,7 +35,9 @@ export function App() {
           <Routes>
             <Route path="/" element={<Roster />} />
             <Route path="/weapons" element={<Weapons />} />
+            <Route path="/weapon/:id" element={<WeaponPage />} />
             <Route path="/artifacts" element={<Artifacts />} />
+            <Route path="/artifact/:id" element={<ArtifactPage />} />
             <Route path="/character/:id" element={<CharacterPage />} />
             <Route path="/team" element={<TeamBuilder />} />
             <Route path="/saved" element={<SavedPage />} />

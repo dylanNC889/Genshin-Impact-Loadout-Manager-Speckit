@@ -180,6 +180,30 @@ select {
   margin-right: 4px;
 }
 
+/* --- Weapon / artifact detail pages (B3) --- */
+.used-by {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.used-by-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px 4px 4px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  text-decoration: none;
+  color: var(--text);
+  font-size: 13px;
+}
+
+.used-by-chip:hover {
+  border-color: var(--accent);
+}
+
 .badge {
   color: #1a1a1a;
   font-size: 11px;

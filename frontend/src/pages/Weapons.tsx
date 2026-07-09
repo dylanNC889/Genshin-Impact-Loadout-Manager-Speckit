@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "react-router-dom";
 import { fetchWeapons } from "../api";
 import { Icon, RarityStars } from "../components/ui";
 import { formatStat, statLabel } from "../format";
@@ -56,7 +57,7 @@ export function Weapons() {
 
       <div className="grid">
         {weapons?.map((w) => (
-          <div key={w.id} className="char-card">
+          <Link key={w.id} to={`/weapon/${w.id}`} className="char-card">
             <div className="char-card-head">
               <span className="muted small">{w.weaponType}</span>
               <RarityStars rarity={w.rarity} />
@@ -71,7 +72,7 @@ export function Weapons() {
                 </span>
               ) : null}
             </div>
-          </div>
+          </Link>
         ))}
       </div>
       {weapons && weapons.length === 0 ? <p className="muted">No weapons match those filters.</p> : null}
