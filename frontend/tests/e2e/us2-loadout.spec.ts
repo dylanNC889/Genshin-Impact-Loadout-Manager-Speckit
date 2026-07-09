@@ -14,6 +14,9 @@ test("equip a weapon and artifacts, see recalculation + set bonus", async ({ pag
   // Active set-bonus list shows the tier and its effect text (the set-bonus-text follow-up).
   await expect(page.getByText(/Crimson Witch of Flames · 2-piece/)).toBeVisible();
   await expect(page.getByText("Pyro DMG Bonus +15%")).toBeVisible();
+
+  // The build is shareable via a link (B3).
+  await expect(page.getByRole("button", { name: /Copy link/ })).toBeVisible();
 });
 
 // #6 — the weapon and artifact-set pickers surface a "Recommended (KQM)" optgroup on top.
