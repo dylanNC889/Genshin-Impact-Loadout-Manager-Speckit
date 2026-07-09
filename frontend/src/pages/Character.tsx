@@ -128,7 +128,10 @@ export function CharacterPage() {
     ([key, value]) => !PRIMARY_ORDER.includes(key) && key.endsWith("_DMG") && value !== 0,
   );
 
-  const gearReady = weaponsQ.data && setsQ.data && rulesQ.data && statValsQ.data && modifiersQ.data;
+  // Modifiers (A1) are additive extras: if that request is unavailable, the gear editor still
+  // loads — it just applies no constellation/refinement bonuses (graceful degradation).
+  const modifiers = modifiersQ.data ?? { constellationBonuses: {}, weaponRefinements: {} };
+  const gearReady = weaponsQ.data && setsQ.data && rulesQ.data && statValsQ.data;
 
   return (
     <div className="character">
@@ -191,7 +194,7 @@ export function CharacterPage() {
           artifactSets={setsQ.data ?? []}
           rules={rulesQ.data!}
           statValues={statValsQ.data!}
-          modifiers={modifiersQ.data!}
+          modifiers={modifiers}
           level={level}
           editingLoadoutId={loadoutParam}
         />
