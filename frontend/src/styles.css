@@ -447,6 +447,38 @@ select {
 }
 
 /* --- Loadout editor (US2) --- */
+/* --- Suggested build panel --- */
+.suggest-build {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  margin-bottom: 16px;
+}
+
+.suggest-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.suggest-head .mini {
+  margin-left: auto;
+}
+
+.suggest-body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.suggest-body b {
+  color: var(--text);
+}
+
 .loadout-grid {
   display: grid;
   grid-template-columns: 1.3fr 1fr;

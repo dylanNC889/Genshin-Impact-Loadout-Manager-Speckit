@@ -31,3 +31,14 @@ test("loadout pickers surface KQM recommendations", async ({ page }) => {
   const recSets = page.locator('select[aria-label="Goblet set"] optgroup[label="★ Recommended (KQM)"]');
   await expect(recSets.locator("option", { hasText: "Crimson Witch of Flames" })).toHaveCount(1);
 });
+
+test("optimised build suggestion applies to the editor", async ({ page }) => {
+  await page.goto("/character/hu-tao");
+
+  await expect(page.getByText("Suggested build")).toBeVisible();
+  await page.getByRole("button", { name: "Apply", exact: true }).click();
+
+  // Apply populates the weapon (Hu Tao → Staff of Homa) and all five artifact slots.
+  await expect(page.getByLabel(/^Weapon/)).toHaveValue("staff-of-homa");
+  await expect(page.getByLabel("Goblet set")).toHaveValue("crimson-witch-of-flames");
+});
