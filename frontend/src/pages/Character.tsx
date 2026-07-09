@@ -186,6 +186,7 @@ export function CharacterPage() {
               max={90}
               step={1}
               value={level}
+              aria-valuetext={`Level ${level}`}
               onChange={(e) => setLevel(Number(e.target.value))}
             />
             <span className="slider-value">Lv {level}</span>
@@ -209,6 +210,7 @@ export function CharacterPage() {
               max={15}
               step={1}
               value={talentLevel}
+              aria-valuetext={`Talent level ${talentLevel}`}
               onChange={(e) => setTalentLevel(Number(e.target.value))}
             />
             <span className="slider-value">Lv {talentLevel}</span>

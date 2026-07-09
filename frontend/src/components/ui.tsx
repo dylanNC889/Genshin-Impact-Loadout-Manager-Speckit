@@ -38,7 +38,11 @@ export function ElementBadge({ element }: { element: string }) {
 }
 
 export function RarityStars({ rarity }: { rarity: number }) {
-  return <span className="stars">{"★".repeat(rarity)}</span>;
+  return (
+    <span className="stars" role="img" aria-label={`${rarity}-star rarity`}>
+      {"★".repeat(rarity)}
+    </span>
+  );
 }
 
 /** Game asset icon (mihoyo CDN); hides itself if the image fails to load. */
