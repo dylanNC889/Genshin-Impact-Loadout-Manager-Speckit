@@ -11,9 +11,14 @@ export interface ArtifactDraft {
 interface LoadoutState {
   weaponId: string | null;
   artifacts: Partial<Record<ArtifactSlot, ArtifactDraft>>;
+  /** Constellation level (0–6) and weapon refinement rank (1–5) — A1. */
+  constellation: number;
+  refinement: number;
   setWeapon: (id: string | null) => void;
   setArtifact: (slot: ArtifactSlot, draft: ArtifactDraft) => void;
   clearArtifact: (slot: ArtifactSlot) => void;
+  setConstellation: (n: number) => void;
+  setRefinement: (n: number) => void;
   reset: () => void;
 }
 
@@ -24,6 +29,8 @@ interface LoadoutState {
 export const useLoadoutStore = create<LoadoutState>((set) => ({
   weaponId: null,
   artifacts: {},
+  constellation: 0,
+  refinement: 1,
   setWeapon: (id) => set({ weaponId: id }),
   setArtifact: (slot, draft) => set((s) => ({ artifacts: { ...s.artifacts, [slot]: draft } })),
   clearArtifact: (slot) =>
@@ -32,5 +39,7 @@ export const useLoadoutStore = create<LoadoutState>((set) => ({
       delete next[slot];
       return { artifacts: next };
     }),
-  reset: () => set({ weaponId: null, artifacts: {} }),
+  setConstellation: (n) => set({ constellation: n }),
+  setRefinement: (n) => set({ refinement: n }),
+  reset: () => set({ weaponId: null, artifacts: {}, constellation: 0, refinement: 1 }),
 }));

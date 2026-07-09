@@ -400,6 +400,23 @@ select {
   cursor: pointer;
 }
 
+/* --- Constellation / refinement controls (A1) --- */
+.cr-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 4px 0 12px;
+}
+
+.cr-controls label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
 /* --- Character intro panel (#4) --- */
 .char-intro {
   margin-bottom: 16px;

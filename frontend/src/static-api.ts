@@ -68,6 +68,11 @@ export async function fetchStatValues(): Promise<StatValuesTable> {
   return (await ds()).statValues ?? { mainStatValues: {}, subStatValues: {} };
 }
 
+export async function fetchModifiers() {
+  const d = await ds();
+  return { constellationBonuses: d.constellationBonuses ?? {}, weaponRefinements: d.weaponRefinements ?? {} };
+}
+
 // --- localStorage persistence ---
 type LoadoutRecord = LoadoutInput & { id: string };
 type TeamRecord = TeamInput & { id: string };

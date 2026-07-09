@@ -5,6 +5,7 @@ import { computeBaseSheet, statRecord } from "@app/stat-engine";
 import {
   fetchArtifactSets,
   fetchCharacterDetail,
+  fetchModifiers,
   fetchRules,
   fetchStatValues,
   fetchWeapons,
@@ -57,6 +58,8 @@ export function CharacterPage() {
   const resetLoadout = useLoadoutStore((s) => s.reset);
   const setWeapon = useLoadoutStore((s) => s.setWeapon);
   const setArtifact = useLoadoutStore((s) => s.setArtifact);
+  const setConstellation = useLoadoutStore((s) => s.setConstellation);
+  const setRefinement = useLoadoutStore((s) => s.setRefinement);
 
   const detail = useQuery({
     queryKey: ["character", id],
@@ -73,6 +76,7 @@ export function CharacterPage() {
   const setsQ = useQuery({ queryKey: ["artifact-sets"], queryFn: fetchArtifactSets });
   const rulesQ = useQuery({ queryKey: ["rules"], queryFn: fetchRules });
   const statValsQ = useQuery({ queryKey: ["stat-values"], queryFn: fetchStatValues });
+  const modifiersQ = useQuery({ queryKey: ["modifiers"], queryFn: fetchModifiers });
   const savedLoadoutQ = useQuery({
     queryKey: ["saved-loadout", loadoutParam],
     queryFn: () => getLoadout(loadoutParam ?? ""),
@@ -92,10 +96,12 @@ export function CharacterPage() {
     resetLoadout();
     if (typeof b.level === "number") setLevel(b.level);
     setWeapon(b.weaponId ?? null);
+    if (typeof b.constellation === "number") setConstellation(b.constellation);
+    if (typeof b.refinement === "number") setRefinement(b.refinement);
     for (const a of b.artifacts ?? []) {
       setArtifact(a.slot, { setId: a.setId, mainStat: a.mainStat, subStats: a.subStats });
     }
-  }, [buildParam, resetLoadout, setWeapon, setArtifact]);
+  }, [buildParam, resetLoadout, setWeapon, setArtifact, setConstellation, setRefinement]);
 
   // Hydrate the editor from a saved loadout when opened via ?loadout=<id> (FR-018 reopen).
   useEffect(() => {
@@ -104,10 +110,12 @@ export function CharacterPage() {
     resetLoadout();
     setLevel(saved.level);
     setWeapon(saved.weaponId ?? null);
+    setConstellation(saved.constellation ?? 0);
+    setRefinement(saved.refinement ?? 1);
     for (const a of saved.artifacts) {
       setArtifact(a.slot, { setId: a.setId, mainStat: a.mainStat, subStats: a.subStats });
     }
-  }, [savedLoadoutQ.data, resetLoadout, setWeapon, setArtifact]);
+  }, [savedLoadoutQ.data, resetLoadout, setWeapon, setArtifact, setConstellation, setRefinement]);
 
   if (detail.isLoading) return <p className="muted">Loading character…</p>;
   if (detail.error) return <p className="error">Failed to load: {(detail.error as Error).message}</p>;
@@ -120,7 +128,7 @@ export function CharacterPage() {
     ([key, value]) => !PRIMARY_ORDER.includes(key) && key.endsWith("_DMG") && value !== 0,
   );
 
-  const gearReady = weaponsQ.data && setsQ.data && rulesQ.data && statValsQ.data;
+  const gearReady = weaponsQ.data && setsQ.data && rulesQ.data && statValsQ.data && modifiersQ.data;
 
   return (
     <div className="character">
@@ -183,6 +191,7 @@ export function CharacterPage() {
           artifactSets={setsQ.data ?? []}
           rules={rulesQ.data!}
           statValues={statValsQ.data!}
+          modifiers={modifiersQ.data!}
           level={level}
           editingLoadoutId={loadoutParam}
         />

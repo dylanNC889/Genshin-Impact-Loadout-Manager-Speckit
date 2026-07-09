@@ -1,4 +1,4 @@
-import type { ArtifactSet, LoadoutInput, SlotStatRules, StatValuesTable, TeamInput, Weapon } from "@app/contracts";
+import type { ArtifactSet, Dataset, LoadoutInput, SlotStatRules, StatValuesTable, TeamInput, Weapon } from "@app/contracts";
 import * as staticApi from "./static-api";
 import type { CharacterDetail, CharacterSummary, SavedLoadout, SavedTeam } from "./types";
 
@@ -77,6 +77,15 @@ export function fetchRules(): Promise<SlotStatRules> {
 export function fetchStatValues(): Promise<StatValuesTable> {
   if (STATIC) return staticApi.fetchStatValues();
   return getJson(`${BASE}/meta/stat-values`);
+}
+
+export interface Modifiers {
+  constellationBonuses: NonNullable<Dataset["constellationBonuses"]>;
+  weaponRefinements: NonNullable<Dataset["weaponRefinements"]>;
+}
+export function fetchModifiers(): Promise<Modifiers> {
+  if (STATIC) return staticApi.fetchModifiers();
+  return getJson(`${BASE}/meta/modifiers`);
 }
 
 // --- Saved loadouts (FR-018) ---

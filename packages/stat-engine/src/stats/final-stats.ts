@@ -77,6 +77,17 @@ export function computeFinalStats(input: LoadoutInput, dataset: Dataset): FinalS
     weaponBaseATK = weapon.baseATK;
     if (weapon.secondaryStat) route(pools, weapon.secondaryStat.key, weapon.secondaryStat.value);
     for (const b of weapon.passiveStatBonuses) route(pools, b.key, b.value);
+    // Static weapon-refinement bonuses at the chosen rank (A1).
+    const refMods = dataset.weaponRefinements?.[weapon.id]?.[String(input.refinement ?? 1)] ?? [];
+    for (const b of refMods) route(pools, b.key, b.value);
+  }
+
+  // Static constellation bonuses up to the chosen level (A1).
+  const conTable = dataset.constellationBonuses?.[character.id];
+  if (conTable) {
+    for (let lvl = 1; lvl <= (input.constellation ?? 0); lvl++) {
+      for (const b of conTable[String(lvl)] ?? []) route(pools, b.key, b.value);
+    }
   }
 
   // Artifacts + set-piece counting.
