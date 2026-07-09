@@ -20,7 +20,7 @@ import { createLoadout, updateLoadout } from "../api";
 import { Card, Icon, StatRow } from "./ui";
 import { formatStat, statLabel } from "../format";
 import { recommendedFor } from "../recommendations";
-import { suggestBuild } from "../suggestBuild";
+import { suggestBuild, buildSubStats } from "../suggestBuild";
 import { encodeShare } from "../share";
 
 const SLOTS: ArtifactSlot[] = ["Flower", "Plume", "Sands", "Goblet", "Circlet"];
@@ -97,7 +97,11 @@ export function LoadoutEditor({
     for (const slot of SLOTS) {
       if (!suggestion.setId) continue;
       const key = suggestion.mains[slot];
-      setArtifact(slot, { setId: suggestion.setId, mainStat: { key, value: statValues.mainStatValues[key] ?? 0 }, subStats: [] });
+      setArtifact(slot, {
+        setId: suggestion.setId,
+        mainStat: { key, value: statValues.mainStatValues[key] ?? 0 },
+        subStats: buildSubStats(suggestion.substatKeys, key, statValues.subStatValues),
+      });
     }
   }
 
