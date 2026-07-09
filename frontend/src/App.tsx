@@ -1,10 +1,14 @@
+import { lazy, Suspense } from "react";
 import { Routes, Route, Link, NavLink } from "react-router-dom";
-import { Roster } from "./pages/Roster";
-import { CharacterPage } from "./pages/Character";
-import { Weapons } from "./pages/Weapons";
-import { Artifacts } from "./pages/Artifacts";
-import { TeamBuilder } from "./pages/TeamBuilder";
-import { SavedPage } from "./pages/Saved";
+
+// Route-level code splitting: each page (and the data it pulls in, e.g. the build
+// recommendations behind the loadout editor) loads on demand, trimming the initial bundle.
+const Roster = lazy(() => import("./pages/Roster").then((m) => ({ default: m.Roster })));
+const CharacterPage = lazy(() => import("./pages/Character").then((m) => ({ default: m.CharacterPage })));
+const Weapons = lazy(() => import("./pages/Weapons").then((m) => ({ default: m.Weapons })));
+const Artifacts = lazy(() => import("./pages/Artifacts").then((m) => ({ default: m.Artifacts })));
+const TeamBuilder = lazy(() => import("./pages/TeamBuilder").then((m) => ({ default: m.TeamBuilder })));
+const SavedPage = lazy(() => import("./pages/Saved").then((m) => ({ default: m.SavedPage })));
 
 export function App() {
   return (
@@ -25,14 +29,16 @@ export function App() {
         <span className="tag">slice</span>
       </header>
       <main className="main">
-        <Routes>
-          <Route path="/" element={<Roster />} />
-          <Route path="/weapons" element={<Weapons />} />
-          <Route path="/artifacts" element={<Artifacts />} />
-          <Route path="/character/:id" element={<CharacterPage />} />
-          <Route path="/team" element={<TeamBuilder />} />
-          <Route path="/saved" element={<SavedPage />} />
-        </Routes>
+        <Suspense fallback={<p className="muted">Loading…</p>}>
+          <Routes>
+            <Route path="/" element={<Roster />} />
+            <Route path="/weapons" element={<Weapons />} />
+            <Route path="/artifacts" element={<Artifacts />} />
+            <Route path="/character/:id" element={<CharacterPage />} />
+            <Route path="/team" element={<TeamBuilder />} />
+            <Route path="/saved" element={<SavedPage />} />
+          </Routes>
+        </Suspense>
       </main>
     </div>
   );
