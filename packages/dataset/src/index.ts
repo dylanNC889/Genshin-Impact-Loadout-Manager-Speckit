@@ -24,13 +24,14 @@ import type {
 } from "@app/contracts";
 
 /**
- * Loads the curated reference dataset from `data/<version>/` JSON, normalizes the compact
- * authored character shape into full `Character` records, and validates everything against
- * the `@app/contracts` Zod schemas (FR-021 / task T014). Throws a descriptive ZodError if
- * any record is malformed.
+ * Loads the reference dataset from `data/<version>/` JSON, normalizes the compact authored
+ * character shape into full `Character` records, and validates everything against the
+ * `@app/contracts` Zod schemas (FR-021 / task T014). Throws a descriptive ZodError if any
+ * record is malformed.
  *
- * NOTE: This is a curated *slice* (not the full roster — SC-008 not yet met). Base stats
- * are best-effort published Lv90 / ascension-6 values and only level 90 is supported.
+ * The dataset is the full live roster imported from genshin-db (see scripts/import.mts,
+ * SC-008): 115 characters / 224 weapons / 44 sets, with accurate per-level base stats
+ * (Lv 1–90 via level anchors + interpolation) and ascension stats. Duplicate ids are dropped.
  */
 
 /** Compact authored character shape (see data/<version>/characters.json). */
