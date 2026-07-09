@@ -16,6 +16,7 @@ import {
 } from "../api";
 import { Card, Icon } from "../components/ui";
 import { encodeShare, decodeShare } from "../share";
+import { teamBuffFor, teamResShred, activeBuffNotes } from "../teamBuffs";
 
 interface Slot {
   characterId: string | null;
@@ -210,6 +211,8 @@ export function TeamBuilder() {
 
   function onCalculate() {
     const r = REACTIONS[reaction] ?? { mult: 1, type: undefined };
+    const teamCharIds = selected.map((s) => s.characterId);
+    const shred = teamResShred(teamCharIds);
     const dmg = selected
       .flatMap((s, i) => {
         const detail = details[i];
@@ -220,8 +223,20 @@ export function TeamBuilder() {
         }
         return [deriveFromBase(detail)];
       })
-      .map((m) => ({ ...m, reactionMultiplier: r.mult, reactionType: r.type }));
-    if (dmg.length) setDamage(estimateTeamDamage(dmg, { enemyLevel, enemyResistancePct: enemyRes }));
+      // Fold in team-wide buffs from the assembled team (A2), then the reaction.
+      .map((m) => {
+        const buff = teamBuffFor(detailByCharId.get(m.characterId)?.element, teamCharIds);
+        return {
+          ...m,
+          finalATK: m.finalATK + buff.flatATK,
+          dmgBonusPct: m.dmgBonusPct + buff.dmgBonusPct,
+          critRate: m.critRate + buff.critRate,
+          critDmg: m.critDmg + buff.critDmg,
+          reactionMultiplier: r.mult,
+          reactionType: r.type,
+        };
+      });
+    if (dmg.length) setDamage(estimateTeamDamage(dmg, { enemyLevel, enemyResistancePct: enemyRes - shred }));
   }
 
   return (
@@ -487,10 +502,20 @@ export function TeamBuilder() {
               </ul>
               <div className="assumptions">
                 <strong>Assumptions:</strong> Lv {damage.assumptions.enemyLevel} enemy,{" "}
-                {damage.assumptions.enemyResistancePct}% RES
+                {damage.assumptions.enemyResistancePct}% RES (after shred)
                 {damage.assumptions.reactionTypes.length ? `, ${damage.assumptions.reactionTypes.join("/")}` : ""},
                 rotation “{damage.assumptions.rotation}”. Slots with a saved loadout use geared stats; others use base
                 stats.
+                {activeBuffNotes(selected.map((s) => s.characterId)).length ? (
+                  <div className="team-buffs">
+                    <strong>Team buffs (approx):</strong>
+                    <ul>
+                      {activeBuffNotes(selected.map((s) => s.characterId)).map((n, i) => (
+                        <li key={i}>{n}</li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : null}
               </div>
             </div>
           ) : (
