@@ -5,6 +5,9 @@ import { test, expect } from "@playwright/test";
 test("browse roster and inspect a character", async ({ page }) => {
   await page.goto("/");
   await page.getByLabel("Search characters").fill("Hu Tao");
+  // Roster upgrades (B4): rarity filter + per-card favourite toggle.
+  await expect(page.getByLabel("Filter by rarity")).toBeVisible();
+  await expect(page.getByRole("button", { name: /Favourite Hu Tao/ })).toBeVisible();
   await page.getByRole("link", { name: /Hu Tao/ }).click();
 
   await expect(page.getByRole("heading", { name: "Hu Tao", level: 1 })).toBeVisible();

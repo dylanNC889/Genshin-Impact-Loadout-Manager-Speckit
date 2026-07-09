@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { estimateTeamDamage } from "../src/index";
+import { estimateTeamDamage, emReactionBonus } from "../src/index";
 import type { DamageMember } from "../src/index";
 
 const member: DamageMember = {
@@ -36,6 +36,16 @@ describe("estimateTeamDamage (T040 / FR-016, SC-009)", () => {
     const low = estimateTeamDamage([{ ...member, finalATK: 1000 }]).totalEstimated;
     const high = estimateTeamDamage([{ ...member, finalATK: 2000 }]).totalEstimated;
     expect(high).toBeGreaterThan(low);
+  });
+
+  it("scales amplifying reactions with EM (A3)", () => {
+    // emReactionBonus golden values: 1 at EM 0; ~1.3475 at 200; ~2.1583 at 1000.
+    expect(emReactionBonus(0)).toBeCloseTo(1, 5);
+    expect(emReactionBonus(200)).toBeCloseTo(1.3475, 3);
+    expect(emReactionBonus(1000)).toBeCloseTo(2.1583, 3);
+    const noEm = estimateTeamDamage([{ ...member, reactionMultiplier: 1.5, reactionType: "Vaporize", em: 0 }]);
+    const withEm = estimateTeamDamage([{ ...member, reactionMultiplier: 1.5, reactionType: "Vaporize", em: 200 }]);
+    expect(withEm.totalEstimated).toBeGreaterThan(noEm.totalEstimated);
   });
 
   it("collects distinct reaction types into the assumptions", () => {

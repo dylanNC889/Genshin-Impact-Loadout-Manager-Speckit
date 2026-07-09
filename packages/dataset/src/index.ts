@@ -30,7 +30,7 @@ import type {
  * record is malformed.
  *
  * The dataset is the full live roster imported from genshin-db (see scripts/import.mts,
- * SC-008): 115 characters / 224 weapons / 44 sets, with accurate per-level base stats
+ * SC-008): 116 characters / 225 weapons / 44 sets, with accurate per-level base stats
  * (Lv 1–90 via level anchors + interpolation) and ascension stats. Duplicate ids are dropped.
  */
 

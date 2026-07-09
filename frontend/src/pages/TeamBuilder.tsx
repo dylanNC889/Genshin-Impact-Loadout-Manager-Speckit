@@ -34,6 +34,7 @@ function deriveFromBase(detail: CharacterDetail): DamageMember {
     critRate: base.sheet.CRIT_RATE,
     critDmg: base.sheet.CRIT_DMG,
     dmgBonusPct,
+    em: base.sheet.EM ?? 0,
     talentMultiplier: 200,
     characterLevel: 90,
   };
@@ -51,6 +52,7 @@ function deriveFromLoadout(lo: SavedLoadout): DamageMember {
     critRate: get("CRIT_RATE"),
     critDmg: get("CRIT_DMG"),
     dmgBonusPct,
+    em: get("EM"),
     talentMultiplier: 200,
     characterLevel: 90,
   };

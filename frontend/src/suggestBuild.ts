@@ -25,6 +25,10 @@ const DEF_SCALERS = new Set(["noelle", "albedo", "arataki-itto", "chiori", "goro
 const EM_SCALERS = new Set([
   "nahida", "sucrose", "kaedehara-kazuha", "sethos", "alhaitham", "kuki-shinobu", "yumemizuki-mizuki",
 ]);
+/** Can't (usefully) crit — want a Healing/HP circlet and no CRIT substats. */
+const NO_CRIT = new Set(["sangonomiya-kokomi"]);
+/** Energy-hungry — want an ER Sands to fund their Burst. */
+const ER_HUNGRY = new Set(["raiden-shogun", "bennett", "xiangling", "sucrose", "kujou-sara"]);
 
 type BuildStat = "ATK" | "HP" | "DEF" | "EM";
 function buildStatOf(id: string): BuildStat {
@@ -74,11 +78,16 @@ export function suggestBuild(
   const weaponId = recs.weaponIds[0] ?? null;
   const setId = recs.setIds[0] ?? null;
   const bs = buildStatOf(character.id);
+  const isHealer = character.roles.includes("Healer");
   const pureHealer = character.roles.length === 1 && character.roles[0] === "Healer";
+  const noCrit = NO_CRIT.has(character.id);
+  const erHungry = ER_HUNGRY.has(character.id);
 
-  const sands = PCT[bs];
+  const sands = erHungry ? "ER" : PCT[bs];
   const goblet = bs === "EM" ? "EM" : (ELEMENT_DMG[character.element] ?? "ATK_PCT");
-  const circlet: StatKey = pureHealer ? "HEAL_BONUS" : bs === "EM" ? "EM" : "CRIT_DMG";
+  // No-crit units want a Healing/HP circlet, not CRIT.
+  const circlet: StatKey =
+    pureHealer || noCrit ? (isHealer ? "HEAL_BONUS" : PCT[bs]) : bs === "EM" ? "EM" : "CRIT_DMG";
 
   const preferred: Record<ArtifactSlot, StatKey> = {
     Flower: "HP", Plume: "ATK", Sands: sands, Goblet: goblet, Circlet: circlet,
@@ -89,18 +98,23 @@ export function suggestBuild(
 
   const crit = "CRIT Rate / CRIT DMG";
   const scale = bs === "ATK" ? "ATK%" : bs === "HP" ? "HP%" : bs === "DEF" ? "DEF%" : "Elemental Mastery";
-  const substats = pureHealer
-    ? ["HP%", "Energy Recharge", "CRIT Rate / CRIT DMG"]
-    : bs === "EM"
-      ? ["Elemental Mastery", crit, "Energy Recharge"]
-      : [crit, scale, "Energy Recharge"];
-
   const scaleSub: StatKey = PCT[bs];
-  const substatKeys: StatKey[] = pureHealer
-    ? ["HP_PCT", "ER", "CRIT_RATE", "CRIT_DMG", "EM"]
-    : bs === "EM"
-      ? ["EM", "CRIT_RATE", "CRIT_DMG", "ER", "ATK_PCT"]
-      : ["CRIT_RATE", "CRIT_DMG", scaleSub, "ER", "EM"];
+  const erLead = erHungry ? "Energy Recharge, " : "";
+  const substats = noCrit
+    ? [`${scale}`, "Energy Recharge", "Elemental Mastery"]
+    : pureHealer
+      ? ["HP%", "Energy Recharge", "CRIT Rate / CRIT DMG"]
+      : bs === "EM"
+        ? ["Elemental Mastery", crit, "Energy Recharge"]
+        : [`${erLead}${crit}`, scale, "Energy Recharge"];
+
+  const substatKeys: StatKey[] = noCrit
+    ? [scaleSub, "ER", "EM", "HP_PCT", "ATK_PCT"]
+    : pureHealer
+      ? ["HP_PCT", "ER", "CRIT_RATE", "CRIT_DMG", "EM"]
+      : bs === "EM"
+        ? ["EM", "CRIT_RATE", "CRIT_DMG", "ER", "ATK_PCT"]
+        : ["CRIT_RATE", "CRIT_DMG", scaleSub, "ER", "EM"];
 
   return {
     weaponId,
@@ -135,7 +149,7 @@ export function buildSubStats(
   const subs: ArtifactSubStat[] = chosen.map((k) => ({ key: k, rollValues: [high(k)], value: round1(high(k)) }));
 
   // Distribute the 4 shared upgrade rolls: CRIT first, then whatever's chosen, 2 at a time.
-  const order: StatKey[] = ["CRIT_DMG", "CRIT_RATE", ...chosen].filter((k, i, a) => a.indexOf(k) === i);
+  const order = (["CRIT_DMG", "CRIT_RATE", ...chosen] as StatKey[]).filter((k, i, a) => a.indexOf(k) === i);
   let upgrades = 4;
   for (const k of order) {
     if (upgrades <= 0) break;

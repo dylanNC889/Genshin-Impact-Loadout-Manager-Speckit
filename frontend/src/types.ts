@@ -15,6 +15,7 @@ export interface CharacterSummary {
   weaponType: string;
   rarity: number;
   icon: string;
+  region: string;
 }
 
 export interface CharacterDetail {
