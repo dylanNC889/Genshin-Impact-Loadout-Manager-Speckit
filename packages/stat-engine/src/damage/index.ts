@@ -14,7 +14,15 @@ export interface DamageMember {
   talentMultiplier: number;
   reactionMultiplier?: number;
   reactionType?: string;
+  /** Elemental Mastery — powers the amplifying-reaction EM bonus. */
+  em?: number;
   characterLevel?: number;
+}
+
+/** Amplifying-reaction EM bonus: 1 + 2.78·EM/(EM+1400) (Vaporize/Melt). */
+export function emReactionBonus(em: number): number {
+  const e = Math.max(em, 0);
+  return 1 + (2.78 * e) / (e + 1400);
 }
 
 const DEFAULTS: DamageCalcOptions = {
@@ -42,7 +50,8 @@ export function estimateTeamDamage(
     const avgCrit = 1 + critRate * (m.critDmg / 100);
     const dmgMult = 1 + m.dmgBonusPct / 100;
     const defFactor = (charLevel + 100) / (charLevel + 100 + (opts.enemyLevel + 100));
-    const reaction = m.reactionMultiplier ?? 1;
+    // Amplifying reactions scale with the triggerer's EM (A3).
+    const reaction = m.reactionMultiplier ? m.reactionMultiplier * emReactionBonus(m.em ?? 0) : 1;
     if (m.reactionType) reactionTypes.add(m.reactionType);
     const base = (m.talentMultiplier / 100) * m.finalATK;
     const estimated = base * dmgMult * avgCrit * defFactor * resFactor * reaction;
