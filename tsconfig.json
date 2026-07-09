@@ -4,6 +4,7 @@
     { "path": "packages/contracts" },
     { "path": "packages/stat-engine" },
     { "path": "packages/dataset" },
+    { "path": "packages/optimizer" },
     { "path": "backend" }
   ]
 }

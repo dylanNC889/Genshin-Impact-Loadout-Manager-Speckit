@@ -1,0 +1,16 @@
+{
+  "name": "@app/optimizer",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@app/contracts": "workspace:*",
+    "@app/stat-engine": "workspace:*"
+  },
+  "devDependencies": {
+    "@app/dataset": "workspace:*"
+  }
+}
