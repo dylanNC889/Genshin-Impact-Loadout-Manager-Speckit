@@ -201,7 +201,11 @@ export const WeaponSchema = z.object({
   splashArt: z.string().default(""),
   /** Base ATK at the weapon's max level (used by loadouts at endgame). */
   baseATK: z.number(),
+  /** Base ATK at level 1 (for the 1→90 progression display). */
+  baseATKMin: z.number().default(0),
   secondaryStat: StatValueSchema.optional(),
+  /** Secondary stat value at level 1 (paired with secondaryStat's key). */
+  secondaryStatMin: z.number().optional(),
   passiveStatBonuses: z.array(StatValueSchema).default([]),
   /** Passive ability (name + effect template + refinement values). */
   passive: WeaponPassiveSchema.optional(),

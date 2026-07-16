@@ -4,7 +4,7 @@ import { useParams, Link } from "react-router-dom";
 import { fetchWeapons, fetchCharacters } from "../api";
 import { Card, Icon, RarityStars, StatRow } from "../components/ui";
 import { formatStat, statLabel } from "../format";
-import { recommendingCharacters } from "../recommendations";
+import { weaponRecommenders } from "../recommendations";
 
 /** Render an effect template, substituting {0}/{1}… with the refinement values (highlighted). */
 function renderEffect(template: string, values: string[]) {
@@ -29,7 +29,7 @@ export function WeaponPage() {
   const rosterQ = useQuery({ queryKey: ["characters", "all"], queryFn: () => fetchCharacters({}) });
 
   const weapon = weaponsQ.data?.find((w) => w.id === id);
-  const usedBy = id ? recommendingCharacters(id) : [];
+  const { signature, others } = id ? weaponRecommenders(id) : { signature: [], others: [] };
   const byId = (cid: string) => rosterQ.data?.find((c) => c.id === cid);
 
   if (weaponsQ.isLoading) return <p className="muted">Loading weapon…</p>;
@@ -37,6 +37,17 @@ export function WeaponPage() {
 
   const passive = weapon.passive;
   const refValues = passive?.refinements[refinement - 1] ?? passive?.refinements[0] ?? [];
+  const sec = weapon.secondaryStat;
+
+  const chip = (cid: string, sig = false) => {
+    const c = byId(cid);
+    return (
+      <Link key={cid} to={`/character/${cid}`} className={`used-by-chip${sig ? " sig" : ""}`}>
+        <Icon src={c?.icon} alt="" size={sig ? 32 : 28} />
+        <span>{c?.name ?? cid}</span>
+      </Link>
+    );
+  };
 
   return (
     <div className="detail">
@@ -52,42 +63,63 @@ export function WeaponPage() {
           </div>
           <h1>{weapon.name}</h1>
           {passive?.name ? <p className="weapon-hero-passive">{passive.name}</p> : null}
+          <div className="weapon-hero-stats">
+            <span>
+              <b>{Math.round(weapon.baseATK)}</b> Base ATK
+            </span>
+            {sec ? (
+              <span>
+                <b>{formatStat(sec.key, sec.value)}</b> {statLabel(sec.key)}
+              </span>
+            ) : null}
+          </div>
         </div>
         {weapon.splashArt ? (
           <img className="weapon-hero-art" src={weapon.splashArt} alt={weapon.name} loading="lazy" />
         ) : (
-          <Icon src={weapon.icon} alt={weapon.name} size={96} />
+          <Icon src={weapon.icon} alt={weapon.name} size={140} />
         )}
       </header>
 
       <div className="char-body">
-        <Card title="Stats (Lv 90)">
-          <StatRow label="Base ATK" value={Math.round(weapon.baseATK)} />
-          {weapon.secondaryStat ? (
+        <Card title="Stats">
+          <StatRow
+            label="Base ATK"
+            value={weapon.baseATKMin ? `${Math.round(weapon.baseATKMin)} → ${Math.round(weapon.baseATK)}` : Math.round(weapon.baseATK)}
+          />
+          {sec ? (
             <StatRow
-              label={statLabel(weapon.secondaryStat.key)}
-              value={formatStat(weapon.secondaryStat.key, weapon.secondaryStat.value)}
+              label={statLabel(sec.key)}
+              value={
+                weapon.secondaryStatMin != null
+                  ? `${formatStat(sec.key, weapon.secondaryStatMin)} → ${formatStat(sec.key, sec.value)}`
+                  : formatStat(sec.key, sec.value)
+              }
             />
           ) : null}
+          <StatRow label="Type" value={weapon.weaponType} />
+          <StatRow label="Rarity" value={`${weapon.rarity}★`} />
+          <p className="muted small stat-foot">Values shown Lv 1 → Lv 90.</p>
         </Card>
 
         {passive?.name ? (
           <Card title="Passive ability">
-            <div className="passive-head">
-              <strong>{passive.name}</strong>
-              {passive.refinements.length > 1 ? (
-                <label className="refine-select">
-                  Refinement
-                  <select value={refinement} onChange={(e) => setRefinement(Number(e.target.value))} aria-label="Refinement">
-                    {passive.refinements.map((_, i) => (
-                      <option key={i} value={i + 1}>
-                        R{i + 1}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              ) : null}
-            </div>
+            <strong>{passive.name}</strong>
+            {passive.refinements.length > 1 ? (
+              <label className="talent-control refine-slider">
+                <span>Refinement</span>
+                <input
+                  type="range"
+                  min={1}
+                  max={passive.refinements.length}
+                  value={refinement}
+                  onChange={(e) => setRefinement(Number(e.target.value))}
+                  className="slider"
+                  aria-label="Refinement"
+                />
+                <span className="slider-value">R{refinement}</span>
+              </label>
+            ) : null}
             <p className="passive-text">{renderEffect(passive.template, refValues)}</p>
           </Card>
         ) : null}
@@ -106,22 +138,22 @@ export function WeaponPage() {
           </Card>
         ) : null}
 
-        <Card title={`Recommended by (${usedBy.length})`}>
-          {usedBy.length ? (
-            <div className="used-by">
-              {usedBy.map((cid) => {
-                const c = byId(cid);
-                return (
-                  <Link key={cid} to={`/character/${cid}`} className="used-by-chip">
-                    <Icon src={c?.icon} alt="" size={28} />
-                    <span>{c?.name ?? cid}</span>
-                  </Link>
-                );
-              })}
+        <Card title="Recommended by">
+          {signature.length ? (
+            <div className="rec-group">
+              <div className="rec-label sig-label">★ Signature / best-in-slot for</div>
+              <div className="used-by">{signature.map((cid) => chip(cid, true))}</div>
             </div>
-          ) : (
+          ) : null}
+          {others.length ? (
+            <div className="rec-group">
+              <div className="rec-label muted">{signature.length ? "Also recommended by" : "Recommended by"}</div>
+              <div className="used-by">{others.map((cid) => chip(cid))}</div>
+            </div>
+          ) : null}
+          {!signature.length && !others.length ? (
             <p className="muted small">No characters recommend this weapon in our data.</p>
-          )}
+          ) : null}
         </Card>
       </div>
     </div>

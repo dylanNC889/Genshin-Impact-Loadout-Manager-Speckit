@@ -319,6 +319,7 @@ for (const name of weaponNames) {
     if (!w || w.rarity < 3 || w.rarity > 5) continue;
     if (!WEAPON_TYPES.has(w.weaponText)) continue;
     const s90 = w.stats(90, "6");
+    const s1 = w.stats(1, "0");
     const secKey = SUBSTAT_TO_KEY[w.mainStatText];
     weapons.push({
       id: slug(w.name),
@@ -329,7 +330,13 @@ for (const name of weaponNames) {
       awakenIcon: enkaUrl(w.images?.filename_awakenIcon),
       splashArt: enkaUrl(w.images?.filename_gacha),
       baseATK: round(s90.attack),
-      ...(secKey ? { secondaryStat: { key: secKey, value: ascensionValue(secKey, s90.specialized) } } : {}),
+      baseATKMin: round(s1.attack),
+      ...(secKey
+        ? {
+            secondaryStat: { key: secKey, value: ascensionValue(secKey, s90.specialized) },
+            secondaryStatMin: ascensionValue(secKey, s1.specialized),
+          }
+        : {}),
       passiveStatBonuses: [],
       ...(w.effectName
         ? {
