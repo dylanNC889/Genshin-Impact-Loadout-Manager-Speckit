@@ -24,3 +24,28 @@ test("compare page with loadout pickers", async ({ page }) => {
   await expect(page.getByLabel("Loadout A")).toBeVisible();
   await expect(page.getByLabel("Loadout B")).toBeVisible();
 });
+
+// B2 — the comparison table lists each stat once (CRIT DMG must not appear twice).
+test("compare table lists each stat once", async ({ page }) => {
+  const save = async (charId: string, name: string) => {
+    await page.goto(`/character/${charId}`);
+    await page.getByLabel("Loadout name").fill(name);
+    await page.getByRole("button", { name: "Save loadout" }).click();
+    await expect(page.getByText("Saved ✓")).toBeVisible();
+  };
+  await save("diluc", "Cmp A");
+  await save("hu-tao", "Cmp B");
+
+  await page.goto("/compare");
+  await page.getByLabel("Loadout A").selectOption({ label: "Cmp A" });
+  await page.getByLabel("Loadout B").selectOption({ label: "Cmp B" });
+  await expect(page.locator(".compare-table")).toBeVisible();
+  await expect(page.locator(".compare-table tbody tr", { hasText: "CRIT DMG" })).toHaveCount(1);
+
+  // Clean up both loadouts.
+  await page.goto("/saved");
+  for (const name of ["Cmp A", "Cmp B"]) {
+    await page.locator(".saved-list li", { hasText: name }).getByRole("button", { name: "delete" }).click();
+    await expect(page.locator(".saved-list li", { hasText: name })).toHaveCount(0);
+  }
+});
