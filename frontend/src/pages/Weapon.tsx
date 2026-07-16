@@ -5,6 +5,7 @@ import { fetchWeapons, fetchCharacters } from "../api";
 import { Card, Icon, RarityStars, StatRow } from "../components/ui";
 import { formatStat, statLabel } from "../format";
 import { weaponRecommenders } from "../recommendations";
+import { SIGNATURE_WEAPONS } from "../data/signatureWeapons";
 
 /** Render an effect template, substituting {0}/{1}… with the refinement values (highlighted). */
 function renderEffect(template: string, values: string[]) {
@@ -29,7 +30,9 @@ export function WeaponPage() {
   const rosterQ = useQuery({ queryKey: ["characters", "all"], queryFn: () => fetchCharacters({}) });
 
   const weapon = weaponsQ.data?.find((w) => w.id === id);
-  const { signature, others } = id ? weaponRecommenders(id) : { signature: [], others: [] };
+  const { signature: topPicks, others } = id ? weaponRecommenders(id) : { signature: [], others: [] };
+  const sigChar = id ? SIGNATURE_WEAPONS[id] : undefined; // true 1:1 signature holder
+  const bis = topPicks.filter((c) => c !== sigChar); // best-in-slot users, minus the signature holder
   const byId = (cid: string) => rosterQ.data?.find((c) => c.id === cid);
 
   if (weaponsQ.isLoading) return <p className="muted">Loading weapon…</p>;
@@ -81,7 +84,7 @@ export function WeaponPage() {
         )}
       </header>
 
-      <div className="char-body">
+      <div className="weapon-body">
         <Card title="Stats">
           <StatRow
             label="Base ATK"
@@ -139,19 +142,25 @@ export function WeaponPage() {
         ) : null}
 
         <Card title="Recommended by">
-          {signature.length ? (
+          {sigChar ? (
             <div className="rec-group">
-              <div className="rec-label sig-label">★ Signature / best-in-slot for</div>
-              <div className="used-by">{signature.map((cid) => chip(cid, true))}</div>
+              <div className="rec-label sig-label">★ Signature weapon of</div>
+              <div className="used-by">{chip(sigChar, true)}</div>
+            </div>
+          ) : null}
+          {bis.length ? (
+            <div className="rec-group">
+              <div className="rec-label">Best-in-slot for</div>
+              <div className="used-by">{bis.map((cid) => chip(cid))}</div>
             </div>
           ) : null}
           {others.length ? (
             <div className="rec-group">
-              <div className="rec-label muted">{signature.length ? "Also recommended by" : "Recommended by"}</div>
+              <div className="rec-label muted">Also recommended by</div>
               <div className="used-by">{others.map((cid) => chip(cid))}</div>
             </div>
           ) : null}
-          {!signature.length && !others.length ? (
+          {!sigChar && !bis.length && !others.length ? (
             <p className="muted small">No characters recommend this weapon in our data.</p>
           ) : null}
         </Card>

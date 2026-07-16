@@ -15,7 +15,9 @@ test("browse the weapons page", async ({ page }) => {
   await card.click();
   await expect(page).toHaveURL(/\/weapon\/staff-of-homa$/);
   await expect(page.getByRole("heading", { name: "Staff of Homa", level: 1 })).toBeVisible();
-  await expect(page.locator(".used-by-chip", { hasText: "Hu Tao" })).toBeVisible();
+  // Hu Tao is the 1:1 signature holder (curated), shown in the highlighted signature slot.
+  await expect(page.getByText("★ Signature weapon of")).toBeVisible();
+  await expect(page.locator(".used-by-chip.sig", { hasText: "Hu Tao" })).toBeVisible();
 
   // Passive ability with a working R1–R5 refinement slider (weapon-page-details).
   await expect(page.getByRole("heading", { name: "Passive ability" })).toBeVisible();
