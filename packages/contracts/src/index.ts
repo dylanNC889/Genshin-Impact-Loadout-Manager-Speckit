@@ -179,16 +179,35 @@ export const CharacterSchema = z.object({
 });
 export type Character = z.infer<typeof CharacterSchema>;
 
+/** A weapon's passive ability, with per-refinement placeholder values (from genshin-db). */
+export const WeaponPassiveSchema = z.object({
+  name: z.string(),
+  /** Effect text with {0}/{1}… placeholders (rich-text tags stripped). */
+  template: z.string(),
+  /** Placeholder values per refinement rank: index 0 = R1 … index 4 = R5. */
+  refinements: z.array(z.array(z.string())).default([]),
+});
+export type WeaponPassive = z.infer<typeof WeaponPassiveSchema>;
+
 export const WeaponSchema = z.object({
   id: z.string(),
   name: z.string(),
   weaponType: WeaponTypeSchema,
   rarity: RaritySchema,
   icon: z.string().default(""),
+  /** Refined/awakened icon URL (enka). */
+  awakenIcon: z.string().default(""),
+  /** Gacha splash art URL (enka); used for the weapon detail hero. */
+  splashArt: z.string().default(""),
   /** Base ATK at the weapon's max level (used by loadouts at endgame). */
   baseATK: z.number(),
   secondaryStat: StatValueSchema.optional(),
   passiveStatBonuses: z.array(StatValueSchema).default([]),
+  /** Passive ability (name + effect template + refinement values). */
+  passive: WeaponPassiveSchema.optional(),
+  /** Flavor description + lore (from genshin-db). */
+  description: z.string().default(""),
+  story: z.string().default(""),
 });
 export type Weapon = z.infer<typeof WeaponSchema>;
 

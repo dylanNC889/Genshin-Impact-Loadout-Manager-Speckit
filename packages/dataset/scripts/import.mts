@@ -18,6 +18,8 @@ const round = (n: number) => Math.round(n * 100) / 100;
 // enka.network hosts every game UI icon by its internal filename — complete + reliable
 // (mihoyo's CDN 404s on newer content and lacks many artifact icons).
 const enkaUrl = (filename?: string) => (filename ? `https://enka.network/ui/${filename}.png` : "");
+// Strip genshin-db rich-text markup (e.g. <color=#..>…</color>), keeping {0}/{1} placeholders.
+const stripTags = (s: string) => s.replace(/<[^>]+>/g, "").trim();
 const slug = (s: string) =>
   s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
 
@@ -324,9 +326,22 @@ for (const name of weaponNames) {
       weaponType: w.weaponText,
       rarity: w.rarity,
       icon: enkaUrl(w.images?.filename_icon),
+      awakenIcon: enkaUrl(w.images?.filename_awakenIcon),
+      splashArt: enkaUrl(w.images?.filename_gacha),
       baseATK: round(s90.attack),
       ...(secKey ? { secondaryStat: { key: secKey, value: ascensionValue(secKey, s90.specialized) } } : {}),
       passiveStatBonuses: [],
+      ...(w.effectName
+        ? {
+            passive: {
+              name: String(w.effectName),
+              template: stripTags(String(w.effectTemplateRaw ?? "")),
+              refinements: [w.r1, w.r2, w.r3, w.r4, w.r5].map((r: any) => (r?.values ?? []).map(String)),
+            },
+          }
+        : {}),
+      description: String(w.description ?? ""),
+      story: String(w.story ?? ""),
     });
   } catch {
     /* skip */

@@ -224,6 +224,126 @@ select {
   border-color: var(--accent);
 }
 
+/* --- Weapon rarity tinting (list cards + detail hero) --- */
+.char-card.rarity-5,
+.weapon-hero.rarity-5 {
+  border-color: #b8934a;
+}
+
+.char-card.rarity-4,
+.weapon-hero.rarity-4 {
+  border-color: #7e5aa8;
+}
+
+.char-card.rarity-3,
+.weapon-hero.rarity-3 {
+  border-color: #4a6f9e;
+}
+
+.char-card.rarity-5 {
+  background: linear-gradient(180deg, rgba(184, 147, 74, 0.14), var(--surface));
+}
+
+.char-card.rarity-4 {
+  background: linear-gradient(180deg, rgba(126, 90, 168, 0.14), var(--surface));
+}
+
+.char-card.rarity-3 {
+  background: linear-gradient(180deg, rgba(74, 111, 158, 0.12), var(--surface));
+}
+
+.weapon-card-passive {
+  font-style: italic;
+  color: var(--accent);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* --- Weapon detail hero --- */
+.weapon-hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  margin: 12px 0 20px;
+  overflow: hidden;
+}
+
+.weapon-hero.rarity-5 {
+  background: linear-gradient(120deg, rgba(184, 147, 74, 0.22), var(--surface) 70%);
+}
+
+.weapon-hero.rarity-4 {
+  background: linear-gradient(120deg, rgba(126, 90, 168, 0.22), var(--surface) 70%);
+}
+
+.weapon-hero.rarity-3 {
+  background: linear-gradient(120deg, rgba(74, 111, 158, 0.2), var(--surface) 70%);
+}
+
+.weapon-hero-info h1 {
+  margin: 8px 0 4px;
+}
+
+.weapon-hero-passive {
+  margin: 0;
+  color: var(--accent);
+  font-style: italic;
+}
+
+.weapon-hero-art {
+  width: 140px;
+  height: 140px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+/* --- Weapon passive + lore --- */
+.passive-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.refine-select {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.passive-text {
+  margin: 0;
+  line-height: 1.5;
+  white-space: pre-line;
+}
+
+.passive-text .hl {
+  color: var(--accent);
+}
+
+.weapon-desc {
+  margin: 0 0 10px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.weapon-story {
+  margin: 8px 0 0;
+  color: var(--muted);
+  line-height: 1.5;
+  font-size: 13px;
+  white-space: pre-line;
+}
+
 /* --- Compare page (B2) --- */
 .compare-pickers {
   display: flex;
