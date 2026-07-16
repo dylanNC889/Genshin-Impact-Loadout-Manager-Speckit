@@ -27,9 +27,10 @@ export function ComparePage() {
   const loA = loadouts.find((l) => l.id === a);
   const loB = loadouts.find((l) => l.id === b);
 
-  // Union of stat keys present in either build (ordered), plus any DMG bonuses.
+  // Union of stat keys present in either build (ordered), plus any elemental/phys DMG bonuses.
+  // Exclude keys already in ORDER — CRIT_DMG ends with "_DMG" too and must not be listed twice.
   const extraKeys = [...new Set([...(loA?.computedFinalStats ?? []), ...(loB?.computedFinalStats ?? [])].map((s) => s.key))]
-    .filter((k) => k.endsWith("_DMG"))
+    .filter((k) => k.endsWith("_DMG") && !ORDER.includes(k))
     .sort();
   const keys = [...ORDER, ...extraKeys];
 
