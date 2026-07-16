@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/server.ts",
+    "dev": "tsx watch --watch-path=../data src/server.ts",
     "start": "tsx src/server.ts",
     "typecheck": "tsc -b"
   },
