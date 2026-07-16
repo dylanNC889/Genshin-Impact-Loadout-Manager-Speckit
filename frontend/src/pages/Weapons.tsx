@@ -7,11 +7,18 @@ import { formatStat, statLabel } from "../format";
 
 const WEAPONS = ["Sword", "Claymore", "Polearm", "Bow", "Catalyst"];
 const RARITIES = [5, 4, 3];
+const SORTS = [
+  { key: "rarity", label: "Rarity" },
+  { key: "atk", label: "Base ATK" },
+  { key: "name", label: "Name" },
+] as const;
+type SortKey = (typeof SORTS)[number]["key"];
 
 export function Weapons() {
   const [q, setQ] = useState("");
   const [weaponType, setWeaponType] = useState("");
   const [rarity, setRarity] = useState("");
+  const [sort, setSort] = useState<SortKey>("rarity");
 
   // The API filters by weaponType server-side; name + rarity are filtered client-side.
   const { data, isLoading, error } = useQuery({
@@ -22,7 +29,13 @@ export function Weapons() {
   const needle = q.trim().toLowerCase();
   const weapons = data
     ?.filter((w) => (rarity ? w.rarity === Number(rarity) : true))
-    .filter((w) => (needle ? w.name.toLowerCase().includes(needle) || w.id.includes(needle) : true));
+    .filter((w) => (needle ? w.name.toLowerCase().includes(needle) || w.id.includes(needle) : true))
+    .slice()
+    .sort((a, b) => {
+      if (sort === "name") return a.name.localeCompare(b.name);
+      if (sort === "atk") return b.baseATK - a.baseATK;
+      return b.rarity - a.rarity || b.baseATK - a.baseATK; // rarity desc, then ATK
+    });
 
   return (
     <div className="roster">
@@ -50,6 +63,13 @@ export function Weapons() {
             </option>
           ))}
         </select>
+        <select value={sort} onChange={(e) => setSort(e.target.value as SortKey)} aria-label="Sort by">
+          {SORTS.map((s) => (
+            <option key={s.key} value={s.key}>
+              Sort: {s.label}
+            </option>
+          ))}
+        </select>
       </div>
 
       {isLoading ? <p className="muted">Loading weapons…</p> : null}
@@ -57,13 +77,14 @@ export function Weapons() {
 
       <div className="grid">
         {weapons?.map((w) => (
-          <Link key={w.id} to={`/weapon/${w.id}`} className="char-card">
+          <Link key={w.id} to={`/weapon/${w.id}`} className={`char-card rarity-${w.rarity}`}>
             <div className="char-card-head">
               <span className="muted small">{w.weaponType}</span>
               <RarityStars rarity={w.rarity} />
             </div>
             <Icon src={w.icon} alt={w.name} size={64} className="char-card-icon" />
             <div className="char-name">{w.name}</div>
+            {w.passive?.name ? <div className="muted small weapon-card-passive">{w.passive.name}</div> : null}
             <div className="ref-stats">
               <span className="muted small">Base ATK {Math.round(w.baseATK)}</span>
               {w.secondaryStat ? (
