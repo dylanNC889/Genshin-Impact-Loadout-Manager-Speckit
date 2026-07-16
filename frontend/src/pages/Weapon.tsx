@@ -84,8 +84,9 @@ export function WeaponPage() {
         )}
       </header>
 
-      <div className="detail-masonry">
-        <Card title="Stats">
+      <div className="detail-cols">
+        <div className="detail-col">
+          <Card title="Stats">
           <StatRow
             label="Base ATK"
             value={weapon.baseATKMin ? `${Math.round(weapon.baseATKMin)} → ${Math.round(weapon.baseATK)}` : Math.round(weapon.baseATK)}
@@ -149,21 +150,24 @@ export function WeaponPage() {
           {!sigChar && !bis.length && !others.length ? (
             <p className="muted small">No characters recommend this weapon in our data.</p>
           ) : null}
-        </Card>
-
-        {weapon.description || weapon.story ? (
-          <Card title="Lore">
-            {weapon.description ? <p className="weapon-desc">{weapon.description}</p> : null}
-            {weapon.story ? (
-              <>
-                <button className="btn ghost small" onClick={() => setShowStory((s) => !s)}>
-                  {showStory ? "Hide story" : "Read story"}
-                </button>
-                {showStory ? <p className="weapon-story">{weapon.story}</p> : null}
-              </>
-            ) : null}
           </Card>
-        ) : null}
+        </div>
+
+        <div className="detail-col">
+          {weapon.description || weapon.story ? (
+            <Card title="Lore">
+              {weapon.description ? <p className="weapon-desc">{weapon.description}</p> : null}
+              {weapon.story ? (
+                <>
+                  <button className="btn ghost small" onClick={() => setShowStory((s) => !s)}>
+                    {showStory ? "Hide story" : "Read story"}
+                  </button>
+                  {showStory ? <p className="weapon-story">{weapon.story}</p> : null}
+                </>
+              ) : null}
+            </Card>
+          ) : null}
+        </div>
       </div>
     </div>
   );
