@@ -17,11 +17,13 @@ test("browse the weapons page", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Staff of Homa", level: 1 })).toBeVisible();
   await expect(page.locator(".used-by-chip", { hasText: "Hu Tao" })).toBeVisible();
 
-  // Passive ability with a working R1–R5 refinement selector (weapon-page-details).
+  // Passive ability with a working R1–R5 refinement slider (weapon-page-details).
   await expect(page.getByRole("heading", { name: "Passive ability" })).toBeVisible();
   const firstHl = page.locator(".passive-text .hl").first();
   const atR1 = await firstHl.textContent();
-  await page.getByLabel("Refinement").selectOption("5");
+  const slider = page.getByLabel("Refinement");
+  await slider.fill("5");
+  await expect(slider).toHaveValue("5");
   await expect(firstHl).not.toHaveText(atR1 ?? "");
 });
 

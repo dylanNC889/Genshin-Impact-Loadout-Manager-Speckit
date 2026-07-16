@@ -13,6 +13,20 @@ export function recommendingCharacters(id: string): string[] {
     .map(([charId]) => charId);
 }
 
+/**
+ * Weapon reverse lookup split by rank: `signature` = characters whose #1 (top KQM pick)
+ * weapon this is — i.e. their signature/best-in-slot; `others` = the rest that recommend it.
+ */
+export function weaponRecommenders(id: string): { signature: string[]; others: string[] } {
+  const signature: string[] = [];
+  const others: string[] = [];
+  for (const [charId, r] of Object.entries(RECOMMENDATIONS)) {
+    if (r.weapons[0] === id) signature.push(charId);
+    else if (r.weapons.includes(id)) others.push(charId);
+  }
+  return { signature, others };
+}
+
 /** Element → signature artifact-set ids, for the heuristic fallback only. */
 const ELEMENT_SET_HINTS: Record<string, string[]> = {
   Pyro: ["crimson-witch-of-flames"],

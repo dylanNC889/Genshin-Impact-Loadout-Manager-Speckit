@@ -296,11 +296,71 @@ select {
   font-style: italic;
 }
 
+.weapon-hero-stats {
+  display: flex;
+  gap: 20px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.weapon-hero-stats b {
+  color: var(--text);
+  font-size: 18px;
+  font-variant-numeric: tabular-nums;
+  margin-right: 4px;
+}
+
 .weapon-hero-art {
-  width: 140px;
-  height: 140px;
+  width: 210px;
+  height: 210px;
   object-fit: contain;
   flex-shrink: 0;
+  filter: drop-shadow(0 6px 16px rgba(0, 0, 0, 0.5));
+}
+
+@media (max-width: 620px) {
+  .weapon-hero {
+    flex-direction: column-reverse;
+    text-align: center;
+  }
+  .weapon-hero-art {
+    width: 160px;
+    height: 160px;
+  }
+  .weapon-hero-stats {
+    justify-content: center;
+  }
+}
+
+/* --- Weapon stats + recommended-by --- */
+.stat-foot {
+  margin: 10px 0 0;
+}
+
+.refine-slider {
+  margin: 10px 0;
+}
+
+.rec-group + .rec-group {
+  margin-top: 14px;
+}
+
+.rec-label {
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.sig-label {
+  color: var(--accent);
+}
+
+.used-by-chip.sig {
+  border-color: var(--accent);
+  background: linear-gradient(180deg, rgba(255, 214, 107, 0.16), var(--surface-2));
+  font-weight: 600;
 }
 
 /* --- Weapon passive + lore --- */
