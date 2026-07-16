@@ -8,6 +8,8 @@ export interface CharacterSummary {
   rarity: Character["rarity"];
   icon: string;
   region: string;
+  /** Debut version (e.g. "1.3") — for signature weapon/set derivation. */
+  version: string;
 }
 
 export interface CharacterDetail {
@@ -37,6 +39,7 @@ export function listCharacters(dataset: Dataset, filters: CharacterFilters = {})
       rarity: c.rarity,
       icon: c.icon,
       region: c.region,
+      version: c.version,
     }));
 }
 

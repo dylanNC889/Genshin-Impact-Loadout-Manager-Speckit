@@ -60,6 +60,7 @@ interface RawCharacter {
   region?: string;
   constellation?: string;
   cv?: string;
+  version?: string;
   splashArt?: string;
 }
 
@@ -126,6 +127,7 @@ function normalizeCharacter(raw: RawCharacter): Character {
     region: raw.region ?? "",
     constellation: raw.constellation ?? "",
     cv: raw.cv ?? "",
+    version: raw.version ?? "",
     splashArt: raw.splashArt ?? "",
   };
   // Validate the assembled record against the contract (single source of truth).

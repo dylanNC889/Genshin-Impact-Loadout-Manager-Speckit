@@ -16,6 +16,7 @@ export interface CharacterSummary {
   rarity: number;
   icon: string;
   region: string;
+  version: string;
 }
 
 export interface CharacterDetail {

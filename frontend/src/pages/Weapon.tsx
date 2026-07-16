@@ -4,8 +4,7 @@ import { useParams, Link } from "react-router-dom";
 import { fetchWeapons, fetchCharacters } from "../api";
 import { Card, Icon, RarityStars, StatRow } from "../components/ui";
 import { formatStat, statLabel } from "../format";
-import { weaponRecommenders } from "../recommendations";
-import { SIGNATURE_WEAPONS } from "../data/signatureWeapons";
+import { weaponRecommenders, signatureWeaponHolder } from "../recommendations";
 
 /** Render an effect template, substituting {0}/{1}… with the refinement values (highlighted). */
 function renderEffect(template: string, values: string[]) {
@@ -30,10 +29,11 @@ export function WeaponPage() {
   const rosterQ = useQuery({ queryKey: ["characters", "all"], queryFn: () => fetchCharacters({}) });
 
   const weapon = weaponsQ.data?.find((w) => w.id === id);
-  const { signature: topPicks, others } = id ? weaponRecommenders(id) : { signature: [], others: [] };
-  const sigChar = id ? SIGNATURE_WEAPONS[id] : undefined; // true 1:1 signature holder
+  const roster = rosterQ.data ?? [];
+  const { top: topPicks, others } = id ? weaponRecommenders(id) : { top: [], others: [] };
+  const sigChar = weapon ? signatureWeaponHolder(weapon, roster) : undefined; // released-with holder
   const bis = topPicks.filter((c) => c !== sigChar); // best-in-slot users, minus the signature holder
-  const byId = (cid: string) => rosterQ.data?.find((c) => c.id === cid);
+  const byId = (cid: string) => roster.find((c) => c.id === cid);
 
   if (weaponsQ.isLoading) return <p className="muted">Loading weapon…</p>;
   if (!weapon) return <p className="muted">No weapon with id “{id}”.</p>;
@@ -84,7 +84,7 @@ export function WeaponPage() {
         )}
       </header>
 
-      <div className="weapon-body">
+      <div className="detail-masonry">
         <Card title="Stats">
           <StatRow
             label="Base ATK"
@@ -127,20 +127,6 @@ export function WeaponPage() {
           </Card>
         ) : null}
 
-        {weapon.description || weapon.story ? (
-          <Card title="Lore">
-            {weapon.description ? <p className="weapon-desc">{weapon.description}</p> : null}
-            {weapon.story ? (
-              <>
-                <button className="btn ghost small" onClick={() => setShowStory((s) => !s)}>
-                  {showStory ? "Hide story" : "Read story"}
-                </button>
-                {showStory ? <p className="weapon-story">{weapon.story}</p> : null}
-              </>
-            ) : null}
-          </Card>
-        ) : null}
-
         <Card title="Recommended by">
           {sigChar ? (
             <div className="rec-group">
@@ -164,6 +150,20 @@ export function WeaponPage() {
             <p className="muted small">No characters recommend this weapon in our data.</p>
           ) : null}
         </Card>
+
+        {weapon.description || weapon.story ? (
+          <Card title="Lore">
+            {weapon.description ? <p className="weapon-desc">{weapon.description}</p> : null}
+            {weapon.story ? (
+              <>
+                <button className="btn ghost small" onClick={() => setShowStory((s) => !s)}>
+                  {showStory ? "Hide story" : "Read story"}
+                </button>
+                {showStory ? <p className="weapon-story">{weapon.story}</p> : null}
+              </>
+            ) : null}
+          </Card>
+        ) : null}
       </div>
     </div>
   );

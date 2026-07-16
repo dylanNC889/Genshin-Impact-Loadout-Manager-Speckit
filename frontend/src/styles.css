@@ -365,18 +365,18 @@ select {
 
 /* Masonry-style layout: cards size to their content and flow naturally (not a rigid grid),
    so a short Stats box doesn't leave a gap and Lore floats up beneath it. */
-.weapon-body {
+.detail-masonry {
   columns: 2;
   column-gap: 16px;
 }
 
-.weapon-body > .card {
+.detail-masonry > .card {
   break-inside: avoid;
   margin: 0 0 16px;
 }
 
 @media (max-width: 720px) {
-  .weapon-body {
+  .detail-masonry {
     columns: 1;
   }
 }
