@@ -39,3 +39,13 @@ test("browse the artifacts page and see set bonuses", async ({ page }) => {
   await expect(card).toHaveCount(1);
   await expect(card.getByText("Pyro DMG Bonus +15%")).toBeVisible();
 });
+
+// Artifact detail: same signature/BiS/recommended treatment as weapons.
+test("artifact detail shows the signature set holder", async ({ page }) => {
+  // Marechaussee Hunter debuted in 4.0 with Lyney → derived as its signature set.
+  await page.goto("/artifact/marechaussee-hunter");
+  await expect(page.getByRole("heading", { name: "Marechaussee Hunter", level: 1 })).toBeVisible();
+  await expect(page.getByText("★ Signature set of")).toBeVisible();
+  await expect(page.locator(".used-by-chip.sig", { hasText: "Lyney" })).toBeVisible();
+  await expect(page.getByText("Best-in-slot for")).toBeVisible();
+});

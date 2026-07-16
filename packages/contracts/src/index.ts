@@ -174,6 +174,8 @@ export const CharacterSchema = z.object({
   region: z.string().default(""),
   constellation: z.string().default(""),
   cv: z.string().default(""),
+  /** Debut game version (e.g. "1.3") — used to derive signature weapon/set pairings. */
+  version: z.string().default(""),
   /** Vertical gacha portrait URL (enka, 320x1024); used for team-builder portraits. */
   splashArt: z.string().default(""),
 });
@@ -212,6 +214,8 @@ export const WeaponSchema = z.object({
   /** Flavor description + lore (from genshin-db). */
   description: z.string().default(""),
   story: z.string().default(""),
+  /** Debut game version (e.g. "1.3") — used to derive the signature holder. */
+  version: z.string().default(""),
 });
 export type Weapon = z.infer<typeof WeaponSchema>;
 
@@ -221,6 +225,8 @@ export const ArtifactSetSchema = z.object({
   icon: z.string().default(""),
   bonus2: z.object({ description: z.string().default(""), statBonuses: z.array(StatValueSchema).default([]) }).optional(),
   bonus4: z.object({ description: z.string().default(""), statBonuses: z.array(StatValueSchema).default([]) }).optional(),
+  /** Debut game version (e.g. "4.1") — used to derive the signature holder. */
+  version: z.string().default(""),
 });
 export type ArtifactSet = z.infer<typeof ArtifactSetSchema>;
 

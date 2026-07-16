@@ -4,7 +4,7 @@ import type { StatValue } from "@app/contracts";
 import { fetchArtifactSets, fetchCharacters } from "../api";
 import { Card, Icon } from "../components/ui";
 import { formatStat, statLabel } from "../format";
-import { recommendingCharacters } from "../recommendations";
+import { setRecommenders, signatureSetHolder } from "../recommendations";
 
 function bonusText(bonus?: { description: string; statBonuses: StatValue[] }): string | null {
   if (!bonus) return null;
@@ -21,14 +21,27 @@ export function ArtifactPage() {
   const rosterQ = useQuery({ queryKey: ["characters", "all"], queryFn: () => fetchCharacters({}) });
 
   const set = setsQ.data?.find((s) => s.id === id);
-  const usedBy = id ? recommendingCharacters(id) : [];
-  const byId = (cid: string) => rosterQ.data?.find((c) => c.id === cid);
+  const roster = rosterQ.data ?? [];
+  const { top: topPicks, others } = id ? setRecommenders(id) : { top: [], others: [] };
+  const sigChar = set ? signatureSetHolder(set, roster) : undefined; // set released-with holder
+  const bis = topPicks.filter((c) => c !== sigChar);
+  const byId = (cid: string) => roster.find((c) => c.id === cid);
 
   if (setsQ.isLoading) return <p className="muted">Loading artifact set…</p>;
   if (!set) return <p className="muted">No artifact set with id “{id}”.</p>;
 
   const two = bonusText(set.bonus2);
   const four = bonusText(set.bonus4);
+
+  const chip = (cid: string, sig = false) => {
+    const c = byId(cid);
+    return (
+      <Link key={cid} to={`/character/${cid}`} className={`used-by-chip${sig ? " sig" : ""}`}>
+        <Icon src={c?.icon} alt="" size={sig ? 32 : 28} />
+        <span>{c?.name ?? cid}</span>
+      </Link>
+    );
+  };
 
   return (
     <div className="detail">
@@ -42,7 +55,7 @@ export function ArtifactPage() {
         </div>
       </div>
 
-      <div className="char-body">
+      <div className="detail-masonry">
         <Card title="Set bonuses">
           {two ? (
             <p className="set-bonus">
@@ -56,22 +69,28 @@ export function ArtifactPage() {
           ) : null}
         </Card>
 
-        <Card title={`Recommended by (${usedBy.length})`}>
-          {usedBy.length ? (
-            <div className="used-by">
-              {usedBy.map((cid) => {
-                const c = byId(cid);
-                return (
-                  <Link key={cid} to={`/character/${cid}`} className="used-by-chip">
-                    <Icon src={c?.icon} alt="" size={28} />
-                    <span>{c?.name ?? cid}</span>
-                  </Link>
-                );
-              })}
+        <Card title="Recommended by">
+          {sigChar ? (
+            <div className="rec-group">
+              <div className="rec-label sig-label">★ Signature set of</div>
+              <div className="used-by">{chip(sigChar, true)}</div>
             </div>
-          ) : (
+          ) : null}
+          {bis.length ? (
+            <div className="rec-group">
+              <div className="rec-label">Best-in-slot for</div>
+              <div className="used-by">{bis.map((cid) => chip(cid))}</div>
+            </div>
+          ) : null}
+          {others.length ? (
+            <div className="rec-group">
+              <div className="rec-label muted">Also recommended by</div>
+              <div className="used-by">{others.map((cid) => chip(cid))}</div>
+            </div>
+          ) : null}
+          {!sigChar && !bis.length && !others.length ? (
             <p className="muted small">No characters recommend this set in our data.</p>
-          )}
+          ) : null}
         </Card>
       </div>
     </div>

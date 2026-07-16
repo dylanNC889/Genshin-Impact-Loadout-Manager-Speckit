@@ -301,6 +301,7 @@ for (const name of charNames) {
       region: c.region ?? "",
       constellation: c.constellation ?? "",
       cv: c.cv?.english ?? "",
+      version: String(c.version ?? ""),
       // Vertical wish-preview art (320x1024) — ideal for team-builder portrait columns.
       splashArt: enkaUrl(c.images?.filename_gachaSlice),
     });
@@ -349,6 +350,7 @@ for (const name of weaponNames) {
         : {}),
       description: String(w.description ?? ""),
       story: String(w.story ?? ""),
+      version: String(w.version ?? ""),
     });
   } catch {
     /* skip */
@@ -369,6 +371,7 @@ for (const name of artifactNames) {
       icon: enkaUrl(a.images?.filename_flower ?? a.images?.filename_circlet),
       bonus2: { description: String(a.effect2Pc ?? ""), statBonuses: parse2pc(String(a.effect2Pc ?? "")) },
       bonus4: { description: String(a.effect4Pc ?? ""), statBonuses: [] },
+      version: String(a.version ?? ""),
     });
   } catch {
     /* skip */

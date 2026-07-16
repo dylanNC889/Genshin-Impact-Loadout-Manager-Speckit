@@ -39,6 +39,7 @@ export async function fetchCharacters(params: {
       rarity: c.rarity,
       icon: c.icon,
       region: c.region,
+      version: c.version,
     }));
 }
 
