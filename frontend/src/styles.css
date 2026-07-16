@@ -363,6 +363,42 @@ select {
   font-weight: 600;
 }
 
+/* --- Artifact pieces list --- */
+.piece-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.piece {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.piece-name {
+  font-weight: 600;
+}
+
+.piece-slot {
+  color: var(--muted);
+  font-weight: 400;
+  font-size: 12px;
+  margin-left: 4px;
+}
+
+.piece-desc {
+  margin: 2px 0 0;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
 /* Masonry-style layout: cards size to their content and flow naturally (not a rigid grid),
    so a short Stats box doesn't leave a gap and Lore floats up beneath it. */
 .detail-masonry {
