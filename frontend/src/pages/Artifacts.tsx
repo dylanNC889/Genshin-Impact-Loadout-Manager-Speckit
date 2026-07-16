@@ -16,8 +16,23 @@ function bonusText(bonus?: { description: string; statBonuses: StatValue[] }): s
   return null;
 }
 
+const SORTS = [
+  { key: "name", label: "Name" },
+  { key: "newest", label: "Newest" },
+  { key: "rarity", label: "Rarity" },
+] as const;
+type SortKey = (typeof SORTS)[number]["key"];
+
+/** Numeric ordering for a "major.minor" version string ("4.10" > "4.2"). */
+const versionNum = (v: string) => {
+  const [maj, min] = v.split(".").map(Number);
+  return (maj || 0) * 1000 + (min || 0);
+};
+const maxRarity = (rs: number[]) => (rs.length ? Math.max(...rs) : 0);
+
 export function Artifacts() {
   const [q, setQ] = useState("");
+  const [sort, setSort] = useState<SortKey>("name");
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["artifact-sets"],
@@ -25,7 +40,14 @@ export function Artifacts() {
   });
 
   const needle = q.trim().toLowerCase();
-  const sets = data?.filter((s) => (needle ? s.name.toLowerCase().includes(needle) || s.id.includes(needle) : true));
+  const sets = data
+    ?.filter((s) => (needle ? s.name.toLowerCase().includes(needle) || s.id.includes(needle) : true))
+    .slice()
+    .sort((a, b) => {
+      if (sort === "newest") return versionNum(b.version) - versionNum(a.version) || a.name.localeCompare(b.name);
+      if (sort === "rarity") return maxRarity(b.rarities) - maxRarity(a.rarities) || a.name.localeCompare(b.name);
+      return a.name.localeCompare(b.name);
+    });
 
   return (
     <div className="roster">
@@ -37,6 +59,13 @@ export function Artifacts() {
           onChange={(e) => setQ(e.target.value)}
           aria-label="Search artifact sets"
         />
+        <select value={sort} onChange={(e) => setSort(e.target.value as SortKey)} aria-label="Sort by">
+          {SORTS.map((s) => (
+            <option key={s.key} value={s.key}>
+              Sort: {s.label}
+            </option>
+          ))}
+        </select>
       </div>
 
       {isLoading ? <p className="muted">Loading artifact sets…</p> : null}

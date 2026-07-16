@@ -34,6 +34,7 @@ test("browse the artifacts page and see set bonuses", async ({ page }) => {
   await page.getByRole("link", { name: "Artifacts" }).click();
   await expect(page).toHaveURL(/\/artifacts$/);
 
+  await expect(page.getByLabel("Sort by")).toBeVisible();
   await page.getByLabel("Search artifact sets").fill("Crimson Witch");
   const card = page.locator(".set-card", { hasText: "Crimson Witch of Flames" });
   await expect(card).toHaveCount(1);
@@ -53,4 +54,9 @@ test("artifact detail shows the signature set holder", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Pieces" })).toBeVisible();
   await expect(page.locator(".piece", { hasText: "Hunter's Brooch" })).toBeVisible();
   await expect(page.locator(".piece-list .piece")).toHaveCount(5);
+
+  // Farming domain + expandable per-piece lore.
+  await expect(page.getByText(/Farmed at/)).toBeVisible();
+  await page.locator(".piece-lore summary").first().click();
+  await expect(page.locator(".piece-story").first()).toBeVisible();
 });

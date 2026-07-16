@@ -229,7 +229,9 @@ export const ArtifactSetSchema = z.object({
   version: z.string().default(""),
   /** Rarities the set drops in (e.g. [4, 5]). */
   rarities: z.array(z.number()).default([]),
-  /** The five named pieces, each with its own art + flavor text. */
+  /** Where the set is farmed (reverse-looked-up from domain reward previews). */
+  domain: z.object({ name: z.string(), region: z.string().default("") }).optional(),
+  /** The five named pieces, each with its own art + flavor + lore. */
   pieces: z
     .array(
       z.object({
@@ -237,6 +239,7 @@ export const ArtifactSetSchema = z.object({
         name: z.string(),
         icon: z.string().default(""),
         description: z.string().default(""),
+        story: z.string().default(""),
       }),
     )
     .default([]),

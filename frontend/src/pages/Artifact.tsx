@@ -59,6 +59,12 @@ export function ArtifactPage() {
                 <span className="muted small">{set.pieces.length ? `${set.pieces.length}-piece set` : ""}</span>
               </div>
             ) : null}
+            {set.domain ? (
+              <p className="muted small artifact-source">
+                ⛏ Farmed at {set.domain.name}
+                {set.domain.region ? ` · ${set.domain.region}` : ""}
+              </p>
+            ) : null}
           </div>
         </div>
       </div>
@@ -88,6 +94,12 @@ export function ArtifactPage() {
                       {p.name} <span className="piece-slot">{p.slot}</span>
                     </div>
                     {p.description ? <p className="piece-desc muted small">{p.description}</p> : null}
+                    {p.story ? (
+                      <details className="piece-lore">
+                        <summary>Lore</summary>
+                        <p className="piece-story muted small">{p.story}</p>
+                      </details>
+                    ) : null}
                   </div>
                 </li>
               ))}

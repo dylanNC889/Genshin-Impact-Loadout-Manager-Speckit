@@ -399,6 +399,27 @@ select {
   overflow: hidden;
 }
 
+.piece-lore {
+  margin-top: 4px;
+}
+
+.piece-lore summary {
+  cursor: pointer;
+  color: var(--accent);
+  font-size: 12px;
+  width: fit-content;
+}
+
+.piece-story {
+  margin: 6px 0 0;
+  line-height: 1.5;
+  white-space: pre-line;
+}
+
+.artifact-source {
+  margin: 6px 0 0;
+}
+
 /* Masonry-style layout: cards size to their content and flow naturally (not a rigid grid),
    so a short Stats box doesn't leave a gap and Lore floats up beneath it. */
 .detail-masonry {
