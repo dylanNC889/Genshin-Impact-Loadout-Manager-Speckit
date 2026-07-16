@@ -363,6 +363,24 @@ select {
   font-weight: 600;
 }
 
+/* Masonry-style layout: cards size to their content and flow naturally (not a rigid grid),
+   so a short Stats box doesn't leave a gap and Lore floats up beneath it. */
+.weapon-body {
+  columns: 2;
+  column-gap: 16px;
+}
+
+.weapon-body > .card {
+  break-inside: avoid;
+  margin: 0 0 16px;
+}
+
+@media (max-width: 720px) {
+  .weapon-body {
+    columns: 1;
+  }
+}
+
 /* --- Weapon passive + lore --- */
 .passive-head {
   display: flex;
