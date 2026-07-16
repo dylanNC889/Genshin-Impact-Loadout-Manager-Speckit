@@ -365,6 +365,24 @@ const PIECE_SLOTS: [string, string][] = [
   ["goblet", "Goblet"],
   ["circlet", "Circlet"],
 ];
+// Reverse lookup: which domain drops each set (artifacts have no domain field). Build a
+// set-name → domain map by scanning every domain's reward preview once.
+const domainNames = genshindb.domains("names", { matchCategories: true }) as string[];
+const setDomain: Record<string, { name: string; region: string }> = {};
+for (const dn of domainNames) {
+  try {
+    const d = genshindb.domains(dn) as any;
+    if (!d || !Array.isArray(d.rewardPreview)) continue;
+    // Strip the tier suffix ("… I".."… IV") so all tiers share one clean domain name.
+    const cleanName = String(d.name).replace(/\s+(?:I{1,3}|IV|V)$/, "").trim();
+    for (const r of d.rewardPreview) {
+      if (r?.name && !setDomain[r.name]) setDomain[r.name] = { name: cleanName, region: String(d.regionName ?? "") };
+    }
+  } catch {
+    /* skip */
+  }
+}
+
 const artifactNames = genshindb.artifacts("names", { matchCategories: true }) as string[];
 const artifactSets: any[] = [];
 for (const name of artifactNames) {
@@ -380,12 +398,14 @@ for (const name of artifactNames) {
       bonus4: { description: String(a.effect4Pc ?? ""), statBonuses: [] },
       version: String(a.version ?? ""),
       rarities: Array.isArray(a.rarityList) ? a.rarityList.filter((r: any) => typeof r === "number") : [],
-      // The five named pieces, each with its own art + flavor text.
+      ...(setDomain[a.name] ? { domain: setDomain[a.name] } : {}),
+      // The five named pieces, each with its own art + flavor + lore.
       pieces: PIECE_SLOTS.filter(([k]) => a[k]).map(([k, slot]) => ({
         slot,
         name: String(a[k].name ?? ""),
         icon: enkaUrl(a.images?.[`filename_${k}`]),
         description: String(a[k].description ?? ""),
+        story: String(a[k].story ?? ""),
       })),
     });
   } catch {
