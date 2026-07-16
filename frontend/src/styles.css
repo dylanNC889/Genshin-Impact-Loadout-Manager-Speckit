@@ -420,6 +420,27 @@ select {
   margin: 6px 0 0;
 }
 
+/* Two fixed columns whose cards stack top-down and size to their content. */
+.detail-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+.detail-col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+@media (max-width: 720px) {
+  .detail-cols {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* Masonry-style layout: cards size to their content and flow naturally (not a rigid grid),
    so a short Stats box doesn't leave a gap and Lore floats up beneath it. */
 .detail-masonry {
