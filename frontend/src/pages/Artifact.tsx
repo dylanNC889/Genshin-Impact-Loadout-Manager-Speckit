@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useParams, Link } from "react-router-dom";
 import type { StatValue } from "@app/contracts";
 import { fetchArtifactSets, fetchCharacters } from "../api";
-import { Card, Icon } from "../components/ui";
+import { Card, Icon, RarityStars } from "../components/ui";
 import { formatStat, statLabel } from "../format";
 import { setRecommenders, signatureSetHolder } from "../recommendations";
 
@@ -51,7 +51,15 @@ export function ArtifactPage() {
       <div className="char-header">
         <div className="char-header-top">
           <Icon src={set.icon} alt={set.name} size={72} />
-          <h1>{set.name}</h1>
+          <div>
+            <h1>{set.name}</h1>
+            {set.rarities.length ? (
+              <div className="char-tags">
+                <RarityStars rarity={Math.max(...set.rarities)} />
+                <span className="muted small">{set.pieces.length ? `${set.pieces.length}-piece set` : ""}</span>
+              </div>
+            ) : null}
+          </div>
         </div>
       </div>
 
@@ -68,6 +76,24 @@ export function ArtifactPage() {
             </p>
           ) : null}
         </Card>
+
+        {set.pieces.length ? (
+          <Card title="Pieces">
+            <ul className="piece-list">
+              {set.pieces.map((p) => (
+                <li key={p.slot} className="piece">
+                  <Icon src={p.icon} alt={p.name} size={44} />
+                  <div className="piece-info">
+                    <div className="piece-name">
+                      {p.name} <span className="piece-slot">{p.slot}</span>
+                    </div>
+                    {p.description ? <p className="piece-desc muted small">{p.description}</p> : null}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </Card>
+        ) : null}
 
         <Card title="Recommended by">
           {sigChar ? (

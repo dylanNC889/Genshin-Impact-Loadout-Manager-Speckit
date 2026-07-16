@@ -48,4 +48,9 @@ test("artifact detail shows the signature set holder", async ({ page }) => {
   await expect(page.getByText("★ Signature set of")).toBeVisible();
   await expect(page.locator(".used-by-chip.sig", { hasText: "Lyney" })).toBeVisible();
   await expect(page.getByText("Best-in-slot for")).toBeVisible();
+
+  // The five named pieces are listed with their art (artifact enrichment).
+  await expect(page.getByRole("heading", { name: "Pieces" })).toBeVisible();
+  await expect(page.locator(".piece", { hasText: "Hunter's Brooch" })).toBeVisible();
+  await expect(page.locator(".piece-list .piece")).toHaveCount(5);
 });

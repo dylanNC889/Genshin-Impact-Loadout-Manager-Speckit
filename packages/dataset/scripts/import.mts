@@ -358,6 +358,13 @@ for (const name of weaponNames) {
 }
 
 // --- Artifact sets (5-piece) ---
+const PIECE_SLOTS: [string, string][] = [
+  ["flower", "Flower"],
+  ["plume", "Plume"],
+  ["sands", "Sands"],
+  ["goblet", "Goblet"],
+  ["circlet", "Circlet"],
+];
 const artifactNames = genshindb.artifacts("names", { matchCategories: true }) as string[];
 const artifactSets: any[] = [];
 for (const name of artifactNames) {
@@ -372,6 +379,14 @@ for (const name of artifactNames) {
       bonus2: { description: String(a.effect2Pc ?? ""), statBonuses: parse2pc(String(a.effect2Pc ?? "")) },
       bonus4: { description: String(a.effect4Pc ?? ""), statBonuses: [] },
       version: String(a.version ?? ""),
+      rarities: Array.isArray(a.rarityList) ? a.rarityList.filter((r: any) => typeof r === "number") : [],
+      // The five named pieces, each with its own art + flavor text.
+      pieces: PIECE_SLOTS.filter(([k]) => a[k]).map(([k, slot]) => ({
+        slot,
+        name: String(a[k].name ?? ""),
+        icon: enkaUrl(a.images?.[`filename_${k}`]),
+        description: String(a[k].description ?? ""),
+      })),
     });
   } catch {
     /* skip */

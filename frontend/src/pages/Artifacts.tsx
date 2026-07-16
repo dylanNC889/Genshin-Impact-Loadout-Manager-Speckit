@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { fetchArtifactSets } from "../api";
-import { Icon } from "../components/ui";
+import { Icon, RarityStars } from "../components/ui";
 import { formatStat, statLabel } from "../format";
 import type { StatValue } from "@app/contracts";
 
@@ -50,7 +50,10 @@ export function Artifacts() {
             <Link key={s.id} to={`/artifact/${s.id}`} className="char-card set-card">
               <div className="set-head">
                 <Icon src={s.icon} alt={s.name} size={48} />
-                <div className="char-name">{s.name}</div>
+                <div>
+                  <div className="char-name">{s.name}</div>
+                  {s.rarities.length ? <RarityStars rarity={Math.max(...s.rarities)} /> : null}
+                </div>
               </div>
               {two ? (
                 <p className="set-bonus">

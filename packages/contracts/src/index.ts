@@ -227,6 +227,19 @@ export const ArtifactSetSchema = z.object({
   bonus4: z.object({ description: z.string().default(""), statBonuses: z.array(StatValueSchema).default([]) }).optional(),
   /** Debut game version (e.g. "4.1") — used to derive the signature holder. */
   version: z.string().default(""),
+  /** Rarities the set drops in (e.g. [4, 5]). */
+  rarities: z.array(z.number()).default([]),
+  /** The five named pieces, each with its own art + flavor text. */
+  pieces: z
+    .array(
+      z.object({
+        slot: ArtifactSlotSchema,
+        name: z.string(),
+        icon: z.string().default(""),
+        description: z.string().default(""),
+      }),
+    )
+    .default([]),
 });
 export type ArtifactSet = z.infer<typeof ArtifactSetSchema>;
 
