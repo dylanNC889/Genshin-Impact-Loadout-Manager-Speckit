@@ -48,10 +48,22 @@ const TRANSFORMATIVE_LEVEL_BASE: Record<number, number> = {
 };
 const transLevelBase = (level: number): number => TRANSFORMATIVE_LEVEL_BASE[level] ?? 1446.85;
 
+/** Additive (catalyze) reaction coefficients — Aggravate/Spread add base DMG to the hit. */
+export const CATALYZE_COEFF: Record<string, number> = {
+  Aggravate: 1.15,
+  Spread: 1.25,
+};
+
 /** Transformative-reaction EM bonus: 1 + 16·EM/(EM+2000). */
 export function transformativeEmBonus(em: number): number {
   const e = Math.max(em, 0);
   return 1 + (16 * e) / (e + 2000);
+}
+
+/** Additive-reaction (Aggravate/Spread) EM bonus: 1 + 5·EM/(EM+1200). */
+export function catalyzeEmBonus(em: number): number {
+  const e = Math.max(em, 0);
+  return 1 + (5 * e) / (e + 1200);
 }
 
 /** Amplifying-reaction EM bonus: 1 + 2.78·EM/(EM+1400) (Vaporize/Melt). */
@@ -95,11 +107,18 @@ export function estimateTeamDamage(
       label: ins.label,
       estimated: (ins.multiplier / 100) * m.finalATK * common,
     }));
-    // Transformative reactions (A6): flat DMG that doesn't crit and ignores DEF/DMG% — its own line.
-    const transCoeff = m.transformative ? TRANSFORMATIVE_COEFF[m.transformative] : undefined;
-    if (transCoeff) {
-      const transDmg = transCoeff * transLevelBase(charLevel) * transformativeEmBonus(m.em ?? 0) * resFactor;
-      instances.push({ label: m.transformative as string, estimated: transDmg });
+    // Extra reactions (A6). Transformative = flat DMG, no crit, ignores DEF/DMG%. Catalyze
+    // (Aggravate/Spread) adds base DMG to the hit, so it crits and takes DMG%/DEF/RES.
+    if (m.transformative) {
+      const transCoeff = TRANSFORMATIVE_COEFF[m.transformative];
+      const catCoeff = CATALYZE_COEFF[m.transformative];
+      if (transCoeff) {
+        const transDmg = transCoeff * transLevelBase(charLevel) * transformativeEmBonus(m.em ?? 0) * resFactor;
+        instances.push({ label: m.transformative, estimated: transDmg });
+      } else if (catCoeff) {
+        const additive = catCoeff * transLevelBase(charLevel) * catalyzeEmBonus(m.em ?? 0);
+        instances.push({ label: m.transformative, estimated: additive * common });
+      }
     }
     const estimated = instances.reduce((sum, ins) => sum + ins.estimated, 0);
     return { characterId: m.characterId, estimated, instances };

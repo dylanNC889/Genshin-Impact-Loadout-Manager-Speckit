@@ -40,6 +40,16 @@ describe("estimateTeamDamage (T040 / FR-016, SC-009)", () => {
     expect(olHi?.estimated ?? 0).toBeGreaterThan(olLo?.estimated ?? 0);
   });
 
+  it("adds a catalyze (Aggravate) line that crits — unlike transformative (A6)", () => {
+    const agg = estimateTeamDamage([{ ...member, transformative: "Aggravate", em: 200 }]);
+    const line = agg.perCharacter[0]?.instances.find((i) => i.label === "Aggravate");
+    expect(line?.estimated).toBeGreaterThan(0);
+    // Aggravate adds to the hit, so more CRIT DMG raises it (transformative would not).
+    const hiCrit = estimateTeamDamage([{ ...member, transformative: "Aggravate", em: 200, critDmg: 300 }]);
+    const lineHi = hiCrit.perCharacter[0]?.instances.find((i) => i.label === "Aggravate");
+    expect(lineHi?.estimated ?? 0).toBeGreaterThan(line?.estimated ?? 0);
+  });
+
   it("echoes the assumptions used, defaulting per the v1 generic rotation (FR-016)", () => {
     const est = estimateTeamDamage([member]);
     expect(est.assumptions.enemyLevel).toBe(90);

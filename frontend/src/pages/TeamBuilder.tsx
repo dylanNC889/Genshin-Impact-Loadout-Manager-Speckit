@@ -89,7 +89,8 @@ const REACTIONS: Record<string, { label: string; mult: number; type?: string }> 
   "melt-1.5": { label: "Melt (1.5×)", mult: 1.5, type: "Melt" },
 };
 
-/** Transformative reactions — separate flat DMG (A6). Keys match the engine's coefficient table. */
+/** Extra reactions (A6): transformative = separate flat DMG; Aggravate/Spread add to the hit.
+ *  Keys match the engine's coefficient tables. */
 const TRANSFORMATIVE = [
   "none",
   "Overloaded",
@@ -101,6 +102,8 @@ const TRANSFORMATIVE = [
   "Hyperbloom",
   "Burgeon",
   "Burning",
+  "Aggravate",
+  "Spread",
 ] as const;
 
 export function TeamBuilder() {
@@ -512,15 +515,15 @@ export function TeamBuilder() {
               </select>
             </label>
             <label>
-              Transformative
+              Extra reaction
               <select
                 value={transformative}
                 onChange={(e) => setTransformative(e.target.value)}
-                aria-label="Transformative reaction"
+                aria-label="Extra reaction"
               >
                 {TRANSFORMATIVE.map((t) => (
                   <option key={t} value={t}>
-                    {t === "none" ? "No transformative" : t}
+                    {t === "none" ? "None" : t}
                   </option>
                 ))}
               </select>
