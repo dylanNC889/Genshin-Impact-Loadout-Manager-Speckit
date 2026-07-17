@@ -1592,6 +1592,18 @@ select {
   font-size: 13px;
 }
 
+.saved-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.saved-head h1 {
+  margin: 0;
+}
+
 .saved-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;

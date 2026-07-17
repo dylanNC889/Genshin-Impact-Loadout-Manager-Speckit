@@ -9,6 +9,10 @@ export function getFavorites(): Set<string> {
   }
 }
 
+export function setFavorites(ids: string[]): void {
+  localStorage.setItem(KEY, JSON.stringify([...new Set(ids)]));
+}
+
 export function toggleFavorite(id: string): Set<string> {
   const favs = getFavorites();
   if (favs.has(id)) favs.delete(id);
