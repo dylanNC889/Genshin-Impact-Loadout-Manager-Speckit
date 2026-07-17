@@ -1,6 +1,18 @@
 import { describe, it, expect } from "vitest";
-import { estimateTeamDamage, emReactionBonus } from "../src/index";
+import { estimateTeamDamage, emReactionBonus, instanceAvgDamage } from "../src/index";
 import type { DamageMember } from "../src/index";
+
+describe("instanceAvgDamage (A7)", () => {
+  const base = { multiplier: 100, statValue: 1000, critRate: 50, critDmg: 100, dmgBonusPct: 50 };
+  it("is positive and rises with multiplier, stat, crit, and DMG bonus", () => {
+    const d = instanceAvgDamage(base);
+    expect(d).toBeGreaterThan(0);
+    expect(instanceAvgDamage({ ...base, multiplier: 200 })).toBeGreaterThan(d);
+    expect(instanceAvgDamage({ ...base, statValue: 2000 })).toBeGreaterThan(d);
+    expect(instanceAvgDamage({ ...base, critDmg: 200 })).toBeGreaterThan(d);
+    expect(instanceAvgDamage({ ...base, dmgBonusPct: 100 })).toBeGreaterThan(d);
+  });
+});
 
 const member: DamageMember = {
   characterId: "test-pyro",
