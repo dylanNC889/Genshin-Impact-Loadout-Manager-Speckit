@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { fetchCharacters } from "../api";
 import { ElementBadge, Icon, RarityStars } from "../components/ui";
 import { getFavorites, toggleFavorite } from "../favorites";
@@ -11,12 +11,20 @@ const RARITIES = [5, 4];
 const REGIONS = ["Mondstadt", "Liyue", "Inazuma", "Sumeru", "Fontaine", "Natlan", "Snezhnaya"];
 
 export function Roster() {
-  const [q, setQ] = useState("");
-  const [element, setElement] = useState("");
-  const [weaponType, setWeaponType] = useState("");
-  const [rarity, setRarity] = useState("");
-  const [region, setRegion] = useState("");
-  const [sort, setSort] = useState("name");
+  // Filters live in the URL query so a filtered view is bookmarkable/shareable (C5).
+  const [params, setParams] = useSearchParams();
+  const q = params.get("q") ?? "";
+  const element = params.get("element") ?? "";
+  const weaponType = params.get("weapon") ?? "";
+  const rarity = params.get("rarity") ?? "";
+  const region = params.get("region") ?? "";
+  const sort = params.get("sort") ?? "name";
+  const setParam = (key: string, value: string, def = "") => {
+    const next = new URLSearchParams(params);
+    if (value && value !== def) next.set(key, value);
+    else next.delete(key);
+    setParams(next, { replace: true });
+  };
   const [favs, setFavs] = useState(() => getFavorites());
 
   const { data, isLoading, error } = useQuery({
@@ -51,10 +59,10 @@ export function Roster() {
           className="search"
           placeholder="Search characters…"
           value={q}
-          onChange={(e) => setQ(e.target.value)}
+          onChange={(e) => setParam("q", e.target.value)}
           aria-label="Search characters"
         />
-        <select value={element} onChange={(e) => setElement(e.target.value)} aria-label="Filter by element">
+        <select value={element} onChange={(e) => setParam("element", e.target.value)} aria-label="Filter by element">
           <option value="">All elements</option>
           {ELEMENTS.map((el) => (
             <option key={el} value={el}>
@@ -62,7 +70,7 @@ export function Roster() {
             </option>
           ))}
         </select>
-        <select value={weaponType} onChange={(e) => setWeaponType(e.target.value)} aria-label="Filter by weapon">
+        <select value={weaponType} onChange={(e) => setParam("weapon", e.target.value)} aria-label="Filter by weapon">
           <option value="">All weapons</option>
           {WEAPONS.map((w) => (
             <option key={w} value={w}>
@@ -70,7 +78,7 @@ export function Roster() {
             </option>
           ))}
         </select>
-        <select value={rarity} onChange={(e) => setRarity(e.target.value)} aria-label="Filter by rarity">
+        <select value={rarity} onChange={(e) => setParam("rarity", e.target.value)} aria-label="Filter by rarity">
           <option value="">All rarities</option>
           {RARITIES.map((r) => (
             <option key={r} value={String(r)}>
@@ -78,7 +86,7 @@ export function Roster() {
             </option>
           ))}
         </select>
-        <select value={region} onChange={(e) => setRegion(e.target.value)} aria-label="Filter by region">
+        <select value={region} onChange={(e) => setParam("region", e.target.value)} aria-label="Filter by region">
           <option value="">All regions</option>
           {REGIONS.map((r) => (
             <option key={r} value={r}>
@@ -86,7 +94,7 @@ export function Roster() {
             </option>
           ))}
         </select>
-        <select value={sort} onChange={(e) => setSort(e.target.value)} aria-label="Sort by">
+        <select value={sort} onChange={(e) => setParam("sort", e.target.value, "name")} aria-label="Sort by">
           <option value="name">Sort: Name</option>
           <option value="rarity">Sort: Rarity</option>
           <option value="element">Sort: Element</option>

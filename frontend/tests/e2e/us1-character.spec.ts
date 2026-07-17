@@ -53,3 +53,13 @@ test("compare two characters", async ({ page }) => {
   await expect(page.locator(".compare-table td", { hasText: "Base HP (Lv 90)" })).toBeVisible();
   await expect(page.locator(".compare-table td", { hasText: "Top weapon (KQM)" })).toBeVisible();
 });
+
+// C5 — roster filters are reflected in the URL and restored on load.
+test("roster filters are shareable via the URL", async ({ page }) => {
+  await page.goto("/");
+  await page.getByLabel("Filter by element").selectOption("Pyro");
+  await expect(page).toHaveURL(/element=Pyro/);
+  await page.goto("/?element=Pyro&rarity=5");
+  await expect(page.getByLabel("Filter by element")).toHaveValue("Pyro");
+  await expect(page.getByLabel("Filter by rarity")).toHaveValue("5");
+});
