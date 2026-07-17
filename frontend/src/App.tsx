@@ -13,6 +13,7 @@ const TeamBuilder = lazy(() => import("./pages/TeamBuilder").then((m) => ({ defa
 const SavedPage = lazy(() => import("./pages/Saved").then((m) => ({ default: m.SavedPage })));
 const ComparePage = lazy(() => import("./pages/Compare").then((m) => ({ default: m.ComparePage })));
 const OptimizePage = lazy(() => import("./pages/Optimize").then((m) => ({ default: m.OptimizePage })));
+const WeaponComparePage = lazy(() => import("./pages/WeaponCompare").then((m) => ({ default: m.WeaponComparePage })));
 
 export function App() {
   return (
@@ -39,6 +40,7 @@ export function App() {
           <Routes>
             <Route path="/" element={<Roster />} />
             <Route path="/weapons" element={<Weapons />} />
+            <Route path="/weapon-compare" element={<WeaponComparePage />} />
             <Route path="/weapon/:id" element={<WeaponPage />} />
             <Route path="/artifacts" element={<Artifacts />} />
             <Route path="/artifact/:id" element={<ArtifactPage />} />

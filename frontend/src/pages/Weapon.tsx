@@ -5,21 +5,7 @@ import { fetchWeapons, fetchCharacters } from "../api";
 import { Card, Icon, RarityStars, StatRow } from "../components/ui";
 import { formatStat, statLabel } from "../format";
 import { weaponRecommenders, signatureWeaponHolder } from "../recommendations";
-
-/** Render an effect template, substituting {0}/{1}… with the refinement values (highlighted). */
-function renderEffect(template: string, values: string[]) {
-  return template.split(/(\{\d+\})/g).map((part, i) => {
-    const m = part.match(/^\{(\d+)\}$/);
-    if (m) {
-      return (
-        <b key={i} className="hl">
-          {values[Number(m[1])] ?? part}
-        </b>
-      );
-    }
-    return <span key={i}>{part}</span>;
-  });
-}
+import { renderEffect } from "../components/renderEffect";
 
 export function WeaponPage() {
   const { id } = useParams<{ id: string }>();

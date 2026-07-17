@@ -70,6 +70,9 @@ export function Weapons() {
             </option>
           ))}
         </select>
+        <Link to="/weapon-compare" className="btn ghost">
+          ⇄ Compare weapons
+        </Link>
       </div>
 
       {isLoading ? <p className="muted">Loading weapons…</p> : null}

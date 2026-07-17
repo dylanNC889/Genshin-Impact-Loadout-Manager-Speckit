@@ -29,6 +29,21 @@ test("browse the weapons page", async ({ page }) => {
   await expect(firstHl).not.toHaveText(atR1 ?? "");
 });
 
+// B5 — compare two weapons side-by-side at a chosen refinement.
+test("compare two weapons", async ({ page }) => {
+  await page.goto("/weapons");
+  await page.getByRole("link", { name: /Compare weapons/ }).click();
+  await expect(page).toHaveURL(/\/weapon-compare$/);
+
+  await page.getByLabel("Weapon A").selectOption({ label: "Staff of Homa" });
+  await page.getByLabel("Weapon B").selectOption({ label: "Vortex Vanquisher" });
+  await expect(page.locator(".compare-table")).toBeVisible();
+  await expect(page.locator(".compare-table td", { hasText: "Base ATK" })).toBeVisible();
+
+  await page.getByLabel("Refinement").selectOption("5");
+  await expect(page.getByRole("heading", { name: "Passives (R5)" })).toBeVisible();
+});
+
 test("browse the artifacts page and see set bonuses", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("link", { name: "Artifacts" }).click();
