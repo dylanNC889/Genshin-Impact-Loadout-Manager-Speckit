@@ -15,6 +15,7 @@ const SavedPage = lazy(() => import("./pages/Saved").then((m) => ({ default: m.S
 const ComparePage = lazy(() => import("./pages/Compare").then((m) => ({ default: m.ComparePage })));
 const OptimizePage = lazy(() => import("./pages/Optimize").then((m) => ({ default: m.OptimizePage })));
 const WeaponComparePage = lazy(() => import("./pages/WeaponCompare").then((m) => ({ default: m.WeaponComparePage })));
+const CharacterComparePage = lazy(() => import("./pages/CharacterCompare").then((m) => ({ default: m.CharacterComparePage })));
 
 export function App() {
   return (
@@ -46,6 +47,7 @@ export function App() {
             <Route path="/weapon/:id" element={<WeaponPage />} />
             <Route path="/artifacts" element={<Artifacts />} />
             <Route path="/artifact/:id" element={<ArtifactPage />} />
+            <Route path="/character-compare" element={<CharacterComparePage />} />
             <Route path="/character/:id" element={<CharacterPage />} />
             <Route path="/team" element={<TeamBuilder />} />
             <Route path="/compare" element={<ComparePage />} />

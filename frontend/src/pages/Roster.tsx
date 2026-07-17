@@ -91,6 +91,9 @@ export function Roster() {
           <option value="rarity">Sort: Rarity</option>
           <option value="element">Sort: Element</option>
         </select>
+        <Link to="/character-compare" className="btn ghost">
+          ⇄ Compare characters
+        </Link>
       </div>
 
       {isLoading ? <p className="muted">Loading roster…</p> : null}

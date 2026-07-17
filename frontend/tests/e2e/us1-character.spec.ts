@@ -41,3 +41,15 @@ test("browse roster and inspect a character", async ({ page }) => {
   await expect(mats.locator(".mat-list li", { hasText: "Mora" }).first()).toBeVisible();
   await expect(mats.getByText("One talent → Lv 10")).toBeVisible();
 });
+
+// B8 — compare two characters side-by-side.
+test("compare two characters", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("link", { name: /Compare characters/ }).click();
+  await expect(page).toHaveURL(/\/character-compare$/);
+  await page.getByLabel("Character A").selectOption("hu-tao");
+  await page.getByLabel("Character B").selectOption("arlecchino");
+  await expect(page.locator(".compare-table")).toBeVisible();
+  await expect(page.locator(".compare-table td", { hasText: "Base HP (Lv 90)" })).toBeVisible();
+  await expect(page.locator(".compare-table td", { hasText: "Top weapon (KQM)" })).toBeVisible();
+});
