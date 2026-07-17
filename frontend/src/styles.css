@@ -315,6 +315,22 @@ select {
   background: linear-gradient(180deg, rgba(74, 111, 158, 0.12), var(--surface));
 }
 
+/* Rarity-tinted glow on hover (keeps the rarity colour instead of the default accent border). */
+.char-card.rarity-5:hover {
+  border-color: #d4a94e;
+  box-shadow: 0 0 14px rgba(212, 169, 78, 0.55);
+}
+
+.char-card.rarity-4:hover {
+  border-color: #9b6cc4;
+  box-shadow: 0 0 14px rgba(155, 108, 196, 0.55);
+}
+
+.char-card.rarity-3:hover {
+  border-color: #5a94c4;
+  box-shadow: 0 0 14px rgba(90, 148, 196, 0.5);
+}
+
 .weapon-card-passive {
   font-style: italic;
   color: var(--accent);
