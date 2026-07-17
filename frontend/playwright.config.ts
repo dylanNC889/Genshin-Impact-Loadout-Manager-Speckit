@@ -12,6 +12,8 @@ const FRONTEND_PORT = 5199;
 export default defineConfig({
   testDir: "./tests/e2e",
   fullyParallel: true,
+  // Reset the isolated E2E store before the run (keeps tests off the dev server's data).
+  globalSetup: "./tests/e2e/global-setup.ts",
   use: {
     baseURL: `http://localhost:${FRONTEND_PORT}`,
     trace: "on-first-retry",
@@ -22,7 +24,8 @@ export default defineConfig({
       port: BACKEND_PORT,
       reuseExistingServer: !process.env.CI,
       cwd: "..",
-      env: { PORT: String(BACKEND_PORT) },
+      // Dedicated store so E2E never pollutes (or reads) the dev server's .data/store.json.
+      env: { PORT: String(BACKEND_PORT), STORE_PATH: ".data/e2e-store.json" },
     },
     {
       command: `pnpm exec vite --port ${FRONTEND_PORT} --strictPort`,
