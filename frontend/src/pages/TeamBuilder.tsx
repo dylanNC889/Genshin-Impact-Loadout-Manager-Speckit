@@ -89,6 +89,20 @@ const REACTIONS: Record<string, { label: string; mult: number; type?: string }> 
   "melt-1.5": { label: "Melt (1.5×)", mult: 1.5, type: "Melt" },
 };
 
+/** Transformative reactions — separate flat DMG (A6). Keys match the engine's coefficient table. */
+const TRANSFORMATIVE = [
+  "none",
+  "Overloaded",
+  "Electro-Charged",
+  "Superconduct",
+  "Swirl",
+  "Shattered",
+  "Bloom",
+  "Hyperbloom",
+  "Burgeon",
+  "Burning",
+] as const;
+
 export function TeamBuilder() {
   const [slots, setSlots] = useState<Slot[]>([
     { characterId: null, loadoutId: null },
@@ -103,6 +117,7 @@ export function TeamBuilder() {
   const [enemyLevel, setEnemyLevel] = useState(90);
   const [enemyRes, setEnemyRes] = useState(10);
   const [reaction, setReaction] = useState("none");
+  const [transformative, setTransformative] = useState<string>("none");
 
   const [searchParams] = useSearchParams();
   const teamParam = searchParams.get("team");
@@ -149,7 +164,7 @@ export function TeamBuilder() {
   // Damage is on-demand (FR-016): clear it whenever the team or assumptions change.
   useEffect(() => {
     setDamage(null);
-  }, [slots, enemyLevel, enemyRes, reaction]);
+  }, [slots, enemyLevel, enemyRes, reaction, transformative]);
 
   // Hydrate from a saved team when opened via ?team=<id> (FR-019 reopen).
   useEffect(() => {
@@ -238,6 +253,21 @@ export function TeamBuilder() {
           reactionType: r.type,
         };
       });
+    // Transformative reaction (A6): a separate flat-DMG line, credited to the highest-EM member
+    // (the likely trigger). Applied once, not per member, to avoid multiplying by team size.
+    if (transformative !== "none" && dmg.length) {
+      let bestIdx = 0;
+      let bestEm = -1;
+      dmg.forEach((m, i) => {
+        const em = m.em ?? 0;
+        if (em > bestEm) {
+          bestEm = em;
+          bestIdx = i;
+        }
+      });
+      const bm = dmg[bestIdx];
+      if (bm) dmg[bestIdx] = { ...bm, transformative };
+    }
     if (dmg.length) setDamage(estimateTeamDamage(dmg, { enemyLevel, enemyResistancePct: enemyRes - shred }));
   }
 
@@ -477,6 +507,20 @@ export function TeamBuilder() {
                 {Object.entries(REACTIONS).map(([k, v]) => (
                   <option key={k} value={k}>
                     {v.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Transformative
+              <select
+                value={transformative}
+                onChange={(e) => setTransformative(e.target.value)}
+                aria-label="Transformative reaction"
+              >
+                {TRANSFORMATIVE.map((t) => (
+                  <option key={t} value={t}>
+                    {t === "none" ? "No transformative" : t}
                   </option>
                 ))}
               </select>

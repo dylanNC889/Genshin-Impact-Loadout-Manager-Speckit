@@ -46,6 +46,13 @@ test("team buffs from enablers are applied", async ({ page }) => {
   await expect(page.getByText("est. total")).toBeVisible();
   await expect(page.getByText("Team buffs (approx)")).toBeVisible();
   await expect(page.getByText(/Bennett: ATK field/)).toBeVisible();
+
+  // Transformative reaction adds its own breakdown line (A6).
+  await page.getByLabel("Transformative reaction").selectOption("Overloaded");
+  await page.getByRole("button", { name: /Calculate/ }).click();
+  await expect(page.getByText("est. total")).toBeVisible();
+  await page.locator(".dmg-detail summary").first().click();
+  await expect(page.locator(".instances li", { hasText: "Overloaded" })).toBeVisible();
 });
 
 // The picker can be filtered to characters that have a saved build.

@@ -31,6 +31,15 @@ describe("estimateTeamDamage (T040 / FR-016, SC-009)", () => {
     expect(est.perCharacter[0]?.characterId).toBe("test-pyro");
   });
 
+  it("adds a transformative reaction as its own EM-scaling line (A6)", () => {
+    const lo = estimateTeamDamage([{ ...member, transformative: "Overloaded", em: 100 }]);
+    const olLo = lo.perCharacter[0]?.instances.find((i) => i.label === "Overloaded");
+    expect(olLo?.estimated).toBeGreaterThan(0);
+    const hi = estimateTeamDamage([{ ...member, transformative: "Overloaded", em: 800 }]);
+    const olHi = hi.perCharacter[0]?.instances.find((i) => i.label === "Overloaded");
+    expect(olHi?.estimated ?? 0).toBeGreaterThan(olLo?.estimated ?? 0);
+  });
+
   it("echoes the assumptions used, defaulting per the v1 generic rotation (FR-016)", () => {
     const est = estimateTeamDamage([member]);
     expect(est.assumptions.enemyLevel).toBe(90);

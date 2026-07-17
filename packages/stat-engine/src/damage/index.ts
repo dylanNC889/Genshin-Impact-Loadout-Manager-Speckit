@@ -16,9 +16,42 @@ export interface DamageMember {
   instances?: { label: string; multiplier: number }[];
   reactionMultiplier?: number;
   reactionType?: string;
-  /** Elemental Mastery — powers the amplifying-reaction EM bonus. */
+  /** A transformative reaction this member triggers (Overloaded/Superconduct/…) — separate DMG. */
+  transformative?: string;
+  /** Elemental Mastery — powers the amplifying- and transformative-reaction EM bonuses. */
   em?: number;
   characterLevel?: number;
+}
+
+/** Standard transformative-reaction coefficients (base DMG = coeff · levelBase · emBonus · res). */
+export const TRANSFORMATIVE_COEFF: Record<string, number> = {
+  Overloaded: 2.0,
+  "Electro-Charged": 1.2,
+  Superconduct: 0.5,
+  Swirl: 0.6,
+  Shattered: 1.5,
+  Bloom: 2.0,
+  Hyperbloom: 3.0,
+  Burgeon: 3.0,
+  Burning: 0.25,
+};
+
+/** Transformative-reaction level base multiplier (anchor levels; keyed by character level). */
+const TRANSFORMATIVE_LEVEL_BASE: Record<number, number> = {
+  1: 17.17,
+  20: 80.58,
+  40: 214.36,
+  60: 494.13,
+  70: 690.29,
+  80: 959.66,
+  90: 1446.85,
+};
+const transLevelBase = (level: number): number => TRANSFORMATIVE_LEVEL_BASE[level] ?? 1446.85;
+
+/** Transformative-reaction EM bonus: 1 + 16·EM/(EM+2000). */
+export function transformativeEmBonus(em: number): number {
+  const e = Math.max(em, 0);
+  return 1 + (16 * e) / (e + 2000);
 }
 
 /** Amplifying-reaction EM bonus: 1 + 2.78·EM/(EM+1400) (Vaporize/Melt). */
@@ -62,6 +95,12 @@ export function estimateTeamDamage(
       label: ins.label,
       estimated: (ins.multiplier / 100) * m.finalATK * common,
     }));
+    // Transformative reactions (A6): flat DMG that doesn't crit and ignores DEF/DMG% — its own line.
+    const transCoeff = m.transformative ? TRANSFORMATIVE_COEFF[m.transformative] : undefined;
+    if (transCoeff) {
+      const transDmg = transCoeff * transLevelBase(charLevel) * transformativeEmBonus(m.em ?? 0) * resFactor;
+      instances.push({ label: m.transformative as string, estimated: transDmg });
+    }
     const estimated = instances.reduce((sum, ins) => sum + ins.estimated, 0);
     return { characterId: m.characterId, estimated, instances };
   });
