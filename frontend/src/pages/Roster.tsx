@@ -98,7 +98,7 @@ export function Roster() {
 
       <div className="grid">
         {rows.map((c) => (
-          <Link key={c.id} to={`/character/${c.id}`} className="char-card">
+          <Link key={c.id} to={`/character/${c.id}`} className={`char-card rarity-${c.rarity}`}>
             <div className="char-card-head">
               <ElementBadge element={c.element} />
               <div className="card-head-right">
