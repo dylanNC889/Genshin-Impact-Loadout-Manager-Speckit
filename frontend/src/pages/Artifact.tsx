@@ -69,67 +69,71 @@ export function ArtifactPage() {
         </div>
       </div>
 
-      <div className="detail-masonry">
-        <Card title="Set bonuses">
-          {two ? (
-            <p className="set-bonus">
-              <span className="set-bonus-label">2-Piece</span> {two}
-            </p>
-          ) : null}
-          {four ? (
-            <p className="set-bonus">
-              <span className="set-bonus-label">4-Piece</span> {four}
-            </p>
-          ) : null}
-        </Card>
-
-        {set.pieces.length ? (
-          <Card title="Pieces">
-            <ul className="piece-list">
-              {set.pieces.map((p) => (
-                <li key={p.slot} className="piece">
-                  <Icon src={p.icon} alt={p.name} size={44} />
-                  <div className="piece-info">
-                    <div className="piece-name">
-                      {p.name} <span className="piece-slot">{p.slot}</span>
-                    </div>
-                    {p.description ? <p className="piece-desc muted small">{p.description}</p> : null}
-                    {p.story ? (
-                      <details className="piece-lore">
-                        <summary>Lore</summary>
-                        <p className="piece-story muted small">{p.story}</p>
-                      </details>
-                    ) : null}
-                  </div>
-                </li>
-              ))}
-            </ul>
+      <div className="detail-cols">
+        <div className="detail-col">
+          <Card title="Set bonuses">
+            {two ? (
+              <p className="set-bonus">
+                <span className="set-bonus-label">2-Piece</span> {two}
+              </p>
+            ) : null}
+            {four ? (
+              <p className="set-bonus">
+                <span className="set-bonus-label">4-Piece</span> {four}
+              </p>
+            ) : null}
           </Card>
-        ) : null}
 
-        <Card title="Recommended by">
-          {sigChar ? (
-            <div className="rec-group">
-              <div className="rec-label sig-label">★ Signature set of</div>
-              <div className="used-by">{chip(sigChar, true)}</div>
-            </div>
+          <Card title="Recommended by">
+            {sigChar ? (
+              <div className="rec-group">
+                <div className="rec-label sig-label">★ Signature set of</div>
+                <div className="used-by">{chip(sigChar, true)}</div>
+              </div>
+            ) : null}
+            {bis.length ? (
+              <div className="rec-group">
+                <div className="rec-label">Best-in-slot for</div>
+                <div className="used-by">{bis.map((cid) => chip(cid))}</div>
+              </div>
+            ) : null}
+            {others.length ? (
+              <div className="rec-group">
+                <div className="rec-label muted">Also recommended by</div>
+                <div className="used-by">{others.map((cid) => chip(cid))}</div>
+              </div>
+            ) : null}
+            {!sigChar && !bis.length && !others.length ? (
+              <p className="muted small">No characters recommend this set in our data.</p>
+            ) : null}
+          </Card>
+        </div>
+
+        <div className="detail-col">
+          {set.pieces.length ? (
+            <Card title="Pieces">
+              <ul className="piece-list">
+                {set.pieces.map((p) => (
+                  <li key={p.slot} className="piece">
+                    <Icon src={p.icon} alt={p.name} size={44} />
+                    <div className="piece-info">
+                      <div className="piece-name">
+                        {p.name} <span className="piece-slot">{p.slot}</span>
+                      </div>
+                      {p.description ? <p className="piece-desc muted small">{p.description}</p> : null}
+                      {p.story ? (
+                        <details className="piece-lore">
+                          <summary>Lore</summary>
+                          <p className="piece-story muted small">{p.story}</p>
+                        </details>
+                      ) : null}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </Card>
           ) : null}
-          {bis.length ? (
-            <div className="rec-group">
-              <div className="rec-label">Best-in-slot for</div>
-              <div className="used-by">{bis.map((cid) => chip(cid))}</div>
-            </div>
-          ) : null}
-          {others.length ? (
-            <div className="rec-group">
-              <div className="rec-label muted">Also recommended by</div>
-              <div className="used-by">{others.map((cid) => chip(cid))}</div>
-            </div>
-          ) : null}
-          {!sigChar && !bis.length && !others.length ? (
-            <p className="muted small">No characters recommend this set in our data.</p>
-          ) : null}
-        </Card>
+        </div>
       </div>
     </div>
   );
