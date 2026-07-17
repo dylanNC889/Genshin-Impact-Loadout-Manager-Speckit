@@ -1,5 +1,6 @@
 import { lazy, Suspense } from "react";
 import { Routes, Route, Link, NavLink } from "react-router-dom";
+import { GlobalSearch } from "./components/GlobalSearch";
 
 // Route-level code splitting: each page (and the data it pulls in, e.g. the build
 // recommendations behind the loadout editor) loads on demand, trimming the initial bundle.
@@ -33,6 +34,7 @@ export function App() {
           <NavLink to="/optimize">Optimize</NavLink>
           <NavLink to="/saved">Saved</NavLink>
         </nav>
+        <GlobalSearch />
         <span className="tag">slice</span>
       </header>
       <main className="main">
