@@ -42,10 +42,13 @@ test("compare table lists each stat once", async ({ page }) => {
   await expect(page.locator(".compare-table")).toBeVisible();
   await expect(page.locator(".compare-table tbody tr", { hasText: "CRIT DMG" })).toHaveCount(1);
 
-  // Clean up both loadouts.
+  // Clean up both loadouts (delete every matching row — robust to any leftovers).
   await page.goto("/saved");
   for (const name of ["Cmp A", "Cmp B"]) {
-    await page.locator(".saved-list li", { hasText: name }).getByRole("button", { name: "delete" }).click();
-    await expect(page.locator(".saved-list li", { hasText: name })).toHaveCount(0);
+    const rows = page.locator(".saved-list li", { hasText: name });
+    for (let n = await rows.count(); n > 0; n--) {
+      await rows.first().getByRole("button", { name: "delete" }).click();
+      await expect(rows).toHaveCount(n - 1);
+    }
   }
 });
