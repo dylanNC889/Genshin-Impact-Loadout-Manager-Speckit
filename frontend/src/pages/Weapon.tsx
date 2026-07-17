@@ -6,6 +6,7 @@ import { Card, Icon, RarityStars, StatRow } from "../components/ui";
 import { formatStat, statLabel } from "../format";
 import { weaponRecommenders, signatureWeaponHolder } from "../recommendations";
 import { renderEffect } from "../components/renderEffect";
+import { MaterialList } from "../components/MaterialList";
 
 export function WeaponPage() {
   const { id } = useParams<{ id: string }>();
@@ -91,6 +92,12 @@ export function WeaponPage() {
           <StatRow label="Rarity" value={`${weapon.rarity}★`} />
           <p className="muted small stat-foot">Values shown Lv 1 → Lv 90.</p>
         </Card>
+
+        {weapon.ascensionMaterials.length ? (
+          <Card title="Ascension materials">
+            <MaterialList items={weapon.ascensionMaterials} />
+          </Card>
+        ) : null}
 
         {passive?.name ? (
           <Card title="Passive ability">

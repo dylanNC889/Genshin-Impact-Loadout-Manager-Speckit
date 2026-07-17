@@ -426,6 +426,46 @@ select {
   font-weight: 600;
 }
 
+/* --- Materials ("what to farm") --- */
+.mat-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 620px) {
+  .mat-cols {
+    grid-template-columns: 1fr;
+  }
+}
+
+.mat-title {
+  margin: 0 0 6px;
+  font-size: 13px;
+  color: var(--accent);
+}
+
+.mat-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.mat-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+
+.mat-count {
+  color: var(--muted);
+  white-space: nowrap;
+}
+
 /* --- Artifact pieces list --- */
 .piece-list {
   list-style: none;

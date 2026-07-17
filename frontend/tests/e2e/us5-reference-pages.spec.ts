@@ -19,6 +19,10 @@ test("browse the weapons page", async ({ page }) => {
   await expect(page.getByText("★ Signature weapon of")).toBeVisible();
   await expect(page.locator(".used-by-chip.sig", { hasText: "Hu Tao" })).toBeVisible();
 
+  // Ascension materials card (D1).
+  await expect(page.getByRole("heading", { name: "Ascension materials" })).toBeVisible();
+  await expect(page.locator(".mat-list li", { hasText: "Mora" }).first()).toBeVisible();
+
   // Passive ability with a working R1–R5 refinement slider (weapon-page-details).
   await expect(page.getByRole("heading", { name: "Passive ability" })).toBeVisible();
   const firstHl = page.locator(".passive-text .hl").first();

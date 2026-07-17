@@ -61,6 +61,8 @@ interface RawCharacter {
   constellation?: string;
   cv?: string;
   version?: string;
+  ascensionMaterials?: { name: string; count: number }[];
+  talentMaterials?: { name: string; count: number }[];
   splashArt?: string;
 }
 
@@ -128,6 +130,8 @@ function normalizeCharacter(raw: RawCharacter): Character {
     constellation: raw.constellation ?? "",
     cv: raw.cv ?? "",
     version: raw.version ?? "",
+    ascensionMaterials: raw.ascensionMaterials ?? [],
+    talentMaterials: raw.talentMaterials ?? [],
     splashArt: raw.splashArt ?? "",
   };
   // Validate the assembled record against the contract (single source of truth).

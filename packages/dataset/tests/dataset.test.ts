@@ -91,6 +91,15 @@ describe("end-to-end loadout with real data (US2 integration)", () => {
     expect(r.PYRO_DMG).toBeCloseTo(46.6 + 15, 1); // goblet main + Crimson Witch 2pc
   });
 
+  it("aggregates ascension & talent materials, Mora first (D1)", () => {
+    const hutao = dataset.characters.find((c) => c.id === "hu-tao");
+    expect(hutao?.ascensionMaterials[0]?.name).toBe("Mora");
+    expect(hutao?.ascensionMaterials[0]?.count).toBeGreaterThan(100000);
+    expect(hutao?.talentMaterials.some((m) => m.name === "Crown of Insight")).toBe(true);
+    const homa2 = dataset.weapons.find((w) => w.id === "staff-of-homa");
+    expect(homa2?.ascensionMaterials.some((m) => m.name === "Mora")).toBe(true);
+  });
+
   it("applies weapon-refinement and constellation stat bonuses (A1)", () => {
     const homa: LoadoutInput = {
       name: "t",

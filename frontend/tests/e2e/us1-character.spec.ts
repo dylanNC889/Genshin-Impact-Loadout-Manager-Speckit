@@ -33,4 +33,9 @@ test("browse roster and inspect a character", async ({ page }) => {
   // Constellations section is present (B1).
   const cons = page.locator(".card").filter({ has: page.getByRole("heading", { name: "Constellations" }) });
   await expect(cons.getByText("C1", { exact: true })).toBeVisible();
+
+  // Materials "what to farm" card (D1).
+  const mats = page.locator(".card").filter({ has: page.getByRole("heading", { name: /Materials/ }) });
+  await expect(mats.locator(".mat-list li", { hasText: "Mora" }).first()).toBeVisible();
+  await expect(mats.getByText("One talent → Lv 10")).toBeVisible();
 });

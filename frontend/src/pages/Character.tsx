@@ -12,6 +12,7 @@ import {
   getLoadout,
 } from "../api";
 import { Card, StatRow, ElementBadge, Icon, RarityStars } from "../components/ui";
+import { MaterialList } from "../components/MaterialList";
 import { LoadoutEditor } from "../components/LoadoutEditor";
 import { formatStat, statLabel } from "../format";
 import { playstyleFor } from "../playstyle";
@@ -294,6 +295,22 @@ export function CharacterPage() {
               </li>
             ))}
           </ul>
+        </Card>
+      ) : null}
+
+      {char.ascensionMaterials.length || char.talentMaterials.length ? (
+        <Card title="Materials — what to farm">
+          <div className="mat-cols">
+            <div>
+              <h4 className="mat-title">Ascension (Lv 90)</h4>
+              <MaterialList items={char.ascensionMaterials} />
+            </div>
+            <div>
+              <h4 className="mat-title">One talent → Lv 10</h4>
+              <MaterialList items={char.talentMaterials} />
+              <p className="muted small">×3 for all talents (books/boss shared).</p>
+            </div>
+          </div>
         </Card>
       ) : null}
     </div>
