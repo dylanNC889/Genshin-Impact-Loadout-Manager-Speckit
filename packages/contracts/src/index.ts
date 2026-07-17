@@ -91,6 +91,10 @@ export const StatValueSchema = z.object({
 });
 export type StatValue = z.infer<typeof StatValueSchema>;
 
+/** An aggregated build material (name + total count) — "what to farm". */
+export const MaterialSchema = z.object({ name: z.string(), count: z.number() });
+export type Material = z.infer<typeof MaterialSchema>;
+
 /** Actionable error envelope (Constitution Principle III). */
 export const ErrorEnvelopeSchema = z.object({
   code: z.string(),
@@ -176,6 +180,9 @@ export const CharacterSchema = z.object({
   cv: z.string().default(""),
   /** Debut game version (e.g. "1.3") — used to derive signature weapon/set pairings. */
   version: z.string().default(""),
+  /** Total materials to fully ascend, and to level one talent to 10 (D1). */
+  ascensionMaterials: z.array(MaterialSchema).default([]),
+  talentMaterials: z.array(MaterialSchema).default([]),
   /** Vertical gacha portrait URL (enka, 320x1024); used for team-builder portraits. */
   splashArt: z.string().default(""),
 });
@@ -216,6 +223,8 @@ export const WeaponSchema = z.object({
   story: z.string().default(""),
   /** Debut game version (e.g. "1.3") — used to derive the signature holder. */
   version: z.string().default(""),
+  /** Total materials to fully ascend the weapon (D1). */
+  ascensionMaterials: z.array(MaterialSchema).default([]),
 });
 export type Weapon = z.infer<typeof WeaponSchema>;
 

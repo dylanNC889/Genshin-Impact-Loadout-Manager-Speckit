@@ -20,6 +20,19 @@ const round = (n: number) => Math.round(n * 100) / 100;
 const enkaUrl = (filename?: string) => (filename ? `https://enka.network/ui/${filename}.png` : "");
 // Strip genshin-db rich-text markup (e.g. <color=#..>…</color>), keeping {0}/{1} placeholders.
 const stripTags = (s: string) => s.replace(/<[^>]+>/g, "").trim();
+
+/** Sum genshin-db cost groups ({id,name,count}[]) into a total material list, Mora first. */
+const aggregateCosts = (groups: any[]): { name: string; count: number }[] => {
+  const totals = new Map<string, number>();
+  for (const group of groups) {
+    for (const item of group ?? []) {
+      if (item?.name) totals.set(item.name, (totals.get(item.name) ?? 0) + (item.count ?? 0));
+    }
+  }
+  return [...totals.entries()]
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => (a.name === "Mora" ? -1 : b.name === "Mora" ? 1 : b.count - a.count));
+};
 const slug = (s: string) =>
   s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
 
@@ -302,6 +315,9 @@ for (const name of charNames) {
       constellation: c.constellation ?? "",
       cv: c.cv?.english ?? "",
       version: String(c.version ?? ""),
+      // Total materials to fully ascend, and to level one talent to 10 (D1).
+      ascensionMaterials: aggregateCosts([1, 2, 3, 4, 5, 6].map((n) => c.costs?.[`ascend${n}`])),
+      talentMaterials: aggregateCosts(Object.values((t?.costs ?? {}) as Record<string, any[]>)),
       // Vertical wish-preview art (320x1024) — ideal for team-builder portrait columns.
       splashArt: enkaUrl(c.images?.filename_gachaSlice),
     });
@@ -351,6 +367,7 @@ for (const name of weaponNames) {
       description: String(w.description ?? ""),
       story: String(w.story ?? ""),
       version: String(w.version ?? ""),
+      ascensionMaterials: aggregateCosts([1, 2, 3, 4, 5, 6].map((n) => w.costs?.[`ascend${n}`])),
     });
   } catch {
     /* skip */
