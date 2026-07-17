@@ -93,12 +93,6 @@ export function WeaponPage() {
           <p className="muted small stat-foot">Values shown Lv 1 → Lv 90.</p>
         </Card>
 
-        {weapon.ascensionMaterials.length ? (
-          <Card title="Ascension materials">
-            <MaterialList items={weapon.ascensionMaterials} />
-          </Card>
-        ) : null}
-
         {passive?.name ? (
           <Card title="Passive ability">
             <strong>{passive.name}</strong>
@@ -121,32 +115,38 @@ export function WeaponPage() {
           </Card>
         ) : null}
 
-        <Card title="Recommended by">
-          {sigChar ? (
-            <div className="rec-group">
-              <div className="rec-label sig-label">★ Signature weapon of</div>
-              <div className="used-by">{chip(sigChar, true)}</div>
-            </div>
-          ) : null}
-          {bis.length ? (
-            <div className="rec-group">
-              <div className="rec-label">Best-in-slot for</div>
-              <div className="used-by">{bis.map((cid) => chip(cid))}</div>
-            </div>
-          ) : null}
-          {others.length ? (
-            <div className="rec-group">
-              <div className="rec-label muted">Also recommended by</div>
-              <div className="used-by">{others.map((cid) => chip(cid))}</div>
-            </div>
-          ) : null}
-          {!sigChar && !bis.length && !others.length ? (
-            <p className="muted small">No characters recommend this weapon in our data.</p>
-          ) : null}
+        {weapon.ascensionMaterials.length ? (
+          <Card title="Ascension materials">
+            <MaterialList items={weapon.ascensionMaterials} />
           </Card>
+        ) : null}
         </div>
 
         <div className="detail-col">
+          <Card title="Recommended by">
+            {sigChar ? (
+              <div className="rec-group">
+                <div className="rec-label sig-label">★ Signature weapon of</div>
+                <div className="used-by">{chip(sigChar, true)}</div>
+              </div>
+            ) : null}
+            {bis.length ? (
+              <div className="rec-group">
+                <div className="rec-label">Best-in-slot for</div>
+                <div className="used-by">{bis.map((cid) => chip(cid))}</div>
+              </div>
+            ) : null}
+            {others.length ? (
+              <div className="rec-group">
+                <div className="rec-label muted">Also recommended by</div>
+                <div className="used-by">{others.map((cid) => chip(cid))}</div>
+              </div>
+            ) : null}
+            {!sigChar && !bis.length && !others.length ? (
+              <p className="muted small">No characters recommend this weapon in our data.</p>
+            ) : null}
+          </Card>
+
           {weapon.description || weapon.story ? (
             <Card title="Lore">
               {weapon.description ? <p className="weapon-desc">{weapon.description}</p> : null}
