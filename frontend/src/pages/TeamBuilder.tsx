@@ -98,6 +98,7 @@ export function TeamBuilder() {
   ]);
   const [damage, setDamage] = useState<DamageEstimate | null>(null);
   const [pickerQ, setPickerQ] = useState("");
+  const [savedOnly, setSavedOnly] = useState(false);
   // Configurable damage-estimate assumptions (B2).
   const [enemyLevel, setEnemyLevel] = useState(90);
   const [enemyRes, setEnemyRes] = useState(10);
@@ -185,9 +186,10 @@ export function TeamBuilder() {
   const teamIds = new Set(slots.filter((s) => s.characterId).map((s) => s.characterId));
   const teamFull = teamIds.size >= 4;
   const pickerNeedle = pickerQ.trim().toLowerCase();
-  const pickerRoster = roster.filter((c) =>
-    pickerNeedle ? c.name.toLowerCase().includes(pickerNeedle) || c.id.includes(pickerNeedle) : true,
-  );
+  const savedCharIds = new Set(savedLoadouts.map((l) => l.characterId));
+  const pickerRoster = roster
+    .filter((c) => (savedOnly ? savedCharIds.has(c.id) : true))
+    .filter((c) => (pickerNeedle ? c.name.toLowerCase().includes(pickerNeedle) || c.id.includes(pickerNeedle) : true));
 
   // Click a roster character: add to the first empty slot, or remove it if already picked
   // (keeps the distinct-character rule — a character can occupy at most one slot).
@@ -256,6 +258,15 @@ export function TeamBuilder() {
             onChange={(e) => setPickerQ(e.target.value)}
             aria-label="Search characters to add"
           />
+          <label className="saved-only-toggle">
+            <input
+              type="checkbox"
+              checked={savedOnly}
+              onChange={(e) => setSavedOnly(e.target.checked)}
+              aria-label="Only characters with a saved build"
+            />
+            Only with a saved build ({savedCharIds.size})
+          </label>
           <div className="picker-grid">
             {pickerRoster.map((c) => {
               const inTeam = teamIds.has(c.id);
