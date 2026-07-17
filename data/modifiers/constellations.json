@@ -1,12 +1,6 @@
 {
-  "_note": "Static, always-on constellation stat bonuses only (A1). Most constellations are talent-level increases or conditional effects and are intentionally NOT modeled here.",
+  "_note": "Sheet-wide, always-on constellation stat bonuses only. Verified against genshin-db constellation text — almost every constellation is a talent-level increase, a mechanic change, or a conditional/talent-scoped buff (e.g. 'Charged Attack CRIT Rate +15%'), none of which map to a whole-sheet StatValue. Faruzan C6 is the rare clean case (her Anemo DMG is effectively all her damage). Do NOT add talent-scoped or conditional effects here — they would overstate the sheet.",
   "faruzan": {
     "6": [{ "key": "CRIT_DMG", "value": 40 }]
-  },
-  "shenhe": {
-    "1": [{ "key": "CRIT_RATE", "value": 15 }]
-  },
-  "yae-miko": {
-    "2": [{ "key": "CRIT_DMG", "value": 60 }]
   }
 }
