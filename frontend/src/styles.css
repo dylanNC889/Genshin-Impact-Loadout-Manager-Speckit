@@ -341,6 +341,57 @@ select {
 }
 
 /* --- Weapon detail hero --- */
+/* --- Character detail splash hero (C6) --- */
+.char-hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 24px;
+  margin: 12px 0 16px;
+  overflow: hidden;
+}
+
+.char-hero.rarity-5 {
+  border-color: #b8934a;
+  background: linear-gradient(120deg, rgba(184, 147, 74, 0.22), var(--surface) 70%);
+}
+
+.char-hero.rarity-4 {
+  border-color: #7e5aa8;
+  background: linear-gradient(120deg, rgba(126, 90, 168, 0.22), var(--surface) 70%);
+}
+
+.char-hero-info h1 {
+  margin: 6px 0 4px;
+}
+
+.char-hero-region {
+  margin: 0 0 2px;
+}
+
+.char-hero-art {
+  width: 150px;
+  height: 190px;
+  object-fit: cover;
+  object-position: top center;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 620px) {
+  .char-hero {
+    flex-direction: column-reverse;
+    text-align: center;
+  }
+  .char-hero-art {
+    width: 120px;
+    height: 150px;
+  }
+}
+
 .weapon-hero {
   display: flex;
   align-items: center;
