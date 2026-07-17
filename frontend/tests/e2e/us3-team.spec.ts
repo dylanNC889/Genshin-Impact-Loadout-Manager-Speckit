@@ -47,3 +47,27 @@ test("team buffs from enablers are applied", async ({ page }) => {
   await expect(page.getByText("Team buffs (approx)")).toBeVisible();
   await expect(page.getByText(/Bennett: ATK field/)).toBeVisible();
 });
+
+// The picker can be filtered to characters that have a saved build.
+test("filter the team picker to characters with a saved build", async ({ page }) => {
+  await page.goto("/character/diluc");
+  await page.getByLabel("Loadout name").fill("Diluc TeamFilter");
+  await page.getByRole("button", { name: "Save loadout" }).click();
+  await expect(page.getByText("Saved ✓")).toBeVisible();
+
+  await page.goto("/team");
+  const cells = page.locator(".picker-cell");
+  await expect(page.locator(".picker-cell", { hasText: "Diluc" })).toBeVisible(); // roster loaded
+  const allCount = await cells.count();
+  await page.getByLabel("Only characters with a saved build").check();
+  await expect(page.locator(".picker-cell", { hasText: "Diluc" })).toBeVisible();
+  expect(await cells.count()).toBeLessThan(allCount);
+
+  // cleanup — remove every matching row (guards against leftovers from earlier runs)
+  await page.goto("/saved");
+  const rows = page.locator(".saved-list li", { hasText: "Diluc TeamFilter" });
+  for (let n = await rows.count(); n > 0; n--) {
+    await rows.first().getByRole("button", { name: "delete" }).click();
+    await expect(rows).toHaveCount(n - 1);
+  }
+});

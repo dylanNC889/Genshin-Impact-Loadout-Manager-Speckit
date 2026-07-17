@@ -1123,6 +1123,21 @@ select {
   margin-bottom: 12px;
 }
 
+.saved-only-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 12px;
+  cursor: pointer;
+}
+
+.saved-only-toggle input {
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
 .picker-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
