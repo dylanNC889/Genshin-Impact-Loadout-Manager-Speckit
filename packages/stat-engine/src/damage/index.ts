@@ -79,3 +79,30 @@ export function estimateTeamDamage(
     },
   };
 }
+
+/**
+ * Average (crit-weighted) damage of a single talent instance — same pipeline as
+ * estimateTeamDamage, but with an explicit scaling stat value (ATK/HP/DEF) so non-ATK
+ * scalers work. Used for the per-talent "≈ damage" figures on the character page (A7).
+ */
+export function instanceAvgDamage(p: {
+  /** Talent scaling as a percent of the scaling stat (e.g. 400 = 400%). */
+  multiplier: number;
+  /** The final value of the scaling stat (ATK / Max HP / DEF). */
+  statValue: number;
+  critRate: number;
+  critDmg: number;
+  dmgBonusPct: number;
+  charLevel?: number;
+  enemyLevel?: number;
+  enemyResistancePct?: number;
+}): number {
+  const charLevel = p.charLevel ?? 90;
+  const enemyLevel = p.enemyLevel ?? 90;
+  const resFactor = 1 - (p.enemyResistancePct ?? 10) / 100;
+  const critRate = Math.min(Math.max(p.critRate, 0), 100) / 100;
+  const avgCrit = 1 + critRate * (p.critDmg / 100);
+  const dmgMult = 1 + p.dmgBonusPct / 100;
+  const defFactor = (charLevel + 100) / (charLevel + 100 + (enemyLevel + 100));
+  return (p.multiplier / 100) * p.statValue * dmgMult * avgCrit * defFactor * resFactor;
+}

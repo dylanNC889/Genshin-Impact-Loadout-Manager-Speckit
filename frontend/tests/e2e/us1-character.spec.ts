@@ -29,6 +29,8 @@ test("browse roster and inspect a character", async ({ page }) => {
   await expect(skills.locator(".skill-name", { hasText: "Guide to Afterlife" })).toBeVisible();
   await expect(skills.locator(".skill-icon").first()).toBeVisible();
   await expect(page.locator(".scaling .scale-stat").first()).toContainText(/of (ATK|Max HP|DEF|EM)/);
+  // Per-talent damage estimate (A7).
+  await expect(skills.locator(".scale-dmg").filter({ hasText: "≈" }).first()).toBeVisible();
 
   // Constellations section is present (B1).
   const cons = page.locator(".card").filter({ has: page.getByRole("heading", { name: "Constellations" }) });

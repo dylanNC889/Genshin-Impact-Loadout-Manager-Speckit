@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useSearchParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { computeBaseSheet, statRecord } from "@app/stat-engine";
+import { computeBaseSheet, computeFinalStats, instanceAvgDamage, statRecord } from "@app/stat-engine";
 import {
   fetchArtifactSets,
   fetchCharacterDetail,
@@ -18,9 +18,11 @@ import { formatStat, statLabel } from "../format";
 import { playstyleFor } from "../playstyle";
 import { decodeShare } from "../share";
 import { useLoadoutStore } from "../state/loadoutStore";
-import type { LoadoutInput } from "@app/contracts";
+import type { ArtifactSlot, Dataset, LoadoutInput } from "@app/contracts";
 
 const PRIMARY_ORDER = ["HP", "ATK", "DEF", "CRIT_RATE", "CRIT_DMG", "EM", "ER"];
+const ASCENSION_FOR_LEVEL: Record<number, number> = { 1: 0, 20: 1, 40: 2, 50: 3, 60: 4, 70: 5, 80: 6, 90: 6 };
+const SCALE_STAT_TO_KEY: Record<string, string> = { ATK: "ATK", "Max HP": "HP", DEF: "DEF" };
 
 /** Format a talent scaling value at the chosen talent level (FR-004). */
 function fmtScale(row: { valuesByLevel: number[]; percent: boolean }, level: number): string {
@@ -61,6 +63,11 @@ export function CharacterPage() {
   const setArtifact = useLoadoutStore((s) => s.setArtifact);
   const setConstellation = useLoadoutStore((s) => s.setConstellation);
   const setRefinement = useLoadoutStore((s) => s.setRefinement);
+  // Equipped-build state, for per-talent damage (A7).
+  const weaponId = useLoadoutStore((s) => s.weaponId);
+  const artifacts = useLoadoutStore((s) => s.artifacts);
+  const constellation = useLoadoutStore((s) => s.constellation);
+  const refinement = useLoadoutStore((s) => s.refinement);
 
   const detail = useQuery({
     queryKey: ["character", id],
@@ -133,6 +140,56 @@ export function CharacterPage() {
   // loads — it just applies no constellation/refinement bonuses (graceful degradation).
   const modifiers = modifiersQ.data ?? { constellationBonuses: {}, weaponRefinements: {} };
   const gearReady = weaponsQ.data && setsQ.data && rulesQ.data && statValsQ.data;
+
+  // Final stats from the currently-equipped build (A7) — for per-talent damage. Falls back to
+  // base stats when nothing is geared. Never throws (e.g. mid-edit invalid weapon).
+  let finalStats: Record<string, number> = sheet;
+  if (gearReady) {
+    try {
+      const clientDataset: Dataset = {
+        meta: { gameVersion: "client", datasetVersion: "client", generatedAt: "" },
+        curves,
+        characters: [char],
+        weapons: weaponsQ.data,
+        artifactSets: setsQ.data,
+        slotStatRules: rulesQ.data,
+        constellationBonuses: modifiers.constellationBonuses,
+        weaponRefinements: modifiers.weaponRefinements,
+      };
+      const loadout: LoadoutInput = {
+        name: "",
+        characterId: char.id,
+        level,
+        ascensionPhase: ASCENSION_FOR_LEVEL[level] ?? 6,
+        weaponId,
+        constellation,
+        refinement,
+        artifacts: (Object.entries(artifacts) as [ArtifactSlot, (typeof artifacts)[ArtifactSlot]][])
+          .filter(([, d]) => d)
+          .map(([slot, d]) => ({ slot, setId: d!.setId, mainStat: d!.mainStat, subStats: d!.subStats })),
+      };
+      finalStats = statRecord(computeFinalStats(loadout, clientDataset).stats);
+    } catch {
+      /* keep base sheet */
+    }
+  }
+
+  // Average (crit-weighted) damage of a talent scaling row at the current build, or null when
+  // it's not a computable ATK/HP/DEF-scaling DMG row.
+  const rowDamage = (row: { valuesByLevel: number[]; percent: boolean }, scaleStat: string | null): number | null => {
+    const key = scaleStat ? SCALE_STAT_TO_KEY[scaleStat] : undefined;
+    if (!key) return null;
+    const mult = row.valuesByLevel[talentLevel - 1] ?? row.valuesByLevel[row.valuesByLevel.length - 1] ?? 0;
+    if (!row.percent || !mult) return null;
+    return instanceAvgDamage({
+      multiplier: mult,
+      statValue: finalStats[key] ?? 0,
+      critRate: finalStats.CRIT_RATE ?? 0,
+      critDmg: finalStats.CRIT_DMG ?? 0,
+      dmgBonusPct: finalStats[`${char.element.toUpperCase()}_DMG`] ?? 0,
+      charLevel: level,
+    });
+  };
 
   return (
     <div className="character">
@@ -260,6 +317,7 @@ export function CharacterPage() {
                     <tbody>
                       {s.scaling.map((row, i) => {
                         const { label, stat } = describeScaling(row.label, row.percent);
+                        const dmg = rowDamage(row, stat);
                         return (
                           <tr key={i}>
                             <td>{label}</td>
@@ -267,6 +325,7 @@ export function CharacterPage() {
                               {fmtScale(row, talentLevel)}
                               {stat ? <span className="scale-stat"> of {stat}</span> : null}
                             </td>
+                            <td className="scale-dmg">{dmg != null ? `≈ ${Math.round(dmg).toLocaleString()}` : ""}</td>
                           </tr>
                         );
                       })}
@@ -276,6 +335,7 @@ export function CharacterPage() {
               </li>
             ))}
           </ul>
+          <p className="muted small">≈ average crit damage for the equipped build vs a Lv 90 enemy (10% RES).</p>
         </Card>
       </div>
 
