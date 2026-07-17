@@ -197,18 +197,23 @@ export function CharacterPage() {
         ← Back to roster
       </Link>
 
-      <div className="char-header">
-        <div className="char-header-top">
-          <Icon src={char.icon} alt={char.name} size={72} />
+      <header className={`char-hero rarity-${char.rarity}`}>
+        <div className="char-hero-info">
+          <div className="char-tags">
+            <ElementBadge element={char.element} />
+            <span className="badge muted-badge">{char.weaponType}</span>
+            <RarityStars rarity={char.rarity} />
+          </div>
           <h1>{char.name}</h1>
+          {char.region ? <p className="char-hero-region muted small">{char.region}</p> : null}
+          {char.roles.length ? <div className="muted small">Roles: {char.roles.join(", ")}</div> : null}
         </div>
-        <div className="char-tags">
-          <ElementBadge element={char.element} />
-          <span className="badge muted-badge">{char.weaponType}</span>
-          <RarityStars rarity={char.rarity} />
-        </div>
-        {char.roles.length ? <div className="muted small">Roles: {char.roles.join(", ")}</div> : null}
-      </div>
+        {char.splashArt ? (
+          <img className="char-hero-art" src={char.splashArt} alt={char.name} loading="lazy" />
+        ) : (
+          <Icon src={char.icon} alt={char.name} size={96} />
+        )}
+      </header>
 
       <section className="card char-intro">
         {char.title ? <div className="intro-title">“{char.title}”</div> : null}
