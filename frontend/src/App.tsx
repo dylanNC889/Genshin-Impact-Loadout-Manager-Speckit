@@ -1,6 +1,7 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { Routes, Route, Link, NavLink } from "react-router-dom";
 import { GlobalSearch } from "./components/GlobalSearch";
+import { getTheme, setTheme, applyTheme, type Theme } from "./theme";
 
 // Route-level code splitting: each page (and the data it pulls in, e.g. the build
 // recommendations behind the loadout editor) loads on demand, trimming the initial bundle.
@@ -21,6 +22,13 @@ const PlannerPage = lazy(() => import("./pages/Planner").then((m) => ({ default:
 const FoodPage = lazy(() => import("./pages/Food").then((m) => ({ default: m.FoodPage })));
 
 export function App() {
+  const [theme, setThemeState] = useState<Theme>(() => getTheme());
+  useEffect(() => applyTheme(theme), [theme]);
+  const toggleTheme = () => {
+    const next: Theme = theme === "dark" ? "light" : "dark";
+    setTheme(next);
+    setThemeState(next);
+  };
   return (
     <div className="app">
       <header className="topbar">
@@ -42,6 +50,14 @@ export function App() {
           <NavLink to="/saved">Saved</NavLink>
         </nav>
         <GlobalSearch />
+        <button
+          className="theme-toggle"
+          onClick={toggleTheme}
+          aria-label="Toggle light or dark theme"
+          title="Toggle theme"
+        >
+          {theme === "dark" ? "☀" : "🌙"}
+        </button>
         <span className="tag">slice</span>
       </header>
       <main className="main">
