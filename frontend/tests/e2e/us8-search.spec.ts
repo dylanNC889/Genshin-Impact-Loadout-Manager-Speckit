@@ -32,3 +32,12 @@ test("release timeline lists versions newest-first", async ({ page }) => {
   await page.locator(".tl-chip", { hasText: "Hu Tao" }).click();
   await expect(page).toHaveURL(/\/character\/hu-tao$/);
 });
+
+// E2 — build planner aggregates materials across a wishlist.
+test("build planner aggregates a wishlist", async ({ page }) => {
+  await page.goto("/planner?chars=hu-tao,yelan");
+  await expect(page.getByRole("heading", { name: /Total for 2 characters/ })).toBeVisible();
+  await expect(page.locator(".mat-list li", { hasText: "Mora" }).first()).toBeVisible();
+  await page.getByLabel("Add character").selectOption("arlecchino");
+  await expect(page.getByRole("heading", { name: /Total for 3 characters/ })).toBeVisible();
+});

@@ -567,6 +567,39 @@ select {
   font-size: 10px;
 }
 
+/* --- Build planner (E2) --- */
+.planner-wishlist {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0 16px;
+}
+
+.wishlist-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px 4px 4px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 13px;
+}
+
+.wishlist-remove {
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 15px;
+  line-height: 1;
+  padding: 0 2px;
+}
+
+.wishlist-remove:hover {
+  color: #ff6b6b;
+}
+
 /* --- Materials ("what to farm") --- */
 .mat-cols {
   display: grid;
