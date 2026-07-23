@@ -368,6 +368,8 @@ export type SynergyAssessment = z.infer<typeof SynergyAssessmentSchema>;
 export const DamageCalcOptionsSchema = z.object({
   enemyLevel: z.number().int().default(90),
   enemyResistancePct: z.number().default(10),
+  /** Per-element RES overrides (A8); elements absent here fall back to enemyResistancePct. */
+  enemyResistanceByElement: z.record(z.string(), z.number()).optional(),
   rotation: z.string().default("v1-generic"),
 });
 export type DamageCalcOptions = z.infer<typeof DamageCalcOptionsSchema>;

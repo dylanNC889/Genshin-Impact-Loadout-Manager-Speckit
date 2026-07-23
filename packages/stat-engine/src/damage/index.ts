@@ -20,6 +20,8 @@ export interface DamageMember {
   transformative?: string;
   /** Elemental Mastery — powers the amplifying- and transformative-reaction EM bonuses. */
   em?: number;
+  /** The member's element — for per-element enemy RES (A8). */
+  element?: string;
   characterLevel?: number;
 }
 
@@ -88,7 +90,11 @@ export function estimateTeamDamage(
   options: Partial<DamageCalcOptions> = {},
 ): DamageEstimate {
   const opts: DamageCalcOptions = { ...DEFAULTS, ...options };
-  const resFactor = 1 - opts.enemyResistancePct / 100;
+  // Per-element RES (A8): a member's element can override the uniform enemy RES.
+  const resFactorFor = (element?: string) => {
+    const perElement = element ? opts.enemyResistanceByElement?.[element] : undefined;
+    return 1 - (perElement ?? opts.enemyResistancePct) / 100;
+  };
   const reactionTypes = new Set<string>();
 
   const perCharacter = members.map((m) => {
@@ -97,6 +103,7 @@ export function estimateTeamDamage(
     const avgCrit = 1 + critRate * (m.critDmg / 100);
     const dmgMult = 1 + m.dmgBonusPct / 100;
     const defFactor = (charLevel + 100) / (charLevel + 100 + (opts.enemyLevel + 100));
+    const resFactor = resFactorFor(m.element);
     // Amplifying reactions scale with the triggerer's EM (A3).
     const reaction = m.reactionMultiplier ? m.reactionMultiplier * emReactionBonus(m.em ?? 0) : 1;
     if (m.reactionType) reactionTypes.add(m.reactionType);
