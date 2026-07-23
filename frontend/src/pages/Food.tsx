@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "react-router-dom";
 import { fetchFoods } from "../api";
 import { Icon, RarityStars } from "../components/ui";
 
@@ -43,7 +44,7 @@ export function FoodPage() {
 
       <div className="grid wide">
         {foods?.map((f) => (
-          <div key={f.id} className="char-card set-card">
+          <Link key={f.id} to={`/food/${f.id}`} className="char-card set-card">
             <div className="set-head">
               <Icon src={f.icon} alt={f.name} size={44} />
               <div>
@@ -55,7 +56,7 @@ export function FoodPage() {
               </div>
             </div>
             <p className="set-bonus">{f.effect}</p>
-          </div>
+          </Link>
         ))}
       </div>
       {foods && foods.length === 0 ? <p className="muted">No food matches those filters.</p> : null}

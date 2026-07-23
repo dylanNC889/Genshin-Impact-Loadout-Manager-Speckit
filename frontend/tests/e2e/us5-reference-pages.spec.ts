@@ -92,3 +92,20 @@ test("browse the food buffs page", async ({ page }) => {
   await page.getByLabel("Filter by type").selectOption("Revival");
   await expect(page.locator(".set-card").first()).toBeVisible();
 });
+
+// #9 — per-food detail page: buff, recipe, specialty owner, lore.
+test("open a food detail page", async ({ page }) => {
+  await page.goto("/food");
+  await page.getByLabel("Search food").fill("Consomm");
+  await page.locator(".set-card").first().click();
+  await expect(page).toHaveURL(/\/food\/consomm-purete$/);
+
+  await expect(page.getByRole("heading", { name: /Consommé Purete/ })).toBeVisible();
+  await expect(page.locator(".card", { hasText: "Buff" })).toBeVisible();
+  // Recipe ingredients from genshin-db.
+  await expect(page.locator(".card", { hasText: "Recipe" }).locator(".mat-list li", { hasText: "Fowl" })).toBeVisible();
+  // Special dish links to its owner.
+  await expect(page.locator(".food-owner", { hasText: "Neuvillette" })).toBeVisible();
+  await page.locator(".food-owner", { hasText: "Neuvillette" }).click();
+  await expect(page).toHaveURL(/\/character\/neuvillette$/);
+});

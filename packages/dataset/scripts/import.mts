@@ -490,6 +490,8 @@ for (const name of foodNames) {
     else if (f.filterText === "Adventurer's Dish") type = "Adventure";
     else if (isRevive) type = "Revival";
     else continue; // skip pure-healing recovery dishes
+    // Special dishes read "<Character>'s specialty." in their flavor text — surface who.
+    const specialty = String(f.description ?? "").match(/^([A-Z][A-Za-z'’. -]+?)'s (?:Special|specialty|special dish)/);
     foods.push({
       id: slug(f.name),
       name: f.name,
@@ -498,6 +500,11 @@ for (const name of foodNames) {
       // Just the buff sentence (drop the co-op caveat / other trailing lines).
       effect: stripTags(String(f.effect ?? "").split("\n")[0].split(/\s*In Co-Op Mode/i)[0]).trim(),
       icon: enkaUrl(f.images?.filename_icon),
+      description: stripTags(String(f.description ?? "")).trim(),
+      ingredients: Array.isArray(f.ingredients)
+        ? f.ingredients.map((i: any) => ({ name: String(i.name), count: Number(i.count ?? 0) }))
+        : [],
+      specialtyName: specialty ? specialty[1].trim() : "",
     });
   } catch {
     /* skip */

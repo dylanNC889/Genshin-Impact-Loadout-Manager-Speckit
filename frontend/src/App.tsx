@@ -20,6 +20,7 @@ const CharacterComparePage = lazy(() => import("./pages/CharacterCompare").then(
 const TimelinePage = lazy(() => import("./pages/Timeline").then((m) => ({ default: m.TimelinePage })));
 const PlannerPage = lazy(() => import("./pages/Planner").then((m) => ({ default: m.PlannerPage })));
 const FoodPage = lazy(() => import("./pages/Food").then((m) => ({ default: m.FoodPage })));
+const FoodDetailPage = lazy(() => import("./pages/FoodDetail").then((m) => ({ default: m.FoodDetailPage })));
 
 export function App() {
   const [theme, setThemeState] = useState<Theme>(() => getTheme());
@@ -77,6 +78,7 @@ export function App() {
             <Route path="/timeline" element={<TimelinePage />} />
             <Route path="/planner" element={<PlannerPage />} />
             <Route path="/food" element={<FoodPage />} />
+            <Route path="/food/:id" element={<FoodDetailPage />} />
             <Route path="/saved" element={<SavedPage />} />
           </Routes>
         </Suspense>
