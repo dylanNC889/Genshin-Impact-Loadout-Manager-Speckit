@@ -17,6 +17,7 @@ import {
 import { Card, Icon } from "../components/ui";
 import { encodeShare, decodeShare } from "../share";
 import { teamBuffFor, teamResShred, activeBuffNotes } from "../teamBuffs";
+import { getOwned } from "../ownership";
 
 interface Slot {
   characterId: string | null;
@@ -116,6 +117,8 @@ export function TeamBuilder() {
   const [damage, setDamage] = useState<DamageEstimate | null>(null);
   const [pickerQ, setPickerQ] = useState("");
   const [savedOnly, setSavedOnly] = useState(false);
+  const [ownedOnly, setOwnedOnly] = useState(false);
+  const owned = getOwned("characters");
   // Configurable damage-estimate assumptions (B2).
   const [enemyLevel, setEnemyLevel] = useState(90);
   const [enemyRes, setEnemyRes] = useState(10);
@@ -206,6 +209,7 @@ export function TeamBuilder() {
   const pickerNeedle = pickerQ.trim().toLowerCase();
   const savedCharIds = new Set(savedLoadouts.map((l) => l.characterId));
   const pickerRoster = roster
+    .filter((c) => (ownedOnly ? owned.has(c.id) : true))
     .filter((c) => (savedOnly ? savedCharIds.has(c.id) : true))
     .filter((c) => (pickerNeedle ? c.name.toLowerCase().includes(pickerNeedle) || c.id.includes(pickerNeedle) : true));
 
@@ -299,6 +303,15 @@ export function TeamBuilder() {
               aria-label="Only characters with a saved build"
             />
             Only with a saved build ({savedCharIds.size})
+          </label>
+          <label className="saved-only-toggle">
+            <input
+              type="checkbox"
+              checked={ownedOnly}
+              onChange={(e) => setOwnedOnly(e.target.checked)}
+              aria-label="Owned characters only"
+            />
+            Owned only ({owned.size})
           </label>
           <div className="picker-grid">
             {pickerRoster.map((c) => {

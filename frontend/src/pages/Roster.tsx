@@ -4,6 +4,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { fetchCharacters } from "../api";
 import { ElementBadge, Icon, RarityStars } from "../components/ui";
 import { getFavorites, toggleFavorite } from "../favorites";
+import { getOwned, toggleOwned } from "../ownership";
 
 const ELEMENTS = ["Pyro", "Hydro", "Electro", "Cryo", "Anemo", "Geo", "Dendro"];
 const WEAPONS = ["Sword", "Claymore", "Polearm", "Bow", "Catalyst"];
@@ -25,7 +26,9 @@ export function Roster() {
     else next.delete(key);
     setParams(next, { replace: true });
   };
+  const ownedOnly = params.get("owned") === "1";
   const [favs, setFavs] = useState(() => getFavorites());
+  const [owned, setOwned] = useState(() => getOwned("characters"));
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["characters", q, element, weaponType],
@@ -37,9 +40,15 @@ export function Roster() {
     e.stopPropagation();
     setFavs(new Set(toggleFavorite(id)));
   }
+  function onToggleOwned(e: React.MouseEvent, id: string) {
+    e.preventDefault();
+    e.stopPropagation();
+    setOwned(new Set(toggleOwned("characters", id)));
+  }
 
   // rarity/region filtering + sort are client-side; favourites always float to the top.
   const rows = (data ?? [])
+    .filter((c) => (ownedOnly ? owned.has(c.id) : true))
     .filter((c) => (rarity ? c.rarity === Number(rarity) : true))
     .filter((c) => (region ? c.region === region : true))
     .slice()
@@ -99,6 +108,15 @@ export function Roster() {
           <option value="rarity">Sort: Rarity</option>
           <option value="element">Sort: Element</option>
         </select>
+        <label className="saved-only-toggle">
+          <input
+            type="checkbox"
+            checked={ownedOnly}
+            onChange={(e) => setParam("owned", e.target.checked ? "1" : "", "")}
+            aria-label="Owned characters only"
+          />
+          Owned only ({owned.size})
+        </label>
         <Link to="/character-compare" className="btn ghost">
           ⇄ Compare characters
         </Link>
@@ -114,6 +132,16 @@ export function Roster() {
               <ElementBadge element={c.element} />
               <div className="card-head-right">
                 <RarityStars rarity={c.rarity} />
+                <button
+                  type="button"
+                  className={`own-btn${owned.has(c.id) ? " owned" : ""}`}
+                  onClick={(e) => onToggleOwned(e, c.id)}
+                  aria-pressed={owned.has(c.id)}
+                  aria-label={owned.has(c.id) ? `Mark ${c.name} not owned` : `Mark ${c.name} owned`}
+                  title={owned.has(c.id) ? "Owned" : "Not owned"}
+                >
+                  {owned.has(c.id) ? "✓" : "＋"}
+                </button>
                 <button
                   type="button"
                   className="fav-btn"

@@ -14,6 +14,7 @@ import {
 import { Card } from "../components/ui";
 import { encodeShare } from "../share";
 import { parseGOOD, loadInventory, saveInventory, type ImportResult } from "../inventory";
+import { getOwned } from "../ownership";
 import { formatStat } from "../format";
 
 const TARGETS: { key: OptimizeTarget; label: string }[] = [
@@ -35,6 +36,8 @@ export function OptimizePage() {
   const modifiersQ = useQuery({ queryKey: ["modifiers"], queryFn: fetchModifiers });
 
   const [characterId, setCharacterId] = useState("");
+  const [ownedOnly, setOwnedOnly] = useState(false);
+  const owned = getOwned("characters");
   const [setId, setSetId] = useState("");
   const [weaponId, setWeaponId] = useState("");
   const [target, setTarget] = useState<OptimizeTarget>("CV");
@@ -161,12 +164,23 @@ export function OptimizePage() {
             Character
             <select value={characterId} onChange={(e) => setCharacterId(e.target.value)} aria-label="Character">
               <option value="">— pick —</option>
-              {(rosterQ.data ?? []).map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
+              {(rosterQ.data ?? [])
+                .filter((c) => !ownedOnly || owned.has(c.id))
+                .map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
             </select>
+            <label className="saved-only-toggle">
+              <input
+                type="checkbox"
+                checked={ownedOnly}
+                onChange={(e) => setOwnedOnly(e.target.checked)}
+                aria-label="Owned characters only"
+              />
+              Owned only ({owned.size})
+            </label>
           </label>
           <label>
             Weapon
