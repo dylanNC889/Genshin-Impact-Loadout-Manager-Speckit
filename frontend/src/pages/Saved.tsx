@@ -19,6 +19,7 @@ export function SavedPage() {
   const qc = useQueryClient();
   const fileRef = useRef<HTMLInputElement>(null);
   const [backupMsg, setBackupMsg] = useState<string | null>(null);
+  const [tagFilter, setTagFilter] = useState("");
 
   async function onExport() {
     const data = await exportBackup();
@@ -73,11 +74,31 @@ export function SavedPage() {
           {backupMsg ? <span className="muted small">{backupMsg}</span> : null}
         </div>
       </div>
+      {(() => {
+        const loadouts = loadoutsQ.data ?? [];
+        const allTags = [...new Set(loadouts.flatMap((l) => l.tags ?? []))].sort();
+        const shownLoadouts = tagFilter ? loadouts.filter((l) => (l.tags ?? []).includes(tagFilter)) : loadouts;
+        return (
       <div className="saved-grid">
-        <Card title={`Loadouts (${loadoutsQ.data?.length ?? 0})`}>
-          {loadoutsQ.data?.length ? (
+        <Card title={`Loadouts (${shownLoadouts.length})`}>
+          {allTags.length ? (
+            <select
+              className="tag-filter"
+              value={tagFilter}
+              onChange={(e) => setTagFilter(e.target.value)}
+              aria-label="Filter by tag"
+            >
+              <option value="">All tags</option>
+              {allTags.map((t) => (
+                <option key={t} value={t}>
+                  #{t}
+                </option>
+              ))}
+            </select>
+          ) : null}
+          {shownLoadouts.length ? (
             <ul className="saved-list">
-              {loadoutsQ.data.map((l) => (
+              {shownLoadouts.map((l) => (
                 <li key={l.id}>
                   <div className="saved-left">
                     <Icon src={iconById(l.characterId)} alt="" size={36} />
@@ -88,6 +109,16 @@ export function SavedPage() {
                       {formatStat("CRIT_RATE", statOf(l, "CRIT_RATE"))} · CD{" "}
                       {formatStat("CRIT_DMG", statOf(l, "CRIT_DMG"))}
                     </span>
+                    {l.tags?.length ? (
+                      <span className="saved-tags">
+                        {l.tags.map((t) => (
+                          <span key={t} className="saved-tag">
+                            #{t}
+                          </span>
+                        ))}
+                      </span>
+                    ) : null}
+                    {l.notes ? <span className="muted small saved-notes">{l.notes}</span> : null}
                     </div>
                   </div>
                   <div className="saved-actions">
@@ -142,6 +173,8 @@ export function SavedPage() {
           )}
         </Card>
       </div>
+        );
+      })()}
     </div>
   );
 }

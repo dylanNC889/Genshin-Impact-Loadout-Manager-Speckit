@@ -92,6 +92,10 @@ export function LoadoutEditor({
   const clearArtifact = useLoadoutStore((s) => s.clearArtifact);
   const setConstellation = useLoadoutStore((s) => s.setConstellation);
   const setRefinement = useLoadoutStore((s) => s.setRefinement);
+  const notes = useLoadoutStore((s) => s.notes);
+  const tags = useLoadoutStore((s) => s.tags);
+  const setNotes = useLoadoutStore((s) => s.setNotes);
+  const setTags = useLoadoutStore((s) => s.setTags);
 
   // Recommended weapons/artifact sets (KQM-sourced) surfaced at the top of the pickers.
   const recs = recommendedFor(character, weapons, artifactSets);
@@ -132,6 +136,8 @@ export function LoadoutEditor({
     weaponId,
     constellation,
     refinement,
+    notes,
+    tags,
     artifacts: SLOTS.flatMap((slot) => {
       const d = artifacts[slot];
       return d ? [{ slot, setId: d.setId, mainStat: d.mainStat, subStats: d.subStats }] : [];
@@ -332,6 +338,20 @@ export function LoadoutEditor({
           )}
           <p className="muted small">Recalculates instantly client-side via the stat-engine (FR-008/010).</p>
         </div>
+      </div>
+      <div className="notes-bar">
+        <input
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          placeholder="Notes (e.g. for abyss 12)"
+          aria-label="Loadout notes"
+        />
+        <input
+          value={tags.join(", ")}
+          onChange={(e) => setTags(e.target.value.split(",").map((t) => t.trim()).filter(Boolean))}
+          placeholder="Tags (comma-separated)"
+          aria-label="Loadout tags"
+        />
       </div>
       <div className="save-bar">
         <input

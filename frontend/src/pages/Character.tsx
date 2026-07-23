@@ -63,6 +63,8 @@ export function CharacterPage() {
   const setArtifact = useLoadoutStore((s) => s.setArtifact);
   const setConstellation = useLoadoutStore((s) => s.setConstellation);
   const setRefinement = useLoadoutStore((s) => s.setRefinement);
+  const setNotes = useLoadoutStore((s) => s.setNotes);
+  const setTags = useLoadoutStore((s) => s.setTags);
   // Equipped-build state, for per-talent damage (A7).
   const weaponId = useLoadoutStore((s) => s.weaponId);
   const artifacts = useLoadoutStore((s) => s.artifacts);
@@ -120,10 +122,12 @@ export function CharacterPage() {
     setWeapon(saved.weaponId ?? null);
     setConstellation(saved.constellation ?? 0);
     setRefinement(saved.refinement ?? 1);
+    setNotes(saved.notes ?? "");
+    setTags(saved.tags ?? []);
     for (const a of saved.artifacts) {
       setArtifact(a.slot, { setId: a.setId, mainStat: a.mainStat, subStats: a.subStats });
     }
-  }, [savedLoadoutQ.data, resetLoadout, setWeapon, setArtifact, setConstellation, setRefinement]);
+  }, [savedLoadoutQ.data, resetLoadout, setWeapon, setArtifact, setConstellation, setRefinement, setNotes, setTags]);
 
   if (detail.isLoading) return <p className="muted">Loading character…</p>;
   if (detail.error) return <p className="error">Failed to load: {(detail.error as Error).message}</p>;
@@ -164,6 +168,8 @@ export function CharacterPage() {
         weaponId,
         constellation,
         refinement,
+        notes: "",
+        tags: [],
         artifacts: (Object.entries(artifacts) as [ArtifactSlot, (typeof artifacts)[ArtifactSlot]][])
           .filter(([, d]) => d)
           .map(([slot, d]) => ({ slot, setId: d!.setId, mainStat: d!.mainStat, subStats: d!.subStats })),
