@@ -87,6 +87,8 @@ export function optimize(inventory: OwnedArtifact[], dataset: Dataset, q: Optimi
     weaponId: q.weaponId ?? null,
     constellation: q.constellation ?? 0,
     refinement: q.refinement ?? 1,
+    notes: "",
+    tags: [],
   };
 
   const results: OptimizedBuild[] = [];

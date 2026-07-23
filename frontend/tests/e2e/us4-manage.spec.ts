@@ -52,3 +52,21 @@ test("compare table lists each stat once", async ({ page }) => {
     }
   }
 });
+
+// B10 — save a loadout with notes + tags, then filter by tag on the Saved page.
+test("loadout notes and tags", async ({ page }) => {
+  await page.goto("/character/diluc");
+  await page.getByLabel("Loadout notes").fill("for abyss 12");
+  await page.getByLabel("Loadout tags").fill("abyss, pyro");
+  await page.getByLabel("Loadout name").fill("Diluc Tagged");
+  await page.getByRole("button", { name: "Save loadout" }).click();
+  await expect(page.getByText("Saved ✓")).toBeVisible();
+
+  await page.goto("/saved");
+  const row = page.locator(".saved-list li", { hasText: "Diluc Tagged" });
+  await expect(row.locator(".saved-tag", { hasText: "#abyss" })).toBeVisible();
+  await expect(row.getByText("for abyss 12")).toBeVisible();
+
+  await page.getByLabel("Filter by tag").selectOption("abyss");
+  await expect(page.locator(".saved-list li", { hasText: "Diluc Tagged" })).toBeVisible();
+});

@@ -323,6 +323,9 @@ export const LoadoutInputSchema = z.object({
   /** Constellation level 0–6 and weapon refinement rank 1–5 (A1; static bonuses only). */
   constellation: z.number().int().min(0).max(6).default(0),
   refinement: z.number().int().min(1).max(5).default(1),
+  /** Freeform note + tags to organise saved builds (B10). */
+  notes: z.string().default(""),
+  tags: z.array(z.string()).default([]),
 });
 export type LoadoutInput = z.infer<typeof LoadoutInputSchema>;
 
