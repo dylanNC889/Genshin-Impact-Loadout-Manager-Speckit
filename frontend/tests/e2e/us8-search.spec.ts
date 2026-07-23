@@ -42,6 +42,24 @@ test("build planner aggregates a wishlist", async ({ page }) => {
   await expect(page.locator(".mat-list li", { hasText: "Mora" }).first()).toBeVisible();
   await page.getByLabel("Add character").selectOption("arlecchino");
   await expect(page.getByRole("heading", { name: /Total for 3 characters/ })).toBeVisible();
+
+  // Material rows carry a "where to farm" hint (#6).
+  await expect(page.locator(".mat-list .mat-info").first()).toBeVisible();
+});
+
+// #6 — the planner wishlist persists across navigation (localStorage).
+test("planner wishlist persists after navigating away", async ({ page }) => {
+  await page.goto("/planner?chars=hu-tao,nahida");
+  await expect(page.locator(".wishlist-chip")).toHaveCount(2);
+  // leave and return to the bare planner URL — the wishlist is restored.
+  await page.goto("/");
+  await page.goto("/planner");
+  await expect(page.locator(".wishlist-chip")).toHaveCount(2);
+  await expect(page).toHaveURL(/chars=/);
+  // clearing persists an empty wishlist.
+  await page.getByRole("button", { name: "Clear" }).click();
+  await page.goto("/planner");
+  await expect(page.locator(".wishlist-chip")).toHaveCount(0);
 });
 
 // C4 — theme toggle switches and persists across reloads.

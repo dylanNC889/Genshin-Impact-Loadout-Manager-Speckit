@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
 import { fetchCharacters, fetchCharacterDetail } from "../api";
@@ -5,7 +6,11 @@ import { Card, Icon } from "../components/ui";
 import { MaterialList } from "../components/MaterialList";
 import { mergeMaterials } from "../materials";
 
-/** Multi-character build planner (E2): pick a wishlist, get the combined "what to farm" list. */
+const STORAGE_KEY = "glm.planner.wishlist";
+
+/** Multi-character build planner (E2): pick a wishlist, get the combined "what to farm" list.
+ *  The wishlist lives in the URL (shareable) but is also persisted to localStorage so it
+ *  survives navigating away and back (#6). */
 export function PlannerPage() {
   const [params, setParams] = useSearchParams();
   const rosterQ = useQuery({ queryKey: ["characters", "all"], queryFn: () => fetchCharacters({}) });
@@ -13,11 +18,31 @@ export function PlannerPage() {
 
   const chars = (params.get("chars") ?? "").split(",").filter(Boolean);
   const setChars = (ids: string[]) => {
+    const unique = [...new Set(ids)];
     const next = new URLSearchParams(params);
-    if (ids.length) next.set("chars", [...new Set(ids)].join(","));
+    if (unique.length) next.set("chars", unique.join(","));
     else next.delete("chars");
     setParams(next, { replace: true });
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(unique));
   };
+
+  // On first load with an empty URL, restore the saved wishlist (persistence, #6).
+  useEffect(() => {
+    if (params.get("chars")) return;
+    try {
+      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "[]") as string[];
+      if (saved.length) setParams(new URLSearchParams({ chars: saved.join(",") }), { replace: true });
+    } catch {
+      /* ignore malformed storage */
+    }
+  }, []);
+
+  // Persist the wishlist whenever it changes — including when arrived at via a shared ?chars=
+  // link — so it survives navigating away. "Clear" writes [] via setChars below.
+  const charsKey = chars.join(",");
+  useEffect(() => {
+    if (charsKey) localStorage.setItem(STORAGE_KEY, JSON.stringify(charsKey.split(",")));
+  }, [charsKey]);
   const nameById = (id: string) => roster.find((c) => c.id === id)?.name ?? id;
   const iconById = (id: string) => roster.find((c) => c.id === id)?.icon;
 

@@ -785,6 +785,50 @@ select {
   white-space: nowrap;
 }
 
+/* Material source hint — a small ⓘ affordance with a hover/focus tooltip (#6). */
+.mat-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.mat-info {
+  position: relative;
+  cursor: help;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1;
+  outline: none;
+}
+.mat-info:hover,
+.mat-info:focus-visible {
+  color: var(--accent);
+}
+.mat-tip {
+  position: absolute;
+  left: 0;
+  top: calc(100% + 6px);
+  z-index: 20;
+  width: max-content;
+  max-width: 260px;
+  padding: 6px 9px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 12px;
+  line-height: 1.35;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.12s ease;
+  pointer-events: none;
+}
+.mat-info:hover .mat-tip,
+.mat-info:focus-visible .mat-tip {
+  opacity: 1;
+  visibility: visible;
+}
+
 /* --- Artifact pieces list --- */
 .piece-list {
   list-style: none;
