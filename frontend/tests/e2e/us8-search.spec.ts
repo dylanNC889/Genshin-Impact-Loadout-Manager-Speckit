@@ -41,3 +41,15 @@ test("build planner aggregates a wishlist", async ({ page }) => {
   await page.getByLabel("Add character").selectOption("arlecchino");
   await expect(page.getByRole("heading", { name: /Total for 3 characters/ })).toBeVisible();
 });
+
+// C4 — theme toggle switches and persists across reloads.
+test("theme toggle switches and persists", async ({ page }) => {
+  await page.goto("/");
+  const html = page.locator("html");
+  const initial = await html.getAttribute("data-theme");
+  const toggled = initial === "dark" ? "light" : "dark";
+  await page.getByRole("button", { name: "Toggle light or dark theme" }).click();
+  await expect(html).toHaveAttribute("data-theme", toggled);
+  await page.reload();
+  await expect(html).toHaveAttribute("data-theme", toggled);
+});
