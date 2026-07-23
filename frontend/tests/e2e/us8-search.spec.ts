@@ -20,3 +20,15 @@ test("global search navigates to results", async ({ page }) => {
   await page.locator(".search-item", { hasText: "Marechaussee Hunter" }).click();
   await expect(page).toHaveURL(/\/artifact\/marechaussee-hunter$/);
 });
+
+// D3 — release timeline groups characters/weapons by debut version.
+test("release timeline lists versions newest-first", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("link", { name: "Timeline", exact: true }).click();
+  await expect(page).toHaveURL(/\/timeline$/);
+  await expect(page.getByRole("heading", { name: "Release timeline" })).toBeVisible();
+  await expect(page.locator(".tl-version").first()).toBeVisible();
+  // a known pairing links through to a detail page
+  await page.locator(".tl-chip", { hasText: "Hu Tao" }).click();
+  await expect(page).toHaveURL(/\/character\/hu-tao$/);
+});

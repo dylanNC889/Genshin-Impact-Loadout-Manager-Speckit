@@ -507,6 +507,66 @@ select {
   font-weight: 600;
 }
 
+/* --- Release timeline (D3) --- */
+.tl-version {
+  display: flex;
+  gap: 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.tl-badge {
+  flex-shrink: 0;
+  width: 56px;
+  font-weight: 700;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  padding-top: 4px;
+}
+
+.tl-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.tl-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tl-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px 4px 4px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  text-decoration: none;
+  color: var(--text);
+  font-size: 13px;
+}
+
+.tl-chip:hover {
+  border-color: var(--accent);
+}
+
+.tl-chip.rarity-5 {
+  border-color: #b8934a;
+}
+
+.tl-chip.weapon {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.tl-weapons .stars {
+  font-size: 10px;
+}
+
 /* --- Materials ("what to farm") --- */
 .mat-cols {
   display: grid;
