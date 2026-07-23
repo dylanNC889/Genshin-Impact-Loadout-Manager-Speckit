@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useSearchParams } from "react-router-dom";
-import { fetchCharacters } from "../api";
+import { fetchCharacters, listLoadouts } from "../api";
 import { ElementBadge, Icon, RarityStars } from "../components/ui";
 import { getFavorites, toggleFavorite } from "../favorites";
 import { getOwned, toggleOwned } from "../ownership";
@@ -27,6 +27,7 @@ export function Roster() {
     setParams(next, { replace: true });
   };
   const ownedOnly = params.get("owned") === "1";
+  const builtOnly = params.get("built") === "1";
   const [favs, setFavs] = useState(() => getFavorites());
   const [owned, setOwned] = useState(() => getOwned("characters"));
 
@@ -34,6 +35,9 @@ export function Roster() {
     queryKey: ["characters", q, element, weaponType],
     queryFn: () => fetchCharacters({ q, element, weaponType }),
   });
+  // Ids of characters that have at least one saved build (for the "has build" filter).
+  const loadoutsQ = useQuery({ queryKey: ["loadouts"], queryFn: listLoadouts });
+  const builtIds = new Set((loadoutsQ.data ?? []).map((l) => l.characterId));
 
   function onToggleFav(e: React.MouseEvent, id: string) {
     e.preventDefault();
@@ -49,6 +53,7 @@ export function Roster() {
   // rarity/region filtering + sort are client-side; favourites always float to the top.
   const rows = (data ?? [])
     .filter((c) => (ownedOnly ? owned.has(c.id) : true))
+    .filter((c) => (builtOnly ? builtIds.has(c.id) : true))
     .filter((c) => (rarity ? c.rarity === Number(rarity) : true))
     .filter((c) => (region ? c.region === region : true))
     .slice()
@@ -116,6 +121,15 @@ export function Roster() {
             aria-label="Owned characters only"
           />
           Owned only ({owned.size})
+        </label>
+        <label className="saved-only-toggle">
+          <input
+            type="checkbox"
+            checked={builtOnly}
+            onChange={(e) => setParam("built", e.target.checked ? "1" : "", "")}
+            aria-label="Characters with a saved build only"
+          />
+          Has build ({builtIds.size})
         </label>
         <Link to="/character-compare" className="btn ghost">
           ⇄ Compare characters
