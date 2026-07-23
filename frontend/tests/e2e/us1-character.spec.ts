@@ -45,7 +45,7 @@ test("browse roster and inspect a character", async ({ page }) => {
   await expect(mats.getByText("One talent → Lv 10")).toBeVisible();
 });
 
-// B8 — compare two characters side-by-side.
+// B8 — compare two characters side-by-side, incl. richer stats and a per-side build (#8).
 test("compare two characters", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("link", { name: /Compare characters/ }).click();
@@ -53,8 +53,32 @@ test("compare two characters", async ({ page }) => {
   await page.getByLabel("Character A").selectOption("hu-tao");
   await page.getByLabel("Character B").selectOption("arlecchino");
   await expect(page.locator(".compare-table")).toBeVisible();
-  await expect(page.locator(".compare-table td", { hasText: "Base HP (Lv 90)" })).toBeVisible();
+  // Expanded stat rows: base HP + combat stats now included.
+  await expect(page.locator(".compare-table td", { hasText: "Max HP" })).toBeVisible();
+  await expect(page.locator(".compare-table td", { hasText: "CRIT DMG" })).toBeVisible();
+  await expect(page.locator(".compare-table td", { hasText: "Energy Recharge" })).toBeVisible();
   await expect(page.locator(".compare-table td", { hasText: "Top weapon (KQM)" })).toBeVisible();
+
+  // A saved build can be selected per side to compare final geared stats.
+  await page.goto("/character/hu-tao");
+  await page.getByLabel("Loadout name").fill("Hu Tao CompareE2E");
+  await page.getByRole("button", { name: "Save loadout" }).click();
+  await expect(page.getByText("Saved ✓")).toBeVisible();
+
+  await page.goto("/character-compare?a=hu-tao&b=arlecchino");
+  await page.getByLabel("Build for character A").selectOption({ label: "Hu Tao CompareE2E" });
+  await expect(page).toHaveURL(/ba=/);
+  await expect(page.locator(".compare-table tr", { hasText: "Stats from" }).locator("td").nth(1)).toHaveText(
+    "Hu Tao CompareE2E",
+  );
+
+  // cleanup
+  await page.goto("/saved");
+  const rows = page.locator(".saved-list li", { hasText: "Hu Tao CompareE2E" });
+  for (let n = await rows.count(); n > 0; n--) {
+    await rows.first().getByRole("button", { name: "delete" }).click();
+    await expect(rows).toHaveCount(n - 1);
+  }
 });
 
 // #3/#10 — owned toggle + saved-builds picker on the character detail page.
