@@ -54,6 +54,31 @@ test("compare two characters", async ({ page }) => {
   await expect(page.locator(".compare-table td", { hasText: "Top weapon (KQM)" })).toBeVisible();
 });
 
+// Roster "has build" filter — show only characters with a saved loadout.
+test("filter roster to characters with a saved build", async ({ page }) => {
+  // create a build so at least one character qualifies
+  await page.goto("/character/diluc");
+  await page.getByLabel("Loadout name").fill("Diluc RosterHasBuild");
+  await page.getByRole("button", { name: "Save loadout" }).click();
+  await expect(page.getByText("Saved ✓")).toBeVisible();
+
+  await page.goto("/");
+  await expect(page.locator(".char-card", { hasText: "Diluc" })).toBeVisible(); // roster loaded
+  const allCount = await page.locator(".char-card").count();
+  await page.getByLabel("Characters with a saved build only").check();
+  await expect(page).toHaveURL(/built=1/);
+  await expect(page.locator(".char-card", { hasText: "Diluc" })).toBeVisible();
+  expect(await page.locator(".char-card").count()).toBeLessThan(allCount);
+
+  // cleanup
+  await page.goto("/saved");
+  const rows = page.locator(".saved-list li", { hasText: "Diluc RosterHasBuild" });
+  for (let n = await rows.count(); n > 0; n--) {
+    await rows.first().getByRole("button", { name: "delete" }).click();
+    await expect(rows).toHaveCount(n - 1);
+  }
+});
+
 // C5 — roster filters are reflected in the URL and restored on load.
 test("roster filters are shareable via the URL", async ({ page }) => {
   await page.goto("/");
