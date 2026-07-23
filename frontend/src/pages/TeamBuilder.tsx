@@ -18,6 +18,7 @@ import { Card, Icon } from "../components/ui";
 import { encodeShare, decodeShare } from "../share";
 import { teamBuffFor, teamResShred, activeBuffNotes } from "../teamBuffs";
 import { getOwned } from "../ownership";
+import { ER_REQUIREMENTS } from "../data/erRequirements";
 
 interface Slot {
   characterId: string | null;
@@ -238,6 +239,21 @@ export function TeamBuilder() {
   const nameById = (id: string) => roster.find((c) => c.id === id)?.name ?? id;
   // Full character records (with splash art) for the selected slots, keyed by id.
   const detailByCharId = new Map(details.map((d) => [d.character.id, d.character]));
+
+  // ER requirement check (A10): each member's ER% (geared or base) vs its curated solo target.
+  const energyRows = selected
+    .map((s, i) => {
+      const detail = details[i];
+      if (!detail) return null;
+      const req = ER_REQUIREMENTS[detail.character.id];
+      if (!req) return null;
+      const lo = s.loadoutId ? savedLoadouts.find((l) => l.id === s.loadoutId) : undefined;
+      const er = lo
+        ? (lo.computedFinalStats.find((x) => x.key === "ER")?.value ?? 100)
+        : (computeBaseStats(detail.character, 90, 6, detail.curves).sheet.ER ?? 100);
+      return { name: detail.character.name, er: Math.round(er), req, short: er < req };
+    })
+    .filter((r): r is { name: string; er: number; req: number; short: boolean } => r !== null);
 
   const teamIds = new Set(slots.filter((s) => s.characterId).map((s) => s.characterId));
   const teamFull = teamIds.size >= 4;
@@ -544,6 +560,23 @@ export function TeamBuilder() {
                 <li key={i}>{n}</li>
               ))}
             </ul>
+          ) : null}
+
+          {energyRows.length ? (
+            <>
+              <h4>Energy (approx ER)</h4>
+              <ul className="energy-list">
+                {energyRows.map((r) => (
+                  <li key={r.name} className={r.short ? "er-short" : ""}>
+                    <span>{r.name}</span>
+                    <span>
+                      {r.er}% / ~{r.req}% {r.short ? "⚠" : "✓"}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              <p className="muted small">Solo ER targets (approx) — a battery teammate lowers these.</p>
+            </>
           ) : null}
         </Card>
 

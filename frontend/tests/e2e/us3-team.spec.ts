@@ -95,6 +95,20 @@ test("auto-detect reaction from team elements", async ({ page }) => {
   await expect(page.locator(".assumptions").getByText("Vaporize").first()).toBeVisible();
 });
 
+// A10 — approximate ER requirement check for energy-hungry members.
+test("show an ER-requirement flag for an energy-hungry member", async ({ page }) => {
+  await page.goto("/team");
+  const search = page.getByLabel("Search characters to add");
+  await search.fill("Xiangling");
+  await page.locator(".picker-cell", { hasText: "Xiangling" }).first().click();
+
+  // Xiangling wants ~200% ER; a bare (100% base) build is flagged short.
+  const energy = page.locator(".energy-list li", { hasText: "Xiangling" });
+  await expect(energy).toBeVisible();
+  await expect(energy).toHaveClass(/er-short/);
+  await expect(energy).toContainText("100% / ~200%");
+});
+
 // A8 — enemy presets (per-element RES).
 test("enemy preset disables manual inputs and recalculates", async ({ page }) => {
   await page.goto("/team");
