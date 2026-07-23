@@ -320,6 +320,8 @@ for (const name of charNames) {
       talentMaterials: aggregateCosts(Object.values((t?.costs ?? {}) as Record<string, any[]>)),
       // Vertical wish-preview art (320x1024) — ideal for team-builder portrait columns.
       splashArt: enkaUrl(c.images?.filename_gachaSlice),
+      // Wide wish splash (2048x1024) — the iconic full art, used as the detail hero banner.
+      wideSplashArt: enkaUrl(c.images?.filename_gachaSplash),
     });
   } catch {
     /* skip non-importable entries (e.g. unreleased/variant) */

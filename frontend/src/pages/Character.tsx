@@ -203,7 +203,10 @@ export function CharacterPage() {
         ← Back to roster
       </Link>
 
-      <header className={`char-hero rarity-${char.rarity}`}>
+      <header className={`char-hero rarity-${char.rarity}${char.wideSplashArt ? " has-splash" : ""}`}>
+        {char.wideSplashArt ? (
+          <img className="char-hero-bg" src={char.wideSplashArt} alt="" aria-hidden="true" loading="lazy" />
+        ) : null}
         <div className="char-hero-info">
           <div className="char-tags">
             <ElementBadge element={char.element} />
@@ -214,11 +217,13 @@ export function CharacterPage() {
           {char.region ? <p className="char-hero-region muted small">{char.region}</p> : null}
           {char.roles.length ? <div className="muted small">Roles: {char.roles.join(", ")}</div> : null}
         </div>
-        {char.splashArt ? (
-          <img className="char-hero-art" src={char.splashArt} alt={char.name} loading="lazy" />
-        ) : (
-          <Icon src={char.icon} alt={char.name} size={96} />
-        )}
+        {!char.wideSplashArt ? (
+          char.splashArt ? (
+            <img className="char-hero-art" src={char.splashArt} alt={char.name} loading="lazy" />
+          ) : (
+            <Icon src={char.icon} alt={char.name} size={96} />
+          )
+        ) : null}
       </header>
 
       <section className="card char-intro">

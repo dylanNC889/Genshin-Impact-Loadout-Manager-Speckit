@@ -66,6 +66,7 @@ interface RawCharacter {
   ascensionMaterials?: { name: string; count: number }[];
   talentMaterials?: { name: string; count: number }[];
   splashArt?: string;
+  wideSplashArt?: string;
 }
 
 interface MetaFile {
@@ -135,6 +136,7 @@ function normalizeCharacter(raw: RawCharacter): Character {
     ascensionMaterials: raw.ascensionMaterials ?? [],
     talentMaterials: raw.talentMaterials ?? [],
     splashArt: raw.splashArt ?? "",
+    wideSplashArt: raw.wideSplashArt ?? "",
   };
   // Validate the assembled record against the contract (single source of truth).
   return CharacterSchema.parse(candidate);
