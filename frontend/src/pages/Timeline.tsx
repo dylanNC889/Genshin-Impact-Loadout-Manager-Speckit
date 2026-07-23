@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { fetchCharacters, fetchWeapons } from "../api";
 import { Icon, RarityStars } from "../components/ui";
+import { versionDateLabel, versionDateFull } from "../data/versionDates";
 
 /** Numeric ordering for a "major.minor" version string ("4.10" > "4.2"). */
 const versionNum = (v: string) => {
@@ -25,16 +26,22 @@ export function TimelinePage() {
   return (
     <div className="timeline">
       <h1>Release timeline</h1>
-      <p className="muted small">Characters and 5★ weapons by debut version, newest first.</p>
+      <p className="muted small">
+        Characters and 5★ weapons by debut version and release date, newest first.
+      </p>
 
       {versions.map((v) => {
         const vChars = chars
           .filter((c) => c.version === v)
           .sort((a, b) => b.rarity - a.rarity || a.name.localeCompare(b.name));
         const vWeapons = weapons.filter((w) => w.version === v).sort((a, b) => a.name.localeCompare(b.name));
+        const dateLabel = versionDateLabel(v);
         return (
           <section key={v} className="tl-version">
-            <div className="tl-badge">v{v}</div>
+            <div className="tl-badge" title={versionDateFull(v)}>
+              <span className="tl-ver">v{v}</span>
+              {dateLabel ? <span className="tl-date">{dateLabel}</span> : null}
+            </div>
             <div className="tl-body">
               {vChars.length ? (
                 <div className="tl-row">
