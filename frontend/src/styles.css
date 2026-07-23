@@ -1779,6 +1779,20 @@ select {
   width: 96px;
 }
 
+.dmg-opts .auto-react {
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-end;
+  padding-bottom: 6px;
+}
+
+.dmg-opts .auto-react input {
+  width: auto;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
 /* --- Save bar + Saved page (US4) --- */
 .save-bar {
   display: flex;

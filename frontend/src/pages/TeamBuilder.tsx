@@ -107,6 +107,24 @@ const TRANSFORMATIVE = [
   "Spread",
 ] as const;
 
+/** Pick the most representative reaction from a team's possible reactions (A9): amplifying first
+ *  (biggest impact), else the first damaging transformative/catalyze. */
+function autoPickReaction(possible: string[]): { reaction: string; transformative: string; label: string } {
+  if (possible.includes("Vaporize")) return { reaction: "vaporize-1.5", transformative: "none", label: "Vaporize" };
+  if (possible.includes("Melt")) return { reaction: "melt-1.5", transformative: "none", label: "Melt" };
+  const TRANS: Record<string, string> = {
+    Quicken: "Aggravate",
+    Overloaded: "Overloaded",
+    "Electro-Charged": "Electro-Charged",
+    Superconduct: "Superconduct",
+    Bloom: "Bloom",
+    Burning: "Burning",
+    Swirl: "Swirl",
+  };
+  for (const r of possible) if (TRANS[r]) return { reaction: "none", transformative: TRANS[r], label: TRANS[r] };
+  return { reaction: "none", transformative: "none", label: "none" };
+}
+
 export function TeamBuilder() {
   const [slots, setSlots] = useState<Slot[]>([
     { characterId: null, loadoutId: null },
@@ -124,6 +142,8 @@ export function TeamBuilder() {
   const [enemyRes, setEnemyRes] = useState(10);
   const [reaction, setReaction] = useState("none");
   const [transformative, setTransformative] = useState<string>("none");
+  const [autoReact, setAutoReact] = useState(false);
+  const [autoChoice, setAutoChoice] = useState<string | null>(null);
 
   const [searchParams] = useSearchParams();
   const teamParam = searchParams.get("team");
@@ -234,7 +254,12 @@ export function TeamBuilder() {
   }
 
   function onCalculate() {
-    const r = REACTIONS[reaction] ?? { mult: 1, type: undefined };
+    // Auto mode (A9) derives the reaction from the team's possible reactions; else use the manual picks.
+    const auto = autoReact ? autoPickReaction(synergy.possibleReactions) : null;
+    setAutoChoice(auto ? (auto.label === "none" ? "no reaction" : auto.label) : null);
+    const effReaction = auto ? auto.reaction : reaction;
+    const effTransformative = auto ? auto.transformative : transformative;
+    const r = REACTIONS[effReaction] ?? { mult: 1, type: undefined };
     const teamCharIds = selected.map((s) => s.characterId);
     const shred = teamResShred(teamCharIds);
     const dmg = selected
@@ -262,7 +287,7 @@ export function TeamBuilder() {
       });
     // Transformative reaction (A6): a separate flat-DMG line, credited to the highest-EM member
     // (the likely trigger). Applied once, not per member, to avoid multiplying by team size.
-    if (transformative !== "none" && dmg.length) {
+    if (effTransformative !== "none" && dmg.length) {
       let bestIdx = 0;
       let bestEm = -1;
       dmg.forEach((m, i) => {
@@ -273,7 +298,7 @@ export function TeamBuilder() {
         }
       });
       const bm = dmg[bestIdx];
-      if (bm) dmg[bestIdx] = { ...bm, transformative };
+      if (bm) dmg[bestIdx] = { ...bm, transformative: effTransformative };
     }
     if (dmg.length) setDamage(estimateTeamDamage(dmg, { enemyLevel, enemyResistancePct: enemyRes - shred }));
   }
@@ -517,9 +542,18 @@ export function TeamBuilder() {
                 aria-label="Enemy resistance percent"
               />
             </label>
+            <label className="auto-react">
+              <input type="checkbox" checked={autoReact} onChange={(e) => setAutoReact(e.target.checked)} aria-label="Auto-detect reaction" />
+              Auto reaction
+            </label>
             <label>
               Reaction
-              <select value={reaction} onChange={(e) => setReaction(e.target.value)} aria-label="Reaction">
+              <select
+                value={reaction}
+                onChange={(e) => setReaction(e.target.value)}
+                aria-label="Reaction"
+                disabled={autoReact}
+              >
                 {Object.entries(REACTIONS).map(([k, v]) => (
                   <option key={k} value={k}>
                     {v.label}
@@ -533,6 +567,7 @@ export function TeamBuilder() {
                 value={transformative}
                 onChange={(e) => setTransformative(e.target.value)}
                 aria-label="Extra reaction"
+                disabled={autoReact}
               >
                 {TRANSFORMATIVE.map((t) => (
                   <option key={t} value={t}>
@@ -577,6 +612,7 @@ export function TeamBuilder() {
                 {damage.assumptions.reactionTypes.length ? `, ${damage.assumptions.reactionTypes.join("/")}` : ""},
                 rotation “{damage.assumptions.rotation}”. Slots with a saved loadout use geared stats; others use base
                 stats.
+                {autoChoice ? <> Auto-detected reaction: <strong>{autoChoice}</strong>.</> : null}
                 {activeBuffNotes(selected.map((s) => s.characterId)).length ? (
                   <div className="team-buffs">
                     <strong>Team buffs (approx):</strong>

@@ -78,3 +78,19 @@ test("filter the team picker to characters with a saved build", async ({ page })
     await expect(rows).toHaveCount(n - 1);
   }
 });
+
+// A9 — auto-detect the reaction from the team's elements.
+test("auto-detect reaction from team elements", async ({ page }) => {
+  await page.goto("/team");
+  const search = page.getByLabel("Search characters to add");
+  await search.fill("Hu Tao");
+  await page.locator(".picker-cell", { hasText: "Hu Tao" }).first().click();
+  await search.fill("Xingqiu");
+  await page.locator(".picker-cell", { hasText: "Xingqiu" }).first().click();
+  await expect(page.locator(".chip", { hasText: "Vaporize" })).toBeVisible(); // details loaded
+
+  await page.getByLabel("Auto-detect reaction").check();
+  await page.getByRole("button", { name: /Calculate/ }).click();
+  await expect(page.getByText(/Auto-detected reaction:/)).toBeVisible();
+  await expect(page.locator(".assumptions").getByText("Vaporize").first()).toBeVisible();
+});
