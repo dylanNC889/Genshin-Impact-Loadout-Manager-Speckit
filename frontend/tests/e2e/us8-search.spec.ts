@@ -28,6 +28,8 @@ test("release timeline lists versions newest-first", async ({ page }) => {
   await expect(page).toHaveURL(/\/timeline$/);
   await expect(page.getByRole("heading", { name: "Release timeline" })).toBeVisible();
   await expect(page.locator(".tl-version").first()).toBeVisible();
+  // each version badge carries a curated release date (#5).
+  await expect(page.locator(".tl-badge .tl-date").first()).toHaveText(/\d{4}/);
   // a known pairing links through to a detail page
   await page.locator(".tl-chip", { hasText: "Hu Tao" }).click();
   await expect(page).toHaveURL(/\/character\/hu-tao$/);
