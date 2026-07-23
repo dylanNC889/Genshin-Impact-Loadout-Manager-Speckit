@@ -1905,6 +1905,26 @@ select {
   min-width: 190px;
 }
 
+/* --- ER requirement check (A10) --- */
+.energy-list {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 0;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.energy-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 3px 0;
+}
+
+.energy-list li.er-short {
+  color: #ff8a5c;
+}
+
 .dmg-opts .auto-react {
   flex-direction: row;
   align-items: center;
