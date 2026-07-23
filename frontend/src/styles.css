@@ -1872,6 +1872,11 @@ select {
   width: 96px;
 }
 
+.dmg-opts .enemy-preset select {
+  width: auto;
+  min-width: 190px;
+}
+
 .dmg-opts .auto-react {
   flex-direction: row;
   align-items: center;

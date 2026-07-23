@@ -94,3 +94,16 @@ test("auto-detect reaction from team elements", async ({ page }) => {
   await expect(page.getByText(/Auto-detected reaction:/)).toBeVisible();
   await expect(page.locator(".assumptions").getByText("Vaporize").first()).toBeVisible();
 });
+
+// A8 — enemy presets (per-element RES).
+test("enemy preset disables manual inputs and recalculates", async ({ page }) => {
+  await page.goto("/team");
+  const search = page.getByLabel("Search characters to add");
+  await search.fill("Hu Tao");
+  await page.locator(".picker-cell", { hasText: "Hu Tao" }).first().click();
+  await expect(page.getByLabel("Enemy level")).toBeEnabled();
+  await page.getByLabel("Enemy preset").selectOption({ label: "Pyro-resistant — +50% Pyro" });
+  await expect(page.getByLabel("Enemy level")).toBeDisabled();
+  await page.getByRole("button", { name: /Calculate/ }).click();
+  await expect(page.getByText("est. total")).toBeVisible();
+});

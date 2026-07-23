@@ -57,6 +57,21 @@ describe("estimateTeamDamage (T040 / FR-016, SC-009)", () => {
     expect(est.assumptions.rotation).toBe("v1-generic");
   });
 
+  it("applies per-element enemy RES only to matching elements (A8)", () => {
+    const pyro: DamageMember = { ...member, element: "Pyro" };
+    const electro: DamageMember = { ...member, element: "Electro" };
+    const opts = { enemyResistancePct: 10, enemyResistanceByElement: { Pyro: 50 } };
+    // Pyro member takes the 50% Pyro RES → less than the uniform-10% baseline.
+    expect(estimateTeamDamage([pyro], opts).totalEstimated).toBeLessThan(
+      estimateTeamDamage([pyro], { enemyResistancePct: 10 }).totalEstimated,
+    );
+    // Electro member is unaffected by a Pyro RES override.
+    expect(estimateTeamDamage([electro], opts).totalEstimated).toBeCloseTo(
+      estimateTeamDamage([electro], { enemyResistancePct: 10 }).totalEstimated,
+      3,
+    );
+  });
+
   it("honors overridden assumptions", () => {
     const est = estimateTeamDamage([member], { enemyResistancePct: 0, enemyLevel: 100 });
     expect(est.assumptions.enemyResistancePct).toBe(0);
