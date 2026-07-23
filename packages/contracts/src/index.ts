@@ -185,6 +185,8 @@ export const CharacterSchema = z.object({
   talentMaterials: z.array(MaterialSchema).default([]),
   /** Vertical gacha portrait URL (enka, 320x1024); used for team-builder portraits. */
   splashArt: z.string().default(""),
+  /** Wide wish/gacha splash URL (enka, 2048x1024); used as the character detail hero banner. */
+  wideSplashArt: z.string().default(""),
 });
 export type Character = z.infer<typeof CharacterSchema>;
 

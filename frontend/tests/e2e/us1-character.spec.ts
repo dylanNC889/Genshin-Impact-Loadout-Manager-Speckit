@@ -12,6 +12,9 @@ test("browse roster and inspect a character", async ({ page }) => {
 
   await expect(page.getByRole("heading", { name: "Hu Tao", level: 1 })).toBeVisible();
 
+  // Hero uses the full wide wish splash as a banner (#5).
+  await expect(page.locator(".char-hero.has-splash .char-hero-bg")).toBeVisible();
+
   // Intro panel (#4): lore title.
   await expect(page.getByText("Fragrance in Thaw")).toBeVisible();
 
