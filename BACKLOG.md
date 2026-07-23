@@ -80,3 +80,19 @@ _None open._
    in `Character.tsx`. Added `Skill.icon` to the contract, populated in the importer from
    genshin-db `talents().images.filename_combat1/2/3` (enka URLs), threaded through the loader.
    Data regenerated (345/345 skills have icons). New `.skill-head` layout + `.skill-icon` CSS.
+
+---
+
+## Later batches (spec'd in `specs/improvements-backlog{,-2,-3}.md`) — ✅ ALL DONE
+
+- **Batch 2** (`improvements-backlog.md`, 11 items, A1–A4 / B1–B4 / C1–C3) — EM reactions,
+  per-instance damage breakdown, teammate buffs, constellations + weapon refinements, roster
+  filters/favourites, weapon/artifact detail pages, build compare, and the artifact optimizer
+  (`/optimize`, `@app/optimizer`). Merged (PRs #11–#22).
+- **Batch 3** (`improvements-backlog-2.md`, 7 items) — export/import backup, weapon compare,
+  constellation-modifier correction, global search, ascension/talent materials, per-talent
+  damage numbers, transformative + catalyze reactions. Merged (PRs #38–#46).
+- **Batch 4** (`improvements-backlog-3.md`, 12 items) — character compare, splash hero,
+  shareable roster filters, ownership tracking, auto-detect reactions, release timeline,
+  loadout notes & tags, multi-character material planner, enemy presets (per-element RES),
+  food buffs page, light theme, and approximate per-member ER requirements. Merged (PRs #51–#62).
