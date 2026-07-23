@@ -289,6 +289,12 @@ export const FoodSchema = z.object({
   type: z.string(),
   effect: z.string().default(""),
   icon: z.string().default(""),
+  /** In-game flavor text / lore. */
+  description: z.string().default(""),
+  /** In-game recipe ingredients (name + count). */
+  ingredients: z.array(MaterialSchema).default([]),
+  /** For a special dish, the character whose specialty it is (display name, from lore). */
+  specialtyName: z.string().default(""),
 });
 export type Food = z.infer<typeof FoodSchema>;
 

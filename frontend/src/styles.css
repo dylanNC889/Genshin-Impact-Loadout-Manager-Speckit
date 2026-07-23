@@ -540,6 +540,36 @@ select {
   font-size: 12px;
 }
 
+/* Food detail hero (#9). */
+.food-hero {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 20px;
+  margin: 12px 0 16px;
+}
+.food-hero h1 {
+  margin: 0 0 6px;
+}
+.food-effect {
+  margin: 0 0 6px;
+  font-size: 15px;
+}
+.food-owner {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 600;
+  color: var(--accent);
+  text-decoration: none;
+  vertical-align: middle;
+}
+.food-owner:hover {
+  text-decoration: underline;
+}
+
 .weapon-hero {
   display: flex;
   align-items: center;
