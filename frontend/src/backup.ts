@@ -1,6 +1,7 @@
 import type { OwnedArtifact } from "@app/optimizer";
 import { listLoadouts, listTeams, createLoadout, createTeam, type SavedLoadout, type SavedTeam } from "./api";
 import { getFavorites, setFavorites } from "./favorites";
+import { getOwned, setOwned } from "./ownership";
 import { loadInventory, saveInventory } from "./inventory";
 
 const FORMAT = "glm-backup";
@@ -14,6 +15,7 @@ export interface Backup {
   loadouts: SavedLoadout[];
   teams: SavedTeam[];
   favorites: string[];
+  owned: { characters: string[]; weapons: string[] };
   inventory: OwnedArtifact[];
 }
 
@@ -27,6 +29,7 @@ export async function exportBackup(): Promise<Backup> {
     loadouts,
     teams,
     favorites: [...getFavorites()],
+    owned: { characters: [...getOwned("characters")], weapons: [...getOwned("weapons")] },
     inventory: loadInventory(),
   };
 }
@@ -55,6 +58,8 @@ export async function importBackup(raw: unknown): Promise<ImportSummary> {
   for (const lo of loadouts) await createLoadout(lo);
   for (const t of teams) await createTeam(t);
   setFavorites([...getFavorites(), ...favorites]);
+  if (data.owned?.characters) setOwned("characters", [...getOwned("characters"), ...data.owned.characters]);
+  if (data.owned?.weapons) setOwned("weapons", [...getOwned("weapons"), ...data.owned.weapons]);
   if (inventory.length) saveInventory(inventory);
 
   return { loadouts: loadouts.length, teams: teams.length, favorites: favorites.length, inventory: inventory.length };

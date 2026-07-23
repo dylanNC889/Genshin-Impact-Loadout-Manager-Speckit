@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { fetchWeapons } from "../api";
 import { Icon, RarityStars } from "../components/ui";
+import { getOwned, toggleOwned } from "../ownership";
 import { formatStat, statLabel } from "../format";
 
 const WEAPONS = ["Sword", "Claymore", "Polearm", "Bow", "Catalyst"];
@@ -19,6 +20,8 @@ export function Weapons() {
   const [weaponType, setWeaponType] = useState("");
   const [rarity, setRarity] = useState("");
   const [sort, setSort] = useState<SortKey>("rarity");
+  const [ownedOnly, setOwnedOnly] = useState(false);
+  const [owned, setOwned] = useState(() => getOwned("weapons"));
 
   // The API filters by weaponType server-side; name + rarity are filtered client-side.
   const { data, isLoading, error } = useQuery({
@@ -28,7 +31,8 @@ export function Weapons() {
 
   const needle = q.trim().toLowerCase();
   const weapons = data
-    ?.filter((w) => (rarity ? w.rarity === Number(rarity) : true))
+    ?.filter((w) => (ownedOnly ? owned.has(w.id) : true))
+    .filter((w) => (rarity ? w.rarity === Number(rarity) : true))
     .filter((w) => (needle ? w.name.toLowerCase().includes(needle) || w.id.includes(needle) : true))
     .slice()
     .sort((a, b) => {
@@ -70,6 +74,15 @@ export function Weapons() {
             </option>
           ))}
         </select>
+        <label className="saved-only-toggle">
+          <input
+            type="checkbox"
+            checked={ownedOnly}
+            onChange={(e) => setOwnedOnly(e.target.checked)}
+            aria-label="Owned weapons only"
+          />
+          Owned only ({owned.size})
+        </label>
         <Link to="/weapon-compare" className="btn ghost">
           ⇄ Compare weapons
         </Link>
@@ -83,7 +96,23 @@ export function Weapons() {
           <Link key={w.id} to={`/weapon/${w.id}`} className={`char-card rarity-${w.rarity}`}>
             <div className="char-card-head">
               <span className="muted small">{w.weaponType}</span>
-              <RarityStars rarity={w.rarity} />
+              <div className="card-head-right">
+                <RarityStars rarity={w.rarity} />
+                <button
+                  type="button"
+                  className={`own-btn${owned.has(w.id) ? " owned" : ""}`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setOwned(new Set(toggleOwned("weapons", w.id)));
+                  }}
+                  aria-pressed={owned.has(w.id)}
+                  aria-label={owned.has(w.id) ? `Mark ${w.name} not owned` : `Mark ${w.name} owned`}
+                  title={owned.has(w.id) ? "Owned" : "Not owned"}
+                >
+                  {owned.has(w.id) ? "✓" : "＋"}
+                </button>
+              </div>
             </div>
             <Icon src={w.icon} alt={w.name} size={64} className="char-card-icon" />
             <div className="char-name">{w.name}</div>

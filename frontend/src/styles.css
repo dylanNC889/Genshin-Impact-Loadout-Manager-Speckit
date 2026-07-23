@@ -180,6 +180,20 @@ select {
   color: var(--accent);
 }
 
+.own-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  color: var(--muted);
+}
+
+.own-btn.owned {
+  color: #6be675;
+}
+
 /* --- Game asset icons --- */
 .icon-img {
   object-fit: contain;

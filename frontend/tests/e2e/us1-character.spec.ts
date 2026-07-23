@@ -63,3 +63,16 @@ test("roster filters are shareable via the URL", async ({ page }) => {
   await expect(page.getByLabel("Filter by element")).toHaveValue("Pyro");
   await expect(page.getByLabel("Filter by rarity")).toHaveValue("5");
 });
+
+// E1 — mark characters owned and filter to "Owned only".
+test("ownership toggle + owned-only filter", async ({ page }) => {
+  await page.goto("/");
+  await page.getByLabel("Search characters").fill("Hu Tao");
+  await page.getByRole("button", { name: "Mark Hu Tao owned" }).click();
+  await expect(page.getByRole("button", { name: "Mark Hu Tao not owned" })).toBeVisible();
+
+  await page.getByLabel("Search characters").fill("");
+  await page.getByLabel("Owned characters only").check();
+  await expect(page.locator(".char-card")).toHaveCount(1);
+  await expect(page.locator(".char-card", { hasText: "Hu Tao" })).toBeVisible();
+});
