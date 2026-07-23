@@ -18,6 +18,7 @@ const WeaponComparePage = lazy(() => import("./pages/WeaponCompare").then((m) =>
 const CharacterComparePage = lazy(() => import("./pages/CharacterCompare").then((m) => ({ default: m.CharacterComparePage })));
 const TimelinePage = lazy(() => import("./pages/Timeline").then((m) => ({ default: m.TimelinePage })));
 const PlannerPage = lazy(() => import("./pages/Planner").then((m) => ({ default: m.PlannerPage })));
+const FoodPage = lazy(() => import("./pages/Food").then((m) => ({ default: m.FoodPage })));
 
 export function App() {
   return (
@@ -32,6 +33,7 @@ export function App() {
           </NavLink>
           <NavLink to="/weapons">Weapons</NavLink>
           <NavLink to="/artifacts">Artifacts</NavLink>
+          <NavLink to="/food">Food</NavLink>
           <NavLink to="/team">Team</NavLink>
           <NavLink to="/compare">Compare</NavLink>
           <NavLink to="/optimize">Optimize</NavLink>
@@ -58,6 +60,7 @@ export function App() {
             <Route path="/optimize" element={<OptimizePage />} />
             <Route path="/timeline" element={<TimelinePage />} />
             <Route path="/planner" element={<PlannerPage />} />
+            <Route path="/food" element={<FoodPage />} />
             <Route path="/saved" element={<SavedPage />} />
           </Routes>
         </Suspense>

@@ -473,8 +473,41 @@ artifactSets.sort((a, b) => a.name.localeCompare(b.name));
 const outChars = dedupeById(characters);
 const outWeapons = dedupeById(weapons);
 const outSets = dedupeById(artifactSets);
+
+// --- Buff / revival foods (D2) ---
+const foodNames = genshindb.foods("names", { matchCategories: true }) as string[];
+const foods: any[] = [];
+for (const name of foodNames) {
+  try {
+    const f = genshindb.foods(name) as any;
+    if (!f) continue;
+    const isRevive = /revive|revival/i.test(String(f.effect ?? ""));
+    let type = "";
+    if (f.filterText === "ATK-Boosting Dish") type = "ATK";
+    else if (f.filterText === "DEF-Boosting Dish") type = "DEF";
+    else if (f.filterText === "Adventurer's Dish") type = "Adventure";
+    else if (isRevive) type = "Revival";
+    else continue; // skip pure-healing recovery dishes
+    foods.push({
+      id: slug(f.name),
+      name: f.name,
+      rarity: Number(f.rarity ?? 0),
+      type,
+      // Just the buff sentence (drop the co-op caveat / other trailing lines).
+      effect: stripTags(String(f.effect ?? "").split("\n")[0].split(/\s*In Co-Op Mode/i)[0]).trim(),
+      icon: enkaUrl(f.images?.filename_icon),
+    });
+  } catch {
+    /* skip */
+  }
+}
+const outFoods = dedupeById(foods).sort((a, b) => a.name.localeCompare(b.name));
+
 write("characters.json", outChars);
 write("weapons.json", outWeapons);
 write("artifact-sets.json", outSets);
+write("foods.json", outFoods);
 write("meta.json", meta);
-console.log(`Imported ${outChars.length} characters, ${outWeapons.length} weapons, ${outSets.length} artifact sets -> ${OUT_DIR}`);
+console.log(
+  `Imported ${outChars.length} characters, ${outWeapons.length} weapons, ${outSets.length} artifact sets, ${outFoods.length} foods -> ${OUT_DIR}`,
+);

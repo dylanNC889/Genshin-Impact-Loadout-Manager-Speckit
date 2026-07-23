@@ -88,6 +88,11 @@ export function fetchModifiers(): Promise<Modifiers> {
   return getJson(`${BASE}/meta/modifiers`);
 }
 
+export function fetchFoods(): Promise<NonNullable<Dataset["foods"]>> {
+  if (STATIC) return staticApi.fetchFoods();
+  return getJson(`${BASE}/foods`);
+}
+
 // --- Saved loadouts (FR-018) ---
 export function listLoadouts(): Promise<SavedLoadout[]> {
   if (STATIC) return staticApi.listLoadouts();

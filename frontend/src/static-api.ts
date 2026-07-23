@@ -74,6 +74,10 @@ export async function fetchModifiers() {
   return { constellationBonuses: d.constellationBonuses ?? {}, weaponRefinements: d.weaponRefinements ?? {} };
 }
 
+export async function fetchFoods() {
+  return (await ds()).foods ?? [];
+}
+
 // --- localStorage persistence ---
 type LoadoutRecord = LoadoutInput & { id: string };
 type TeamRecord = TeamInput & { id: string };

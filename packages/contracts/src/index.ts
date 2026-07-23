@@ -278,6 +278,18 @@ export type DatasetMeta = z.infer<typeof DatasetMetaSchema>;
 /** A growth curve maps a level (as a string key) to a multiplier of the level-1 base. */
 export type GrowthCurve = Record<string, number>;
 
+/** A buff/revival food dish (D2). */
+export const FoodSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  rarity: z.number().default(0),
+  /** ATK / DEF / Adventure / Revival. */
+  type: z.string(),
+  effect: z.string().default(""),
+  icon: z.string().default(""),
+});
+export type Food = z.infer<typeof FoodSchema>;
+
 export interface Dataset {
   meta: DatasetMeta;
   curves: Record<string, GrowthCurve>;
@@ -285,6 +297,8 @@ export interface Dataset {
   weapons: Weapon[];
   artifactSets: ArtifactSet[];
   slotStatRules: SlotStatRules;
+  /** Buff/revival foods (D2). Optional for engine-only use. */
+  foods?: Food[];
   /** Canonical equipment stat values for build dropdowns (FR-022). Optional for engine-only use. */
   statValues?: StatValuesTable;
   /** Static constellation stat bonuses (A1): charId → level ("1".."6") → StatValue[]. */
