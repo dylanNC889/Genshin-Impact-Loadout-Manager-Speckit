@@ -57,6 +57,35 @@ test("compare two characters", async ({ page }) => {
   await expect(page.locator(".compare-table td", { hasText: "Top weapon (KQM)" })).toBeVisible();
 });
 
+// #3/#10 — owned toggle + saved-builds picker on the character detail page.
+test("character detail: owned toggle and load a saved build", async ({ page }) => {
+  await page.goto("/character/diluc");
+
+  // Owned toggle (E1) mirrored from the roster.
+  await page.getByRole("button", { name: "Mark Diluc owned" }).click();
+  await expect(page.getByRole("button", { name: "Mark Diluc not owned" })).toBeVisible();
+
+  // Save a build, then it appears as a loadable chip.
+  await page.getByLabel("Loadout name").fill("Diluc DetailBuild");
+  await page.getByRole("button", { name: "Save loadout" }).click();
+  await expect(page.getByText("Saved ✓")).toBeVisible();
+
+  await page.goto("/character/diluc");
+  const chip = page.locator(".saved-build-chip", { hasText: "Diluc DetailBuild" });
+  await expect(chip).toBeVisible();
+  await chip.click();
+  await expect(page).toHaveURL(/loadout=/);
+  await expect(page.locator(".saved-build-chip.active", { hasText: "Diluc DetailBuild" })).toBeVisible();
+
+  // cleanup
+  await page.goto("/saved");
+  const rows = page.locator(".saved-list li", { hasText: "Diluc DetailBuild" });
+  for (let n = await rows.count(); n > 0; n--) {
+    await rows.first().getByRole("button", { name: "delete" }).click();
+    await expect(rows).toHaveCount(n - 1);
+  }
+});
+
 // Roster "has build" filter — show only characters with a saved loadout.
 test("filter roster to characters with a saved build", async ({ page }) => {
   // create a build so at least one character qualifies

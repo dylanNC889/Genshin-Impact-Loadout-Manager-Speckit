@@ -10,6 +10,7 @@ import {
   fetchStatValues,
   fetchWeapons,
   getLoadout,
+  listLoadouts,
 } from "../api";
 import { Card, StatRow, ElementBadge, Icon, RarityStars } from "../components/ui";
 import { MaterialList } from "../components/MaterialList";
@@ -17,6 +18,7 @@ import { LoadoutEditor } from "../components/LoadoutEditor";
 import { formatStat, statLabel } from "../format";
 import { playstyleFor } from "../playstyle";
 import { decodeShare } from "../share";
+import { getOwned, toggleOwned } from "../ownership";
 import { useLoadoutStore } from "../state/loadoutStore";
 import type { ArtifactSlot, Dataset, LoadoutInput } from "@app/contracts";
 
@@ -92,6 +94,19 @@ export function CharacterPage() {
     queryFn: () => getLoadout(loadoutParam ?? ""),
     enabled: Boolean(loadoutParam),
   });
+  // This character's saved builds, to load into the editor (#10).
+  const loadoutsQ = useQuery({ queryKey: ["loadouts"], queryFn: listLoadouts });
+  const savedBuilds = (loadoutsQ.data ?? []).filter((l) => l.characterId === id);
+
+  // Ownership toggle (E1) — also available here, mirroring the roster.
+  const [owned, setOwned] = useState<boolean>(false);
+  useEffect(() => {
+    if (id) setOwned(getOwned("characters").has(id));
+  }, [id]);
+  const onToggleOwned = () => {
+    if (!id) return;
+    setOwned(toggleOwned("characters", id).has(id));
+  };
 
   // Reset the loadout editor whenever the character changes.
   useEffect(() => {
@@ -212,6 +227,16 @@ export function CharacterPage() {
             <ElementBadge element={char.element} />
             <span className="badge muted-badge">{char.weaponType}</span>
             <RarityStars rarity={char.rarity} />
+            <button
+              type="button"
+              className={`own-btn${owned ? " owned" : ""}`}
+              onClick={onToggleOwned}
+              aria-pressed={owned}
+              aria-label={owned ? `Mark ${char.name} not owned` : `Mark ${char.name} owned`}
+              title={owned ? "Owned" : "Not owned"}
+            >
+              {owned ? "✓ Owned" : "＋ Own"}
+            </button>
           </div>
           <h1>{char.name}</h1>
           {char.region ? <p className="char-hero-region muted small">{char.region}</p> : null}
@@ -259,6 +284,31 @@ export function CharacterPage() {
           </dl>
         ) : null}
       </section>
+
+      {savedBuilds.length ? (
+        <section className="card saved-builds">
+          <div className="saved-builds-head">
+            <h3>Your saved builds</h3>
+            <span className="muted small">Load one into the editor below</span>
+          </div>
+          <ul className="saved-builds-list">
+            {savedBuilds.map((b) => (
+              <li key={b.id}>
+                <Link
+                  to={`/character/${id}?loadout=${b.id}`}
+                  className={`saved-build-chip${loadoutParam === b.id ? " active" : ""}`}
+                >
+                  <span className="saved-build-name">{b.name || "Untitled build"}</span>
+                  <span className="muted small">Lv {b.level}</span>
+                  {b.tags?.length ? (
+                    <span className="saved-build-tags">{b.tags.map((t) => `#${t}`).join(" ")}</span>
+                  ) : null}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       {gearReady ? (
         <LoadoutEditor

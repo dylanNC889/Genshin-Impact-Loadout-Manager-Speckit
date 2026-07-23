@@ -477,6 +477,69 @@ select {
   }
 }
 
+/* Owned toggle in the hero — a pill rather than the bare roster icon-button (#3). */
+.char-tags .own-btn {
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 600;
+}
+.char-tags .own-btn.owned {
+  border-color: #4caf50;
+  background: rgba(76, 175, 80, 0.16);
+  color: #3fae4a;
+}
+
+/* This character's saved builds — click a chip to load it into the editor (#10). */
+.saved-builds {
+  margin-bottom: 16px;
+}
+.saved-builds-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.saved-builds-head h3 {
+  margin: 0;
+}
+.saved-builds-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.saved-build-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-2);
+  text-decoration: none;
+  color: var(--text);
+}
+.saved-build-chip:hover {
+  border-color: var(--accent);
+}
+.saved-build-chip.active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent) inset;
+}
+.saved-build-name {
+  font-weight: 600;
+}
+.saved-build-tags {
+  color: var(--accent);
+  font-size: 12px;
+}
+
 .weapon-hero {
   display: flex;
   align-items: center;
