@@ -10,4 +10,5 @@ export function registerMetaRoutes(app: FastifyInstance, dataset: Dataset): void
     constellationBonuses: dataset.constellationBonuses ?? {},
     weaponRefinements: dataset.weaponRefinements ?? {},
   }));
+  app.get("/foods", async () => dataset.foods ?? []);
 }

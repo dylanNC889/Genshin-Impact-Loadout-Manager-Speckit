@@ -6,6 +6,7 @@ import {
   ArtifactSetSchema,
   CharacterSchema,
   DatasetMetaSchema,
+  FoodSchema,
   SlotStatRulesSchema,
   StatValuesTableSchema,
   WeaponSchema,
@@ -15,6 +16,7 @@ import type {
   Character,
   Dataset,
   Element,
+  Food,
   GrowthCurve,
   Role,
   StatKey,
@@ -175,6 +177,12 @@ export function loadDatasetFromDir(dir: string): Dataset {
   const meta = DatasetMetaSchema.parse(metaFile.meta);
   const constellationBonuses = readModifierTable("constellations.json");
   const weaponRefinements = readModifierTable("weapon-refinements.json");
+  let foods: Food[] = [];
+  try {
+    foods = dedupeById(z.array(FoodSchema).parse(readJson(dir, "foods.json")));
+  } catch {
+    foods = []; // older datasets without foods.json
+  }
 
   return {
     meta,
@@ -186,6 +194,7 @@ export function loadDatasetFromDir(dir: string): Dataset {
     statValues,
     constellationBonuses,
     weaponRefinements,
+    foods,
   };
 }
 

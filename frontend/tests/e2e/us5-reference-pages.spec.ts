@@ -79,3 +79,16 @@ test("artifact detail shows the signature set holder", async ({ page }) => {
   await page.locator(".piece-lore summary").first().click();
   await expect(page.locator(".piece-story").first()).toBeVisible();
 });
+
+// D2 — food buffs reference page.
+test("browse the food buffs page", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("link", { name: "Food", exact: true }).click();
+  await expect(page).toHaveURL(/\/food$/);
+  await expect(page.getByRole("heading", { name: "Food buffs" })).toBeVisible();
+  await page.getByLabel("Search food").fill("Adeptus");
+  await expect(page.locator(".set-card", { hasText: "Adeptus" }).first()).toBeVisible();
+  await page.getByLabel("Search food").fill("");
+  await page.getByLabel("Filter by type").selectOption("Revival");
+  await expect(page.locator(".set-card").first()).toBeVisible();
+});
