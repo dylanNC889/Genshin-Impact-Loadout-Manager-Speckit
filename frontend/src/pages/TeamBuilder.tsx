@@ -415,8 +415,19 @@ export function TeamBuilder() {
                     >
                       ×
                     </button>
-                    {char?.splashArt ? (
-                      <img className="portrait-img" src={char.splashArt} alt={summary?.name ?? ""} loading="lazy" />
+                    {char?.splashArt || char?.wideSplashArt ? (
+                      <img
+                        className="portrait-img"
+                        src={char.splashArt || char.wideSplashArt}
+                        alt={summary?.name ?? ""}
+                        loading="lazy"
+                        // The vertical gacha slice isn't on the CDN for the newest characters;
+                        // fall back to the (always-present) wide splash, cropped by object-fit.
+                        onError={(e) => {
+                          const el = e.currentTarget;
+                          if (char.wideSplashArt && el.src !== char.wideSplashArt) el.src = char.wideSplashArt;
+                        }}
+                      />
                     ) : (
                       <div className="portrait-fallback">
                         <Icon src={summary?.icon} alt={summary?.name ?? ""} size={72} />

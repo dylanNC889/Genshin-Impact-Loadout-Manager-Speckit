@@ -277,7 +277,9 @@ for (const name of charNames) {
         ? {
             type,
             name: combat.name as string,
-            icon: enkaUrl(iconFile),
+            // Newer characters only have the non-HD burst icon on the CDN; genshin-db still
+            // returns the "_HD" name (which 404s). The non-HD variant exists for everyone.
+            icon: enkaUrl(iconFile?.replace(/_HD$/, "")),
             desc: firstContentLine(combat.description),
             scaling: scalingOf(combat),
           }
