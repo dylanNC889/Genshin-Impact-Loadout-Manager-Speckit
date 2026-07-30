@@ -222,6 +222,14 @@ select {
   color: #6be675;
 }
 
+/* Placeholder tile for assets no CDN hosts yet (keeps layout stable). */
+.icon-fallback {
+  display: inline-block;
+  background: var(--surface-2);
+  border: 1px dashed var(--border);
+  box-sizing: border-box;
+}
+
 /* --- Game asset icons --- */
 .icon-img {
   object-fit: contain;

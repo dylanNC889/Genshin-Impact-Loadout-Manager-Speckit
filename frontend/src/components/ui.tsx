@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 
 const ELEMENT_COLORS: Record<string, string> = {
   Pyro: "#ef7a35",
@@ -57,7 +57,20 @@ export function Icon({
   size?: number;
   className?: string;
 }) {
-  if (!src) return null;
+  const [failed, setFailed] = useState(false);
+  // Some assets simply aren't hosted yet (e.g. just-announced characters whose art no CDN
+  // carries). Show a neutral placeholder tile rather than a broken-image glyph or a blank gap.
+  if (!src || failed) {
+    return (
+      <span
+        className={`icon-img icon-fallback${className ? ` ${className}` : ""}`}
+        style={{ width: size, height: size }}
+        role="img"
+        aria-label={alt}
+        title={alt}
+      />
+    );
+  }
   return (
     <img
       src={src}
@@ -66,9 +79,7 @@ export function Icon({
       height={size}
       loading="lazy"
       className={`icon-img${className ? ` ${className}` : ""}`}
-      onError={(e) => {
-        e.currentTarget.style.display = "none";
-      }}
+      onError={() => setFailed(true)}
     />
   );
 }
