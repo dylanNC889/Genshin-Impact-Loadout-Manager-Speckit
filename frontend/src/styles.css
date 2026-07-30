@@ -569,6 +569,10 @@ select {
 .food-owner:hover {
   text-decoration: underline;
 }
+.real-dish {
+  margin: 10px 0 4px;
+  font-size: 14px;
+}
 
 .weapon-hero {
   display: flex;

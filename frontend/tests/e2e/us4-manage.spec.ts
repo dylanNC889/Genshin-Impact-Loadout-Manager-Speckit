@@ -18,7 +18,9 @@ test("save a loadout and manage it", async ({ page }) => {
 // B2 — the compare page is reachable from the nav with two loadout pickers.
 test("compare page with loadout pickers", async ({ page }) => {
   await page.goto("/");
-  await page.getByRole("link", { name: "Compare" }).click();
+  // Scope to the primary nav — the roster also has a "⇄ Compare characters" link that
+  // substring-matches "Compare" (and races the roster's lazy load, causing flakiness).
+  await page.getByRole("navigation").getByRole("link", { name: "Compare", exact: true }).click();
   await expect(page).toHaveURL(/\/compare$/);
   await expect(page.getByRole("heading", { name: "Compare builds" })).toBeVisible();
   await expect(page.getByLabel("Loadout A")).toBeVisible();

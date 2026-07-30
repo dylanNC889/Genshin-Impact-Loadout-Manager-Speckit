@@ -103,9 +103,23 @@ test("open a food detail page", async ({ page }) => {
   await expect(page.getByRole("heading", { name: /Consommé Purete/ })).toBeVisible();
   await expect(page.locator(".card", { hasText: "Buff" })).toBeVisible();
   // Recipe ingredients from genshin-db.
-  await expect(page.locator(".card", { hasText: "Recipe" }).locator(".mat-list li", { hasText: "Fowl" })).toBeVisible();
+  const recipe = page.locator(".card", { hasText: "Recipe" });
+  await expect(recipe.locator(".mat-list li", { hasText: "Fowl" })).toBeVisible();
+  // A specialty dish is shown as a version of its (more real) base dish, and the recipe link
+  // searches that base — excluding Genshin fan pages — rather than the fancy name (#9 refine).
+  await expect(recipe.locator(".real-dish", { hasText: "Consommé" })).toBeVisible();
+  const link = recipe.getByRole("link", { name: /Find a real recipe/ });
+  await expect(link).toHaveAttribute("href", /-genshin/);
   // Special dish links to its owner.
   await expect(page.locator(".food-owner", { hasText: "Neuvillette" })).toBeVisible();
   await page.locator(".food-owner", { hasText: "Neuvillette" }).click();
   await expect(page).toHaveURL(/\/character\/neuvillette$/);
+});
+
+// #9 refine — a fantasy-named dish maps to its real-world dish.
+test("fantasy dish maps to a real-world recipe", async ({ page }) => {
+  await page.goto("/food/adeptus-temptation");
+  const recipe = page.locator(".card", { hasText: "Recipe" });
+  await expect(recipe.locator(".real-dish", { hasText: "Buddha Jumps Over the Wall" })).toBeVisible();
+  await expect(recipe.getByRole("link", { name: /Find a real recipe for Buddha Jumps Over the Wall/ })).toBeVisible();
 });
