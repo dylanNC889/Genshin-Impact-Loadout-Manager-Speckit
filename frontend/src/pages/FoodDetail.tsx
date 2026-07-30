@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link, useParams } from "react-router-dom";
 import { fetchFoods, fetchCharacters } from "../api";
 import { Card, Icon, RarityStars } from "../components/ui";
-import { lookupRealDish, realRecipeSearchUrl } from "../data/realDishes";
+import { resolveRealDish, realRecipeSearchUrl } from "../data/realDishes";
 
 const slug = (name: string) =>
   name
@@ -36,12 +36,11 @@ export function FoodDetailPage() {
   const specialtyId = food.specialtyName ? slug(food.specialtyName) : "";
   const specialtyChar = rosterQ.data?.find((c) => c.id === specialtyId);
 
-  // Real-world recipe (#9 refine): fantasy names ("Adeptus' Temptation") search poorly, so use a
-  // curated real dish when known, else a special dish's standard base dish, else the name — and
-  // always target real recipes (exclude Genshin fan pages).
-  const realDish = lookupRealDish(food.name, food.baseDishName);
-  const searchTerm = realDish?.dish ?? (food.baseDishName || food.name).replace(/["'“”]/g, "");
-  const recipeUrl = realRecipeSearchUrl(searchTerm);
+  // Real-world recipe (#9 refine): fantasy names ("Adeptus' Temptation") search poorly, so
+  // resolve every dish to a best-effort real dish + cuisine and search THAT (excluding Genshin
+  // fan pages). Always returns something.
+  const realDish = resolveRealDish(food.name, food.baseDishName);
+  const recipeUrl = realRecipeSearchUrl(realDish.dish);
 
   return (
     <div className="character">
@@ -94,17 +93,21 @@ export function FoodDetailPage() {
                 </li>
               ))}
             </ul>
-            {realDish ? (
-              <p className="real-dish">
-                🍽 Based on <strong>{realDish.dish}</strong> · <span className="muted">{realDish.cuisine} cuisine</span>
-              </p>
-            ) : food.baseDishName && food.baseDishName !== food.name.replace(/["'“”]/g, "") ? (
-              <p className="real-dish muted small">Special version of {food.baseDishName}.</p>
-            ) : null}
+            <p className="real-dish">
+              🍽{" "}
+              {realDish.mapped ? (
+                <>
+                  Based on <strong>{realDish.dish}</strong>
+                </>
+              ) : (
+                <strong>{realDish.dish}</strong>
+              )}
+              {realDish.cuisine ? <span className="muted"> · {realDish.cuisine} cuisine</span> : null}
+            </p>
             <p className="muted small stat-foot">
               In-game ingredients.{" "}
               <a href={recipeUrl} target="_blank" rel="noreferrer">
-                Find a real recipe for {searchTerm.replace(/\(.*?\)/g, "").trim()} →
+                Find a real recipe for {realDish.dish.replace(/\(.*?\)/g, "").trim()} →
               </a>
             </p>
           </Card>

@@ -16,10 +16,13 @@ const GOOD = JSON.stringify({
 test("optimize a build from an imported GOOD inventory", async ({ page }) => {
   await page.goto("/optimize");
 
-  // 1 · import inventory
-  await page.getByLabel("GOOD inventory JSON").fill(GOOD);
+  // 1 · import inventory (the /optimize chunk is lazy + heavy; wait for it before asserting the
+  // import result, and allow extra time under parallel load on the single dev server)
+  const goodInput = page.getByLabel("GOOD inventory JSON");
+  await expect(goodInput).toBeVisible();
+  await goodInput.fill(GOOD);
   await page.getByRole("button", { name: "Import", exact: true }).click();
-  await expect(page.getByText(/Imported 5 artifacts/)).toBeVisible();
+  await expect(page.getByText(/Imported 5 artifacts/)).toBeVisible({ timeout: 15000 });
 
   // 2 · pick character; wait for its weapons to load
   // (exact — "Character" also substring-matches the "Owned characters only" checkbox added by E1)
