@@ -20,7 +20,9 @@ export default defineConfig({
   },
   webServer: [
     {
-      command: "pnpm --filter @app/backend start",
+      // Wipe the isolated store *before* the backend boots (globalSetup races the server
+      // startup — the backend can load the old file into memory before the wipe lands).
+      command: "rm -f backend/.data/e2e-store.json && pnpm --filter @app/backend start",
       port: BACKEND_PORT,
       reuseExistingServer: !process.env.CI,
       cwd: "..",

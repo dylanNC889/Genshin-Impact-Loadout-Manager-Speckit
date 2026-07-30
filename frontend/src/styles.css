@@ -2025,40 +2025,100 @@ select {
 }
 
 .damage-total {
-  font-size: 26px;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--surface-2);
+  border-radius: 8px;
+}
+.damage-total .dmg-num {
+  font-size: 28px;
   font-weight: 800;
   color: var(--accent);
-}
-
-.damage-total span {
-  font-size: 12px;
-  color: var(--muted);
-  font-weight: 400;
-  margin-left: 6px;
-}
-
-.per-char {
-  list-style: none;
-  margin: 10px 0;
-  padding: 0;
-}
-
-.per-char li {
-  padding: 4px 0;
-  border-bottom: 1px solid var(--border);
   font-variant-numeric: tabular-nums;
 }
-
-/* --- Damage breakdown (A4) --- */
-.dmg-detail summary {
-  display: flex;
-  justify-content: space-between;
-  cursor: pointer;
-  list-style: none;
+.damage-total .dmg-total-label {
+  font-size: 12px;
+  color: var(--muted);
+}
+.dmg-auto {
+  margin: 6px 0 0;
 }
 
+/* --- Per-character damage bars (#4 UX) --- */
+.dmg-bars {
+  list-style: none;
+  margin: 12px 0;
+  padding: 0;
+}
+.dmg-bars > li {
+  padding: 7px 0;
+  border-bottom: 1px solid var(--border);
+}
+.dmg-detail summary {
+  cursor: pointer;
+  list-style: none;
+  display: block;
+}
 .dmg-detail summary::-webkit-details-marker {
   display: none;
+}
+.dmg-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-variant-numeric: tabular-nums;
+}
+.dmg-line .dmg-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dmg-line .dmg-val {
+  font-weight: 700;
+}
+.dmg-line .dmg-val em {
+  margin-left: 6px;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 11px;
+  color: var(--muted);
+}
+.dmg-bar-track {
+  display: block;
+  height: 6px;
+  margin-top: 5px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+.dmg-bar {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--accent);
+  transition: width 0.25s ease;
+}
+/* Element tints for the bars (fall back to accent). */
+.dmg-bar.el-pyro { background: #ec6a4b; }
+.dmg-bar.el-hydro { background: #4bb7ec; }
+.dmg-bar.el-electro { background: #b57ee0; }
+.dmg-bar.el-cryo { background: #7fd5e6; }
+.dmg-bar.el-anemo { background: #58c0a5; }
+.dmg-bar.el-geo { background: #e0aa3e; }
+.dmg-bar.el-dendro { background: #8bc34a; }
+
+.dmg-assumptions {
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.dmg-assumptions summary {
+  cursor: pointer;
+  color: var(--muted);
 }
 
 .instances {
@@ -2076,12 +2136,6 @@ select {
   color: var(--muted);
 }
 
-.assumptions {
-  margin-top: 10px;
-  font-size: 12px;
-  color: var(--muted);
-}
-
 .team-buffs {
   margin-top: 6px;
 }
@@ -2091,30 +2145,63 @@ select {
   padding-left: 16px;
 }
 
-/* --- Damage estimate options (B2) --- */
-.dmg-opts {
+/* --- Damage estimate assumptions form (B2, redesigned #4) --- */
+.dmg-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.dmg-group {
+  flex: 1;
+  min-width: 220px;
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  margin-bottom: 12px;
+  align-items: flex-end;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px 10px;
+  margin: 0;
 }
-
-.dmg-opts label {
+.dmg-group legend {
+  padding: 0 4px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--accent);
+}
+.dmg-group label {
   display: flex;
   flex-direction: column;
   gap: 3px;
   font-size: 11px;
   color: var(--muted);
 }
-
-.dmg-opts input,
-.dmg-opts select {
-  width: 96px;
+.dmg-group input {
+  width: 80px;
 }
-
-.dmg-opts .enemy-preset select {
+.dmg-group select {
+  min-width: 128px;
+}
+.dmg-group .enemy-preset {
+  flex: 1;
+}
+.dmg-group .enemy-preset select {
+  width: 100%;
+  min-width: 150px;
+}
+.dmg-group .auto-react {
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  padding-bottom: 7px;
+}
+.dmg-group .auto-react input {
   width: auto;
-  min-width: 190px;
+  accent-color: var(--accent);
+  cursor: pointer;
 }
 
 /* --- ER requirement check (A10) --- */
@@ -2135,20 +2222,6 @@ select {
 
 .energy-list li.er-short {
   color: #ff8a5c;
-}
-
-.dmg-opts .auto-react {
-  flex-direction: row;
-  align-items: center;
-  gap: 6px;
-  align-self: flex-end;
-  padding-bottom: 6px;
-}
-
-.dmg-opts .auto-react input {
-  width: auto;
-  accent-color: var(--accent);
-  cursor: pointer;
 }
 
 /* --- Save bar + Saved page (US4) --- */
