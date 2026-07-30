@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link, useSearchParams, useHref } from "react-router-dom";
 import { assessSynergy, computeBaseStats, estimateTeamDamage } from "@app/stat-engine";
@@ -147,7 +147,6 @@ export function TeamBuilder() {
     { characterId: null, loadoutId: null },
     { characterId: null, loadoutId: null },
   ]);
-  const [damage, setDamage] = useState<DamageEstimate | null>(null);
   const [pickerQ, setPickerQ] = useState("");
   const [savedOnly, setSavedOnly] = useState(false);
   const [ownedOnly, setOwnedOnly] = useState(false);
@@ -158,7 +157,6 @@ export function TeamBuilder() {
   const [reaction, setReaction] = useState("none");
   const [transformative, setTransformative] = useState<string>("none");
   const [autoReact, setAutoReact] = useState(false);
-  const [autoChoice, setAutoChoice] = useState<string | null>(null);
   const [enemyPreset, setEnemyPreset] = useState(0);
 
   const [searchParams] = useSearchParams();
@@ -202,11 +200,6 @@ export function TeamBuilder() {
     void navigator.clipboard?.writeText(window.location.origin + shareHref);
     setCopied(true);
   }
-
-  // Damage is on-demand (FR-016): clear it whenever the team or assumptions change.
-  useEffect(() => {
-    setDamage(null);
-  }, [slots, enemyLevel, enemyRes, reaction, transformative, enemyPreset]);
 
   // Hydrate from a saved team when opened via ?team=<id> (FR-019 reopen).
   useEffect(() => {
@@ -284,10 +277,11 @@ export function TeamBuilder() {
     setSlots((prev) => prev.map((s, idx) => (idx === i ? { ...s, loadoutId: loadoutId || null } : s)));
   }
 
-  function onCalculate() {
+  // Damage updates live from the team, gear and assumptions — no button to press (#4 UX).
+  const { damage, autoChoice } = useMemo<{ damage: DamageEstimate | null; autoChoice: string | null }>(() => {
     // Auto mode (A9) derives the reaction from the team's possible reactions; else use the manual picks.
     const auto = autoReact ? autoPickReaction(synergy.possibleReactions) : null;
-    setAutoChoice(auto ? (auto.label === "none" ? "no reaction" : auto.label) : null);
+    const autoChoiceLabel = auto ? (auto.label === "none" ? "no reaction" : auto.label) : null;
     const effReaction = auto ? auto.reaction : reaction;
     const effTransformative = auto ? auto.transformative : transformative;
     const r = REACTIONS[effReaction] ?? { mult: 1, type: undefined };
@@ -338,22 +332,21 @@ export function TeamBuilder() {
     const byElement = preset.byElement
       ? Object.fromEntries(Object.entries(preset.byElement).map(([el, v]) => [el, v - shred]))
       : undefined;
-    if (dmg.length)
-      setDamage(
-        estimateTeamDamage(dmg, {
+    const est = dmg.length
+      ? estimateTeamDamage(dmg, {
           enemyLevel: level,
           enemyResistancePct: baseRes - shred,
           enemyResistanceByElement: byElement,
-        }),
-      );
-  }
+        })
+      : null;
+    return { damage: est, autoChoice: autoChoiceLabel };
+  }, [slots, details, savedLoadouts, reaction, transformative, autoReact, enemyPreset, enemyLevel, enemyRes]);
 
   return (
     <div className="team">
       <h1>Team Builder</h1>
       <p className="muted small">
-        Pick up to 4 distinct characters and optionally a saved loadout per slot. Synergy updates live; damage is
-        on-demand.
+        Pick up to 4 distinct characters and optionally a saved loadout per slot. Synergy and damage update live.
       </p>
 
       <div className="team-builder">
@@ -580,113 +573,136 @@ export function TeamBuilder() {
           ) : null}
         </Card>
 
-        <Card title="On-demand Damage Estimate">
-          <div className="dmg-opts">
-            <label className="enemy-preset">
-              Enemy
-              <select value={enemyPreset} onChange={(e) => setEnemyPreset(Number(e.target.value))} aria-label="Enemy preset">
-                {ENEMY_PRESETS.map((p, i) => (
-                  <option key={p.name} value={i}>
-                    {p.name}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label>
-              Enemy Lv
-              <input
-                type="number"
-                min={1}
-                max={110}
-                value={enemyLevel}
-                onChange={(e) => setEnemyLevel(Number(e.target.value))}
-                aria-label="Enemy level"
-                disabled={enemyPreset !== 0}
-              />
-            </label>
-            <label>
-              RES %
-              <input
-                type="number"
-                min={-100}
-                max={90}
-                value={enemyRes}
-                onChange={(e) => setEnemyRes(Number(e.target.value))}
-                aria-label="Enemy resistance percent"
-                disabled={enemyPreset !== 0}
-              />
-            </label>
-            <label className="auto-react">
-              <input type="checkbox" checked={autoReact} onChange={(e) => setAutoReact(e.target.checked)} aria-label="Auto-detect reaction" />
-              Auto reaction
-            </label>
-            <label>
-              Reaction
-              <select
-                value={reaction}
-                onChange={(e) => setReaction(e.target.value)}
-                aria-label="Reaction"
-                disabled={autoReact}
-              >
-                {Object.entries(REACTIONS).map(([k, v]) => (
-                  <option key={k} value={k}>
-                    {v.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label>
-              Extra reaction
-              <select
-                value={transformative}
-                onChange={(e) => setTransformative(e.target.value)}
-                aria-label="Extra reaction"
-                disabled={autoReact}
-              >
-                {TRANSFORMATIVE.map((t) => (
-                  <option key={t} value={t}>
-                    {t === "none" ? "None" : t}
-                  </option>
-                ))}
-              </select>
-            </label>
+        <Card title="Damage Estimate">
+          <div className="dmg-form">
+            <fieldset className="dmg-group">
+              <legend>Enemy</legend>
+              <label className="enemy-preset">
+                <span>Preset</span>
+                <select value={enemyPreset} onChange={(e) => setEnemyPreset(Number(e.target.value))} aria-label="Enemy preset">
+                  {ENEMY_PRESETS.map((p, i) => (
+                    <option key={p.name} value={i}>
+                      {p.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                <span>Level</span>
+                <input
+                  type="number"
+                  min={1}
+                  max={110}
+                  value={enemyLevel}
+                  onChange={(e) => setEnemyLevel(Number(e.target.value))}
+                  aria-label="Enemy level"
+                  disabled={enemyPreset !== 0}
+                />
+              </label>
+              <label>
+                <span>RES %</span>
+                <input
+                  type="number"
+                  min={-100}
+                  max={90}
+                  value={enemyRes}
+                  onChange={(e) => setEnemyRes(Number(e.target.value))}
+                  aria-label="Enemy resistance percent"
+                  disabled={enemyPreset !== 0}
+                />
+              </label>
+            </fieldset>
+
+            <fieldset className="dmg-group">
+              <legend>Reaction</legend>
+              <label className="auto-react">
+                <input type="checkbox" checked={autoReact} onChange={(e) => setAutoReact(e.target.checked)} aria-label="Auto-detect reaction" />
+                <span>Auto-detect</span>
+              </label>
+              <label>
+                <span>Amplifying</span>
+                <select value={reaction} onChange={(e) => setReaction(e.target.value)} aria-label="Reaction" disabled={autoReact}>
+                  {Object.entries(REACTIONS).map(([k, v]) => (
+                    <option key={k} value={k}>
+                      {v.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                <span>Extra</span>
+                <select
+                  value={transformative}
+                  onChange={(e) => setTransformative(e.target.value)}
+                  aria-label="Extra reaction"
+                  disabled={autoReact}
+                >
+                  {TRANSFORMATIVE.map((t) => (
+                    <option key={t} value={t}>
+                      {t === "none" ? "None" : t}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </fieldset>
           </div>
-          <button className="calc-btn" onClick={onCalculate} disabled={selected.length === 0}>
-            ⚔️ Calculate
-          </button>
+
           {damage ? (
             <div className="damage">
               <div className="damage-total">
-                {Math.round(damage.totalEstimated).toLocaleString()}
-                <span> est. total</span>
+                <span className="dmg-num">{Math.round(damage.totalEstimated).toLocaleString()}</span>
+                <span className="dmg-total-label">estimated damage / rotation</span>
               </div>
-              <ul className="per-char">
-                {damage.perCharacter.map((p) => (
-                  <li key={p.characterId}>
-                    <details className="dmg-detail">
-                      <summary>
-                        <span>{nameById(p.characterId)}</span>
-                        <span>{Math.round(p.estimated).toLocaleString()}</span>
-                      </summary>
-                      <ul className="instances">
-                        {p.instances.map((ins, i) => (
-                          <li key={i}>
-                            <span>{ins.label}</span>
-                            <span>{Math.round(ins.estimated).toLocaleString()}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </details>
-                  </li>
-                ))}
+              {autoChoice ? (
+                <p className="muted small dmg-auto">
+                  Auto-detected reaction: <strong>{autoChoice}</strong>
+                </p>
+              ) : null}
+
+              <ul className="dmg-bars">
+                {[...damage.perCharacter]
+                  .sort((x, y) => y.estimated - x.estimated)
+                  .map((p) => {
+                    const share = damage.totalEstimated ? p.estimated / damage.totalEstimated : 0;
+                    const element = detailByCharId.get(p.characterId)?.element ?? "";
+                    return (
+                      <li key={p.characterId}>
+                        <details className="dmg-detail">
+                          <summary>
+                            <span className="dmg-line">
+                              <Icon src={detailByCharId.get(p.characterId)?.icon} alt="" size={22} />
+                              <span className="dmg-name">{nameById(p.characterId)}</span>
+                              <span className="dmg-val">
+                                {Math.round(p.estimated).toLocaleString()}
+                                <em>{Math.round(share * 100)}%</em>
+                              </span>
+                            </span>
+                            <span className="dmg-bar-track">
+                              <span className={`dmg-bar el-${element.toLowerCase()}`} style={{ width: `${share * 100}%` }} />
+                            </span>
+                          </summary>
+                          <ul className="instances">
+                            {p.instances.map((ins, i) => (
+                              <li key={i}>
+                                <span>{ins.label}</span>
+                                <span>{Math.round(ins.estimated).toLocaleString()}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </details>
+                      </li>
+                    );
+                  })}
               </ul>
-              <div className="assumptions">
-                <strong>Assumptions:</strong> Lv {damage.assumptions.enemyLevel} enemy,{" "}
-                {damage.assumptions.enemyResistancePct}% RES (after shred)
-                {damage.assumptions.reactionTypes.length ? `, ${damage.assumptions.reactionTypes.join("/")}` : ""},
-                rotation “{damage.assumptions.rotation}”. Slots with a saved loadout use geared stats; others use base
-                stats.
-                {autoChoice ? <> Auto-detected reaction: <strong>{autoChoice}</strong>.</> : null}
+
+              <details className="dmg-assumptions">
+                <summary>Assumptions &amp; team buffs</summary>
+                <p className="muted small">
+                  Lv {damage.assumptions.enemyLevel} enemy, {damage.assumptions.enemyResistancePct}% RES (after shred)
+                  {damage.assumptions.reactionTypes.length ? `, ${damage.assumptions.reactionTypes.join("/")}` : ""},
+                  rotation “{damage.assumptions.rotation}”. Slots with a saved loadout use geared stats; others use base
+                  stats.
+                </p>
                 {activeBuffNotes(selected.map((s) => s.characterId)).length ? (
                   <div className="team-buffs">
                     <strong>Team buffs (approx):</strong>
@@ -697,12 +713,10 @@ export function TeamBuilder() {
                     </ul>
                   </div>
                 ) : null}
-              </div>
+              </details>
             </div>
           ) : (
-            <p className="muted small">
-              Click Calculate to estimate team damage (v1 generic rotation; geared where a loadout is assigned).
-            </p>
+            <p className="muted small">Add at least one character to estimate team damage.</p>
           )}
         </Card>
       </div>

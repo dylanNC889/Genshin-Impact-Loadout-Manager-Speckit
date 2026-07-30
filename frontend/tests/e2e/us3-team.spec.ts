@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 
-// US3 — build a team via the icon-grid picker (#5 redesign); live synergy; on-demand damage
+// US3 — build a team via the icon-grid picker (#5 redesign); live synergy + live damage
 // (FR-012..016). The old slot dropdowns were replaced by a searchable picker + portrait slots.
 test("build a team and evaluate synergy + damage", async ({ page }) => {
   await page.goto("/team");
@@ -18,12 +18,11 @@ test("build a team and evaluate synergy + damage", async ({ page }) => {
   // lists "Vaporize (2×)" etc.).
   await expect(page.locator(".chip", { hasText: "Vaporize" })).toBeVisible();
 
-  // Damage assumptions are configurable (B2).
+  // Damage assumptions are configurable (B2) and the estimate updates live (#4 — no button).
   await expect(page.getByLabel("Enemy level")).toBeVisible();
-  await page.getByRole("button", { name: /Calculate/ }).click();
-  await expect(page.getByText("est. total")).toBeVisible();
+  await expect(page.getByText("estimated damage / rotation")).toBeVisible();
 
-  // Per-character damage breakdown expands to labeled instances (A4).
+  // Per-character damage bars expand to labeled instances (A4).
   await page.locator(".dmg-detail summary").first().click();
   await expect(page.locator(".instances li").first()).toBeVisible();
 
@@ -40,18 +39,18 @@ test("team buffs from enablers are applied", async ({ page }) => {
   await search.fill("Bennett");
   await page.locator(".picker-cell", { hasText: "Bennett" }).first().click();
 
-  // Wait for details to load (double-Pyro resonance) before the on-demand calc.
+  // Live estimate once details load (double-Pyro resonance).
   await expect(page.locator(".chip", { hasText: "Fervent Flames" })).toBeVisible();
-  await page.getByRole("button", { name: /Calculate/ }).click();
-  await expect(page.getByText("est. total")).toBeVisible();
+  await expect(page.getByText("estimated damage / rotation")).toBeVisible();
+  // Team buffs are listed in the collapsible assumptions.
+  await page.locator(".dmg-assumptions summary").click();
   await expect(page.getByText("Team buffs (approx)")).toBeVisible();
   await expect(page.getByText(/Bennett: ATK field/)).toBeVisible();
 
-  // Extra reaction adds its own breakdown line (A6).
+  // Extra reaction adds its own breakdown line (A6), recomputed live.
   await page.getByLabel("Extra reaction").selectOption("Overloaded");
-  await page.getByRole("button", { name: /Calculate/ }).click();
-  await expect(page.getByText("est. total")).toBeVisible();
-  await page.locator(".dmg-detail summary").first().click();
+  const summaries = page.locator(".dmg-detail summary");
+  for (let i = 0, n = await summaries.count(); i < n; i++) await summaries.nth(i).click();
   await expect(page.locator(".instances li", { hasText: "Overloaded" })).toBeVisible();
 });
 
@@ -90,9 +89,8 @@ test("auto-detect reaction from team elements", async ({ page }) => {
   await expect(page.locator(".chip", { hasText: "Vaporize" })).toBeVisible(); // details loaded
 
   await page.getByLabel("Auto-detect reaction").check();
-  await page.getByRole("button", { name: /Calculate/ }).click();
-  await expect(page.getByText(/Auto-detected reaction:/)).toBeVisible();
-  await expect(page.locator(".assumptions").getByText("Vaporize").first()).toBeVisible();
+  await expect(page.locator(".dmg-auto")).toContainText(/Auto-detected reaction:/);
+  await expect(page.locator(".dmg-auto")).toContainText(/Vaporize/i);
 });
 
 // A10 — approximate ER requirement check for energy-hungry members.
@@ -118,6 +116,5 @@ test("enemy preset disables manual inputs and recalculates", async ({ page }) =>
   await expect(page.getByLabel("Enemy level")).toBeEnabled();
   await page.getByLabel("Enemy preset").selectOption({ label: "Pyro-resistant — +50% Pyro" });
   await expect(page.getByLabel("Enemy level")).toBeDisabled();
-  await page.getByRole("button", { name: /Calculate/ }).click();
-  await expect(page.getByText("est. total")).toBeVisible();
+  await expect(page.getByText("estimated damage / rotation")).toBeVisible();
 });

@@ -22,7 +22,8 @@ test("optimize a build from an imported GOOD inventory", async ({ page }) => {
   await expect(page.getByText(/Imported 5 artifacts/)).toBeVisible();
 
   // 2 · pick character; wait for its weapons to load
-  await page.getByLabel("Character").selectOption("hu-tao");
+  // (exact — "Character" also substring-matches the "Owned characters only" checkbox added by E1)
+  await page.getByLabel("Character", { exact: true }).selectOption("hu-tao");
   await expect(page.getByLabel("Weapon").locator("option", { hasText: "Staff of Homa" })).toBeAttached();
 
   // 3 · optimize → results
