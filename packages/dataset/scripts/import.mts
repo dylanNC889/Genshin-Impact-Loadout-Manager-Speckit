@@ -517,6 +517,36 @@ for (const name of foodNames) {
 }
 const outFoods = dedupeById(foods).sort((a, b) => a.name.localeCompare(b.name));
 
+// The vertical gacha "slice" portrait (splashArt) isn't published on the CDN for the very
+// newest characters, even though their wide splash is. HEAD-check each slice and fall back to
+// the wide splash when it 404s — self-healing (reverts to the slice once the CDN publishes it).
+// Fail-safe: on any network error we keep the slice, so the build never depends on the network.
+async function verifySplashArt(chars: { name: string; splashArt: string; wideSplashArt: string }[]): Promise<void> {
+  let cursor = 0;
+  let swapped = 0;
+  async function worker(): Promise<void> {
+    while (cursor < chars.length) {
+      const c = chars[cursor++]!;
+      if (!c.splashArt || !c.wideSplashArt || c.splashArt === c.wideSplashArt) continue;
+      try {
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), 8000);
+        const res = await fetch(c.splashArt, { method: "HEAD", signal: ctrl.signal });
+        clearTimeout(timer);
+        if (res.status === 404) {
+          c.splashArt = c.wideSplashArt;
+          swapped++;
+        }
+      } catch {
+        /* network error / timeout — keep the slice */
+      }
+    }
+  }
+  await Promise.all(Array.from({ length: 16 }, () => worker()));
+  console.log(`Verified splash art: ${swapped} character(s) fell back to the wide splash.`);
+}
+await verifySplashArt(outChars as unknown as { name: string; splashArt: string; wideSplashArt: string }[]);
+
 write("characters.json", outChars);
 write("weapons.json", outWeapons);
 write("artifact-sets.json", outSets);
