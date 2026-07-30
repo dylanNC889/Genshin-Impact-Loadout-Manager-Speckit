@@ -18,6 +18,9 @@ const round = (n: number) => Math.round(n * 100) / 100;
 // enka.network hosts every game UI icon by its internal filename — complete + reliable
 // (mihoyo's CDN 404s on newer content and lacks many artifact icons).
 const enkaUrl = (filename?: string) => (filename ? `https://enka.network/ui/${filename}.png` : "");
+// enka does NOT host most food item icons (UI_ItemIcon_108xxx) — ~1/3 of them 404. Project
+// Amber's CDN has the full set, so foods use it instead.
+const yattaUrl = (filename?: string) => (filename ? `https://gi.yatta.moe/assets/UI/${filename}.png` : "");
 // Strip genshin-db rich-text markup (e.g. <color=#..>…</color>), keeping {0}/{1} placeholders.
 const stripTags = (s: string) => s.replace(/<[^>]+>/g, "").trim();
 
@@ -497,7 +500,7 @@ for (const name of foodNames) {
       type,
       // Just the buff sentence (drop the co-op caveat / other trailing lines).
       effect: stripTags(String(f.effect ?? "").split("\n")[0].split(/\s*In Co-Op Mode/i)[0]).trim(),
-      icon: enkaUrl(f.images?.filename_icon),
+      icon: yattaUrl(f.images?.filename_icon),
       description: stripTags(String(f.description ?? "")).trim(),
       ingredients: Array.isArray(f.ingredients)
         ? f.ingredients.map((i: any) => ({ name: String(i.name), count: Number(i.count ?? 0) }))
