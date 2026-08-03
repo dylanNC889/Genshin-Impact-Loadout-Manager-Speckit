@@ -107,6 +107,32 @@ test("show an ER-requirement flag for an energy-hungry member", async ({ page })
   await expect(energy).toContainText("100% / ~200%");
 });
 
+// N — the character page lists the saved teams it appears in.
+test("character page lists the teams it appears in", async ({ page }) => {
+  await page.goto("/team");
+  const search = page.getByLabel("Search characters to add");
+  await search.fill("Hu Tao");
+  await page.locator(".picker-cell", { hasText: "Hu Tao" }).first().click();
+  await page.getByLabel("Team name").fill("N-Lookup Team");
+  await page.getByRole("button", { name: "Save team" }).click();
+  await expect(page.getByText("Saved ✓")).toBeVisible();
+
+  await page.goto("/character/hu-tao");
+  const chip = page.locator(".in-team-chip", { hasText: "N-Lookup Team" });
+  await expect(chip).toBeVisible();
+  await chip.click();
+  await expect(page).toHaveURL(/\/team\?team=/);
+
+  // cleanup — delete the team (scoped to the Teams card)
+  await page.goto("/saved");
+  const teamsCard = page.locator(".card").filter({ has: page.getByRole("heading", { name: /^Teams/ }) });
+  const rows = teamsCard.locator(".saved-list li", { hasText: "N-Lookup Team" });
+  for (let n = await rows.count(); n > 0; n--) {
+    await rows.first().getByRole("button", { name: "delete" }).click();
+    await expect(rows).toHaveCount(n - 1);
+  }
+});
+
 // A8 — enemy presets (per-element RES).
 test("enemy preset disables manual inputs and recalculates", async ({ page }) => {
   await page.goto("/team");

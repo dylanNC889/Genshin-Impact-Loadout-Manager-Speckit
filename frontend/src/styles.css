@@ -583,6 +583,39 @@ select {
   font-size: 12px;
 }
 
+/* This character appears in these saved teams (N). */
+.in-teams {
+  margin-bottom: 16px;
+}
+.in-teams h3 {
+  margin: 0 0 10px;
+}
+.in-teams-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.in-team-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-2);
+  text-decoration: none;
+  color: var(--text);
+}
+.in-team-chip:hover {
+  border-color: var(--accent);
+}
+.in-team-name {
+  font-weight: 600;
+}
+
 /* Food detail hero (#9). */
 .food-hero {
   display: flex;

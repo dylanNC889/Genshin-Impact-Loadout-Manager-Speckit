@@ -11,6 +11,7 @@ import {
   fetchWeapons,
   getLoadout,
   listLoadouts,
+  listTeams,
 } from "../api";
 import { Card, StatRow, ElementBadge, Icon, RarityStars } from "../components/ui";
 import { DetailSkeleton } from "../components/Skeleton";
@@ -98,6 +99,9 @@ export function CharacterPage() {
   // This character's saved builds, to load into the editor (#10).
   const loadoutsQ = useQuery({ queryKey: ["loadouts"], queryFn: listLoadouts });
   const savedBuilds = (loadoutsQ.data ?? []).filter((l) => l.characterId === id);
+  // Saved teams that include this character (N — reverse lookup).
+  const teamsQ = useQuery({ queryKey: ["teams"], queryFn: listTeams });
+  const inTeams = (teamsQ.data ?? []).filter((t) => t.slots.some((s) => s.characterId === id));
 
   // Ownership toggle (E1) — also available here, mirroring the roster.
   const [owned, setOwned] = useState<boolean>(false);
@@ -304,6 +308,24 @@ export function CharacterPage() {
                   {b.tags?.length ? (
                     <span className="saved-build-tags">{b.tags.map((t) => `#${t}`).join(" ")}</span>
                   ) : null}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+
+      {inTeams.length ? (
+        <section className="card in-teams">
+          <h3>In your teams</h3>
+          <ul className="in-teams-list">
+            {inTeams.map((t) => (
+              <li key={t.id}>
+                <Link to={`/team?team=${t.id}`} className="in-team-chip">
+                  <span className="in-team-name">{t.name}</span>
+                  <span className="muted small">
+                    {t.slots.filter((s) => s.characterId).length}/4
+                  </span>
                 </Link>
               </li>
             ))}
