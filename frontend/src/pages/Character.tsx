@@ -21,6 +21,7 @@ import { formatStat, statLabel } from "../format";
 import { playstyleFor } from "../playstyle";
 import { decodeShare } from "../share";
 import { getOwned, toggleOwned } from "../ownership";
+import { pushRecent } from "../recent";
 import { useLoadoutStore } from "../state/loadoutStore";
 import type { ArtifactSlot, Dataset, LoadoutInput } from "@app/contracts";
 
@@ -102,6 +103,14 @@ export function CharacterPage() {
   // Saved teams that include this character (N — reverse lookup).
   const teamsQ = useQuery({ queryKey: ["teams"], queryFn: listTeams });
   const inTeams = (teamsQ.data ?? []).filter((t) => t.slots.some((s) => s.characterId === id));
+
+  // Record this character as recently viewed (L).
+  const characterForRecent = detail.data?.character;
+  useEffect(() => {
+    if (characterForRecent) {
+      pushRecent({ id: characterForRecent.id, name: characterForRecent.name, icon: characterForRecent.icon });
+    }
+  }, [characterForRecent]);
 
   // Ownership toggle (E1) — also available here, mirroring the roster.
   const [owned, setOwned] = useState<boolean>(false);

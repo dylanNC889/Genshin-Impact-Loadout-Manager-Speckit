@@ -583,6 +583,52 @@ select {
   font-size: 12px;
 }
 
+/* Recently-viewed characters strip on the roster (L). */
+.recent-strip {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 14px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  overflow-x: auto;
+}
+.recent-label {
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+.recent-items {
+  display: flex;
+  gap: 6px;
+}
+.recent-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  width: 60px;
+  padding: 4px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: var(--text);
+}
+.recent-item:hover {
+  background: var(--surface-2);
+}
+.recent-name {
+  font-size: 10px;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* This character appears in these saved teams (N). */
 .in-teams {
   margin-bottom: 16px;
