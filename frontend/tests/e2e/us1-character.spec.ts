@@ -135,6 +135,24 @@ test("filter roster to characters with a saved build", async ({ page }) => {
   }
 });
 
+// L — recently-viewed characters strip on the roster.
+test("recently viewed strip records visited characters", async ({ page }) => {
+  await page.goto("/character/zhongli");
+  await expect(page.getByRole("heading", { name: "Zhongli", level: 1 })).toBeVisible();
+  await page.goto("/character/nahida");
+  await expect(page.getByRole("heading", { name: "Nahida", level: 1 })).toBeVisible();
+
+  await page.goto("/");
+  const strip = page.locator(".recent-strip");
+  await expect(strip).toBeVisible();
+  // most-recent first
+  await expect(strip.locator(".recent-item").first()).toContainText("Nahida");
+  await expect(strip.locator(".recent-item", { hasText: "Zhongli" })).toBeVisible();
+  // a chip links to the character
+  await strip.locator(".recent-item", { hasText: "Zhongli" }).click();
+  await expect(page).toHaveURL(/\/character\/zhongli$/);
+});
+
 // C5 — roster filters are reflected in the URL and restored on load.
 test("roster filters are shareable via the URL", async ({ page }) => {
   await page.goto("/");

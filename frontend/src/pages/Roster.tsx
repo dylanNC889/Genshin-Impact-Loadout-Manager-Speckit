@@ -5,6 +5,7 @@ import { fetchCharacters, listLoadouts } from "../api";
 import { ElementBadge, Icon, RarityStars } from "../components/ui";
 import { getFavorites, toggleFavorite } from "../favorites";
 import { getOwned, toggleOwned } from "../ownership";
+import { getRecent } from "../recent";
 import { CardGridSkeleton } from "../components/Skeleton";
 
 const ELEMENTS = ["Pyro", "Hydro", "Electro", "Cryo", "Anemo", "Geo", "Dendro"];
@@ -31,6 +32,7 @@ export function Roster() {
   const builtOnly = params.get("built") === "1";
   const [favs, setFavs] = useState(() => getFavorites());
   const [owned, setOwned] = useState(() => getOwned("characters"));
+  const [recentChars] = useState(() => getRecent());
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["characters", q, element, weaponType],
@@ -136,6 +138,20 @@ export function Roster() {
           ⇄ Compare characters
         </Link>
       </div>
+
+      {recentChars.length ? (
+        <div className="recent-strip">
+          <span className="recent-label">Recently viewed</span>
+          <div className="recent-items">
+            {recentChars.map((c) => (
+              <Link key={c.id} to={`/character/${c.id}`} className="recent-item" title={c.name}>
+                <Icon src={c.icon} alt={c.name} size={40} />
+                <span className="recent-name">{c.name}</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      ) : null}
 
       {isLoading ? <CardGridSkeleton count={18} /> : null}
       {error ? <p className="error">Failed to load: {(error as Error).message}</p> : null}
