@@ -13,6 +13,7 @@ import {
   listLoadouts,
 } from "../api";
 import { Card, StatRow, ElementBadge, Icon, RarityStars } from "../components/ui";
+import { DetailSkeleton } from "../components/Skeleton";
 import { MaterialList } from "../components/MaterialList";
 import { LoadoutEditor } from "../components/LoadoutEditor";
 import { formatStat, statLabel } from "../format";
@@ -144,7 +145,7 @@ export function CharacterPage() {
     }
   }, [savedLoadoutQ.data, resetLoadout, setWeapon, setArtifact, setConstellation, setRefinement, setNotes, setTags]);
 
-  if (detail.isLoading) return <p className="muted">Loading character…</p>;
+  if (detail.isLoading) return <div className="character"><DetailSkeleton /></div>;
   if (detail.error) return <p className="error">Failed to load: {(detail.error as Error).message}</p>;
   if (!detail.data) return <p className="muted">Not found.</p>;
 

@@ -5,6 +5,7 @@ import { fetchCharacters, listLoadouts } from "../api";
 import { ElementBadge, Icon, RarityStars } from "../components/ui";
 import { getFavorites, toggleFavorite } from "../favorites";
 import { getOwned, toggleOwned } from "../ownership";
+import { CardGridSkeleton } from "../components/Skeleton";
 
 const ELEMENTS = ["Pyro", "Hydro", "Electro", "Cryo", "Anemo", "Geo", "Dendro"];
 const WEAPONS = ["Sword", "Claymore", "Polearm", "Bow", "Catalyst"];
@@ -136,7 +137,7 @@ export function Roster() {
         </Link>
       </div>
 
-      {isLoading ? <p className="muted">Loading roster…</p> : null}
+      {isLoading ? <CardGridSkeleton count={18} /> : null}
       {error ? <p className="error">Failed to load: {(error as Error).message}</p> : null}
 
       <div className="grid">
