@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { fetchArtifactSets } from "../api";
 import { Icon, RarityStars } from "../components/ui";
+import { CardGridSkeleton } from "../components/Skeleton";
 import { formatStat, statLabel } from "../format";
 import type { StatValue } from "@app/contracts";
 
@@ -68,7 +69,7 @@ export function Artifacts() {
         </select>
       </div>
 
-      {isLoading ? <p className="muted">Loading artifact sets…</p> : null}
+      {isLoading ? <CardGridSkeleton count={12} wide /> : null}
       {error ? <p className="error">Failed to load: {(error as Error).message}</p> : null}
 
       <div className="grid wide">

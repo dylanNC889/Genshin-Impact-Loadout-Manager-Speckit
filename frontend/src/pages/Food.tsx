@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { fetchFoods } from "../api";
 import { Icon, RarityStars } from "../components/ui";
+import { CardGridSkeleton } from "../components/Skeleton";
 
 const TYPES = ["ATK", "DEF", "Adventure", "Revival"];
 
@@ -39,7 +40,7 @@ export function FoodPage() {
         </select>
       </div>
 
-      {isLoading ? <p className="muted">Loading food…</p> : null}
+      {isLoading ? <CardGridSkeleton count={12} wide /> : null}
       {error ? <p className="error">Failed to load: {(error as Error).message}</p> : null}
 
       <div className="grid wide">

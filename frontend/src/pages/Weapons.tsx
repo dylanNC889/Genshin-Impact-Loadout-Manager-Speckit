@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { fetchWeapons } from "../api";
 import { Icon, RarityStars } from "../components/ui";
+import { CardGridSkeleton } from "../components/Skeleton";
 import { getOwned, toggleOwned } from "../ownership";
 import { formatStat, statLabel } from "../format";
 
@@ -88,7 +89,7 @@ export function Weapons() {
         </Link>
       </div>
 
-      {isLoading ? <p className="muted">Loading weapons…</p> : null}
+      {isLoading ? <CardGridSkeleton count={18} /> : null}
       {error ? <p className="error">Failed to load: {(error as Error).message}</p> : null}
 
       <div className="grid">
