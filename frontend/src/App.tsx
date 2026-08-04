@@ -22,6 +22,7 @@ const PlannerPage = lazy(() => import("./pages/Planner").then((m) => ({ default:
 const FoodPage = lazy(() => import("./pages/Food").then((m) => ({ default: m.FoodPage })));
 const FoodDetailPage = lazy(() => import("./pages/FoodDetail").then((m) => ({ default: m.FoodDetailPage })));
 const FarmablePage = lazy(() => import("./pages/Farmable").then((m) => ({ default: m.FarmablePage })));
+const TeamComparePage = lazy(() => import("./pages/TeamCompare").then((m) => ({ default: m.TeamComparePage })));
 
 export function App() {
   const [theme, setThemeState] = useState<Theme>(() => getTheme());
@@ -82,6 +83,7 @@ export function App() {
             <Route path="/food" element={<FoodPage />} />
             <Route path="/food/:id" element={<FoodDetailPage />} />
             <Route path="/farmable" element={<FarmablePage />} />
+            <Route path="/team-compare" element={<TeamComparePage />} />
             <Route path="/saved" element={<SavedPage />} />
           </Routes>
         </Suspense>

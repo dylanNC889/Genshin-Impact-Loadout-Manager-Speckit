@@ -133,6 +133,44 @@ test("character page lists the teams it appears in", async ({ page }) => {
   }
 });
 
+// F — compare two saved teams side-by-side.
+test("compare two saved teams", async ({ page }) => {
+  const makeTeam = async (name: string, members: string[]) => {
+    await page.goto("/team");
+    const search = page.getByLabel("Search characters to add");
+    for (const n of members) {
+      await search.fill(n);
+      await page.locator(".picker-cell", { hasText: n }).first().click();
+    }
+    await page.getByLabel("Team name").fill(name);
+    await page.getByRole("button", { name: "Save team" }).click();
+    await expect(page.getByText("Saved ✓")).toBeVisible();
+  };
+  await makeTeam("F-Cmp A", ["Hu Tao", "Xingqiu"]);
+  await makeTeam("F-Cmp B", ["Klee", "Bennett"]);
+
+  await page.goto("/saved");
+  await page.getByRole("link", { name: /Compare teams/ }).click();
+  await expect(page).toHaveURL(/\/team-compare$/);
+  await page.getByLabel("Team A").selectOption({ label: "F-Cmp A" });
+  await page.getByLabel("Team B").selectOption({ label: "F-Cmp B" });
+  await expect(page.locator(".compare-table")).toBeVisible();
+  await expect(page.locator(".compare-table td", { hasText: "Synergy grade" })).toBeVisible();
+  await expect(page.locator(".compare-table td", { hasText: "Est. damage" })).toBeVisible();
+  await expect(page.locator(".cmp-win").first()).toBeVisible();
+
+  // cleanup
+  await page.goto("/saved");
+  const teamsCard = page.locator(".card").filter({ has: page.getByRole("heading", { name: /^Teams/ }) });
+  for (const name of ["F-Cmp A", "F-Cmp B"]) {
+    const rows = teamsCard.locator(".saved-list li", { hasText: name });
+    for (let n = await rows.count(); n > 0; n--) {
+      await rows.first().getByRole("button", { name: "delete" }).click();
+      await expect(rows).toHaveCount(n - 1);
+    }
+  }
+});
+
 // A8 — enemy presets (per-element RES).
 test("enemy preset disables manual inputs and recalculates", async ({ page }) => {
   await page.goto("/team");
