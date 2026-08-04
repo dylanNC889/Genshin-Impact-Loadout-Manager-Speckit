@@ -11,6 +11,7 @@ import { REACTIONS, computeTeamDamage } from "../teamDamage";
 import { getOwned } from "../ownership";
 import { ER_REQUIREMENTS } from "../data/erRequirements";
 import { TEAM_TEMPLATES, resolveTemplate, type TeamTemplate } from "../data/teamTemplates";
+import { downloadTeamCard } from "../cardImage";
 
 interface Slot {
   characterId: string | null;
@@ -408,6 +409,25 @@ export function TeamBuilder() {
           title="Copy a shareable link to this team"
         >
           🔗 Copy link
+        </button>
+        <button
+          type="button"
+          className="mini"
+          onClick={() =>
+            void downloadTeamCard({
+              name: teamName || "Team",
+              grade: synergy.rating.grade,
+              damage: damage?.totalEstimated,
+              members: details.map((d) => ({
+                name: d.character.name,
+                imageUrl: d.character.splashArt || d.character.wideSplashArt || d.character.icon,
+              })),
+            })
+          }
+          disabled={selected.length === 0}
+          title="Download a shareable team card"
+        >
+          📷 Card
         </button>
         {saveMut.isSuccess ? <span className="saved-ok">Saved ✓</span> : null}
         {updateMut.isSuccess ? <span className="saved-ok">Updated ✓</span> : null}

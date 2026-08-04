@@ -139,6 +139,17 @@ test("filter roster to characters with a saved build", async ({ page }) => {
   }
 });
 
+// K — download a shareable build card (PNG).
+test("download a character build card", async ({ page }) => {
+  await page.goto("/character/hu-tao");
+  await expect(page.getByRole("heading", { name: "Hu Tao", level: 1 })).toBeVisible();
+  const [dl] = await Promise.all([
+    page.waitForEvent("download"),
+    page.getByRole("button", { name: /Card/ }).click(),
+  ]);
+  expect(dl.suggestedFilename()).toBe("hu-tao-build.png");
+});
+
 // L — recently-viewed characters strip on the roster.
 test("recently viewed strip records visited characters", async ({ page }) => {
   await page.goto("/character/zhongli");

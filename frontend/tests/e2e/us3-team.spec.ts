@@ -107,6 +107,20 @@ test("show an ER-requirement flag for an energy-hungry member", async ({ page })
   await expect(energy).toContainText("100% / ~200%");
 });
 
+// K — download a shareable team card (PNG).
+test("download a team card", async ({ page }) => {
+  await page.goto("/team");
+  const search = page.getByLabel("Search characters to add");
+  await search.fill("Hu Tao");
+  await page.locator(".picker-cell", { hasText: "Hu Tao" }).first().click();
+  await page.getByLabel("Team name").fill("Card Squad");
+  const [dl] = await Promise.all([
+    page.waitForEvent("download"),
+    page.getByRole("button", { name: "📷 Card" }).click(),
+  ]);
+  expect(dl.suggestedFilename()).toBe("card-squad-team.png");
+});
+
 // E — a meta template one-click-fills the team and synergy recomputes.
 test("team template fills the slots", async ({ page }) => {
   await page.goto("/team");
