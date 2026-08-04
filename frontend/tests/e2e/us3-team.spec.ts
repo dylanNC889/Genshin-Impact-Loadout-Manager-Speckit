@@ -144,3 +144,17 @@ test("enemy preset disables manual inputs and recalculates", async ({ page }) =>
   await expect(page.getByLabel("Enemy level")).toBeDisabled();
   await expect(page.getByText("estimated damage / rotation")).toBeVisible();
 });
+
+// C — per-element effective RES: VV shreds swirlable elements only; Zhongli is universal.
+test("effective RES readout is element-scoped", async ({ page }) => {
+  await page.goto("/team");
+  const search = page.getByLabel("Search characters to add");
+  for (const n of ["Hu Tao", "Kaedehara Kazuha", "Zhongli"]) {
+    await search.fill(n);
+    await page.locator(".picker-cell", { hasText: n }).first().click();
+  }
+  await expect(page.getByText("estimated damage / rotation")).toBeVisible();
+  // Pyro (swirlable) gets VV −40% + Zhongli −20% = −50%; Anemo gets only Zhongli −20% → −10%.
+  await expect(page.locator(".res-chip", { hasText: "Pyro -50%" })).toBeVisible();
+  await expect(page.locator(".res-chip", { hasText: "Anemo -10%" })).toBeVisible();
+});
