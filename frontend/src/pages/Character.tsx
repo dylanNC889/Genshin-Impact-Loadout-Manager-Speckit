@@ -19,6 +19,7 @@ import { MaterialList } from "../components/MaterialList";
 import { LoadoutEditor } from "../components/LoadoutEditor";
 import { formatStat, statLabel } from "../format";
 import { playstyleFor } from "../playstyle";
+import { talentAdviceFor } from "../data/talentPriority";
 import { decodeShare } from "../share";
 import { getOwned, toggleOwned } from "../ownership";
 import { pushRecent } from "../recent";
@@ -163,6 +164,7 @@ export function CharacterPage() {
   if (!detail.data) return <p className="muted">Not found.</p>;
 
   const { character: char, curves } = detail.data;
+  const advice = talentAdviceFor(char.id, char.roles); // talent priority + how-to-play (M)
   // Client-side recalculation — instant on level change (Principle IV / FR-003).
   const sheet = statRecord(computeBaseSheet(char, level, 6, curves));
   const extras = Object.entries(sheet).filter(
@@ -384,6 +386,13 @@ export function CharacterPage() {
         </Card>
 
         <Card title="Skills">
+          <div className="talent-advice">
+            <div>
+              <span className="ta-label">Level priority</span>
+              <span className="ta-priority">{advice.priority}</span>
+            </div>
+            <p className="ta-note">{advice.note}</p>
+          </div>
           <div className="talent-control">
             <label htmlFor="talent">Talent level</label>
             <input
