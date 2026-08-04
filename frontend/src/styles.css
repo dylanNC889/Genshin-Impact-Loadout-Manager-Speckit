@@ -583,6 +583,31 @@ select {
   font-size: 12px;
 }
 
+/* Team templates strip (E). */
+.team-templates {
+  margin-bottom: 10px;
+}
+.team-template-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+.template-chip {
+  padding: 5px 10px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.template-chip:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
 /* Team compare — highlight the higher damage total (F). */
 .cmp-win {
   color: #4caf50;

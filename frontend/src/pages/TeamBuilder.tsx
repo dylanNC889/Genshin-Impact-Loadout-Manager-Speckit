@@ -10,6 +10,7 @@ import { activeBuffNotes } from "../teamBuffs";
 import { REACTIONS, computeTeamDamage } from "../teamDamage";
 import { getOwned } from "../ownership";
 import { ER_REQUIREMENTS } from "../data/erRequirements";
+import { TEAM_TEMPLATES, resolveTemplate, type TeamTemplate } from "../data/teamTemplates";
 
 interface Slot {
   characterId: string | null;
@@ -196,6 +197,11 @@ export function TeamBuilder() {
   function removeSlot(i: number) {
     setSlots((prev) => prev.map((s, idx) => (idx === i ? { characterId: null, loadoutId: null } : s)));
   }
+  // Populate the 4 slots from a meta template, preferring owned exemplars (E).
+  function applyTemplate(t: TeamTemplate) {
+    const ids = resolveTemplate(t, owned);
+    setSlots([0, 1, 2, 3].map((i) => ({ characterId: ids[i] ?? null, loadoutId: null })));
+  }
   function setSlotLoadout(i: number, loadoutId: string) {
     setSlots((prev) => prev.map((s, idx) => (idx === i ? { ...s, loadoutId: loadoutId || null } : s)));
   }
@@ -235,6 +241,22 @@ export function TeamBuilder() {
 
       <div className="team-builder">
         <div className="team-picker">
+          <div className="team-templates">
+            <span className="muted small">Start from a template:</span>
+            <div className="team-template-chips">
+              {TEAM_TEMPLATES.map((t) => (
+                <button
+                  key={t.name}
+                  type="button"
+                  className="template-chip"
+                  title={t.description}
+                  onClick={() => applyTemplate(t)}
+                >
+                  {t.name}
+                </button>
+              ))}
+            </div>
+          </div>
           <input
             className="search"
             placeholder="Search characters…"
