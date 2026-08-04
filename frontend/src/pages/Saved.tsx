@@ -141,6 +141,11 @@ export function SavedPage() {
         </Card>
 
         <Card title={`Teams (${teamsQ.data?.length ?? 0})`}>
+          {(teamsQ.data?.length ?? 0) >= 2 ? (
+            <Link to="/team-compare" className="btn ghost small" style={{ marginBottom: 8, display: "inline-block" }}>
+              ⇄ Compare teams
+            </Link>
+          ) : null}
           {teamsQ.data?.length ? (
             <ul className="saved-list">
               {teamsQ.data.map((t) => (
