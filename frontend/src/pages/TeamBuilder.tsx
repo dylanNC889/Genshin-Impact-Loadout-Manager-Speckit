@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link, useSearchParams, useHref } from "react-router-dom";
 import { assessSynergy, computeBaseStats, estimateTeamDamage } from "@app/stat-engine";
 import type { DamageMember } from "@app/stat-engine";
-import type { DamageEstimate, SynergyAssessment } from "@app/contracts";
+import type { DamageEstimate, Element, SynergyAssessment } from "@app/contracts";
 import {
   createTeam,
   fetchCharacters,
@@ -16,7 +16,7 @@ import {
 } from "../api";
 import { Card, Icon } from "../components/ui";
 import { encodeShare, decodeShare } from "../share";
-import { teamBuffFor, teamResShred, activeBuffNotes } from "../teamBuffs";
+import { teamBuffFor, resShredForElement, activeBuffNotes } from "../teamBuffs";
 import { getOwned } from "../ownership";
 import { ER_REQUIREMENTS } from "../data/erRequirements";
 
@@ -278,7 +278,11 @@ export function TeamBuilder() {
   }
 
   // Damage updates live from the team, gear and assumptions — no button to press (#4 UX).
-  const { damage, autoChoice } = useMemo<{ damage: DamageEstimate | null; autoChoice: string | null }>(() => {
+  const { damage, autoChoice, resReadout } = useMemo<{
+    damage: DamageEstimate | null;
+    autoChoice: string | null;
+    resReadout: { element: Element; res: number }[];
+  }>(() => {
     // Auto mode (A9) derives the reaction from the team's possible reactions; else use the manual picks.
     const auto = autoReact ? autoPickReaction(synergy.possibleReactions) : null;
     const autoChoiceLabel = auto ? (auto.label === "none" ? "no reaction" : auto.label) : null;
@@ -286,7 +290,6 @@ export function TeamBuilder() {
     const effTransformative = auto ? auto.transformative : transformative;
     const r = REACTIONS[effReaction] ?? { mult: 1, type: undefined };
     const teamCharIds = selected.map((s) => s.characterId);
-    const shred = teamResShred(teamCharIds);
     const dmg = selected
       .flatMap((s, i) => {
         const detail = details[i];
@@ -325,21 +328,29 @@ export function TeamBuilder() {
       const bm = dmg[bestIdx];
       if (bm) dmg[bestIdx] = { ...bm, transformative: effTransformative };
     }
-    // Enemy preset (A8): level + RES (optionally per-element), with RES shred applied.
+    // Enemy preset (A8): level + RES (optionally per-element). RES shred is now applied PER
+    // ELEMENT (C) — VV only shreds swirlable elements, Zhongli is universal — so each member's
+    // element gets its own effective RES.
     const preset = ENEMY_PRESETS[enemyPreset] ?? ENEMY_PRESETS[0]!;
     const level = preset.level ?? enemyLevel;
     const baseRes = preset.res ?? enemyRes;
-    const byElement = preset.byElement
-      ? Object.fromEntries(Object.entries(preset.byElement).map(([el, v]) => [el, v - shred]))
-      : undefined;
+    const teamElements = [...new Set(dmg.map((m) => m.element).filter(Boolean))] as Element[];
+    const byElement: Record<string, number> = {};
+    for (const el of teamElements) {
+      const presetEl = preset.byElement?.[el] ?? baseRes;
+      byElement[el] = presetEl - resShredForElement(teamCharIds, el);
+    }
+    const resReadout = teamElements
+      .map((el) => ({ element: el, res: byElement[el]! }))
+      .sort((a, b) => a.element.localeCompare(b.element));
     const est = dmg.length
       ? estimateTeamDamage(dmg, {
           enemyLevel: level,
-          enemyResistancePct: baseRes - shred,
+          enemyResistancePct: baseRes - resShredForElement(teamCharIds, undefined),
           enemyResistanceByElement: byElement,
         })
       : null;
-    return { damage: est, autoChoice: autoChoiceLabel };
+    return { damage: est, autoChoice: autoChoiceLabel, resReadout };
   }, [slots, details, savedLoadouts, reaction, transformative, autoReact, enemyPreset, enemyLevel, enemyRes]);
 
   return (
@@ -668,6 +679,17 @@ export function TeamBuilder() {
                 <p className="muted small dmg-auto">
                   Auto-detected reaction: <strong>{autoChoice}</strong>
                 </p>
+              ) : null}
+
+              {resReadout.length ? (
+                <div className="res-readout" aria-label="Effective enemy resistance by element">
+                  <span className="muted small">Effective RES:</span>
+                  {resReadout.map((r) => (
+                    <span key={r.element} className={`res-chip el-${r.element.toLowerCase()}`}>
+                      {r.element} {r.res}%
+                    </span>
+                  ))}
+                </div>
               ) : null}
 
               <ul className="dmg-bars">

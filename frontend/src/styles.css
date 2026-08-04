@@ -2172,6 +2172,31 @@ select {
   margin: 6px 0 0;
 }
 
+/* Effective per-element enemy RES after shred (C). */
+.res-readout {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 8px 0 0;
+}
+.res-chip {
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+.res-chip.el-pyro { color: #ec6a4b; }
+.res-chip.el-hydro { color: #4bb7ec; }
+.res-chip.el-electro { color: #b57ee0; }
+.res-chip.el-cryo { color: #5fb8cc; }
+.res-chip.el-anemo { color: #58c0a5; }
+.res-chip.el-geo { color: #c9982e; }
+.res-chip.el-dendro { color: #7bb03a; }
+
 /* --- Per-character damage bars (#4 UX) --- */
 .dmg-bars {
   list-style: none;
