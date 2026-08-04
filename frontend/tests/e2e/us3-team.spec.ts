@@ -107,6 +107,17 @@ test("show an ER-requirement flag for an energy-hungry member", async ({ page })
   await expect(energy).toContainText("100% / ~200%");
 });
 
+// E — a meta template one-click-fills the team and synergy recomputes.
+test("team template fills the slots", async ({ page }) => {
+  await page.goto("/team");
+  await page.locator(".template-chip", { hasText: "Pyro National" }).click();
+  await expect(page.locator(".portrait-slot.filled")).toHaveCount(4);
+  await expect(page.locator(".portrait-name", { hasText: "Xiangling" })).toBeVisible();
+  await expect(page.locator(".portrait-name", { hasText: "Bennett" })).toBeVisible();
+  // synergy recomputes for the assembled team
+  await expect(page.locator(".rating-badge")).toBeVisible();
+});
+
 // N — the character page lists the saved teams it appears in.
 test("character page lists the teams it appears in", async ({ page }) => {
   await page.goto("/team");
