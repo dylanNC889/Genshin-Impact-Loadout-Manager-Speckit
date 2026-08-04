@@ -35,6 +35,10 @@ test("browse roster and inspect a character", async ({ page }) => {
   // Per-talent damage estimate (A7).
   await expect(skills.locator(".scale-dmg").filter({ hasText: "≈" }).first()).toBeVisible();
 
+  // Talent priority + how-to-play note (M).
+  await expect(skills.locator(".ta-priority")).toContainText(/Normal Attack|Elemental/);
+  await expect(skills.locator(".ta-note")).toBeVisible();
+
   // Constellations section is present (B1).
   const cons = page.locator(".card").filter({ has: page.getByRole("heading", { name: "Constellations" }) });
   await expect(cons.getByText("C1", { exact: true })).toBeVisible();
