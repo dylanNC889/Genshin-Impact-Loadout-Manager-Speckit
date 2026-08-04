@@ -35,6 +35,20 @@ test("release timeline lists versions newest-first", async ({ page }) => {
   await expect(page).toHaveURL(/\/character\/hu-tao$/);
 });
 
+// D — "Farmable today" lists domains open on the current weekday + their characters.
+test("farmable-today lists domains for the current weekday", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("link", { name: "Farmable", exact: true }).click();
+  await expect(page).toHaveURL(/\/farmable$/);
+  await expect(page.getByRole("heading", { name: "Farmable today" })).toBeVisible();
+  // fresh store => no owned/built => shows all characters; some domain is always open Mon–Sun.
+  await expect(page.locator(".detail-masonry .card").first()).toBeVisible();
+  const char = page.locator(".farm-char").first();
+  await expect(char).toBeVisible();
+  await char.click();
+  await expect(page).toHaveURL(/\/character\//);
+});
+
 // E2 — build planner aggregates materials across a wishlist.
 test("build planner aggregates a wishlist", async ({ page }) => {
   await page.goto("/planner?chars=hu-tao,yelan");

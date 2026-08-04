@@ -583,6 +583,35 @@ select {
   font-size: 12px;
 }
 
+/* Farmable-today calendar (D). */
+.farm-chars {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+.farm-char {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  width: 60px;
+  padding: 4px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: var(--text);
+}
+.farm-char:hover {
+  background: var(--surface-2);
+}
+.farm-char-name {
+  font-size: 10px;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* Recently-viewed characters strip on the roster (L). */
 .recent-strip {
   display: flex;
