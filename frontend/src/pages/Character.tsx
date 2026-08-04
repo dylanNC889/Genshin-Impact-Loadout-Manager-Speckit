@@ -23,6 +23,7 @@ import { talentAdviceFor } from "../data/talentPriority";
 import { decodeShare } from "../share";
 import { getOwned, toggleOwned } from "../ownership";
 import { pushRecent } from "../recent";
+import { downloadCharacterCard } from "../cardImage";
 import { useLoadoutStore } from "../state/loadoutStore";
 import type { ArtifactSlot, Dataset, LoadoutInput } from "@app/contracts";
 
@@ -165,6 +166,28 @@ export function CharacterPage() {
 
   const { character: char, curves } = detail.data;
   const advice = talentAdviceFor(char.id, char.roles); // talent priority + how-to-play (M)
+
+  // Shareable build card (K).
+  function downloadCard() {
+    const keys = ["HP", "ATK", "DEF", "CRIT_RATE", "CRIT_DMG", "EM", "ER"];
+    const stats = keys.map((k) => ({ label: statLabel(k), value: formatStat(k, finalStats[k] ?? 0) }));
+    const elKey = `${char.element.toUpperCase()}_DMG`;
+    if (finalStats[elKey]) stats.push({ label: `${char.element} DMG`, value: formatStat(elKey, finalStats[elKey]!) });
+    const weaponName = weaponsQ.data?.find((w) => w.id === weaponId)?.name;
+    const counts = new Map<string, number>();
+    for (const a of Object.values(artifacts)) if (a?.setId) counts.set(a.setId, (counts.get(a.setId) ?? 0) + 1);
+    const topSetId = [...counts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0];
+    const setName = setsQ.data?.find((s) => s.id === topSetId)?.name;
+    void downloadCharacterCard({
+      name: char.name,
+      element: char.element,
+      level,
+      splashUrl: char.wideSplashArt || char.splashArt || char.icon,
+      stats,
+      weapon: weaponName,
+      set: setName,
+    });
+  }
   // Client-side recalculation — instant on level change (Principle IV / FR-003).
   const sheet = statRecord(computeBaseSheet(char, level, 6, curves));
   const extras = Object.entries(sheet).filter(
@@ -252,6 +275,9 @@ export function CharacterPage() {
               title={owned ? "Owned" : "Not owned"}
             >
               {owned ? "✓ Owned" : "＋ Own"}
+            </button>
+            <button type="button" className="own-btn card-btn" onClick={downloadCard} title="Download a shareable build card">
+              📷 Card
             </button>
           </div>
           <h1>{char.name}</h1>
