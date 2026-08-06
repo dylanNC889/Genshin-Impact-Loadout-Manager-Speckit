@@ -1861,6 +1861,73 @@ select {
   font-weight: 600;
 }
 
+/* --- Responsive pass (I) --- */
+/* Nav has many items, so it collapses to a scrollable row earlier than the content breakpoints. */
+@media (max-width: 960px) {
+  /* Clip stray absolutely-positioned overflow (e.g. hidden material tooltips near the right edge)
+     without breaking the nested horizontal-scroll regions (nav, compare table). */
+  .app {
+    overflow-x: hidden;
+  }
+  .topbar {
+    flex-wrap: wrap;
+    padding: 10px 14px;
+    gap: 8px;
+  }
+  .brand {
+    font-size: 16px;
+  }
+  /* nav drops to its own full-width row and scrolls horizontally instead of overflowing */
+  .nav {
+    order: 3;
+    flex-basis: 100%;
+    overflow-x: auto;
+    gap: 16px;
+    padding-bottom: 2px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .nav a {
+    white-space: nowrap;
+  }
+  .global-search {
+    margin-left: auto;
+  }
+  .global-search .search {
+    min-width: 120px;
+  }
+  .tag {
+    display: none;
+  }
+  .main {
+    padding: 16px 12px;
+  }
+  /* wide comparison tables scroll rather than force the page wide */
+  .compare-table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .compare-build-pickers {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 620px) {
+  /* loadout-editor rows: let the stat pickers / roll dropdowns wrap instead of overflowing */
+  .main-row,
+  .slot-head {
+    flex-wrap: wrap;
+  }
+  .slot-head select {
+    max-width: 100%;
+  }
+  .main-row select,
+  .main-row input {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+}
+
 /* --- Team builder (US3) --- */
 /* --- Team builder: picker grid (left) + portraits (right) (#5) --- */
 .team-builder {
