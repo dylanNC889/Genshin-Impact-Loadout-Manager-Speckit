@@ -3,6 +3,7 @@ import { listLoadouts, listTeams, createLoadout, createTeam, type SavedLoadout, 
 import { getFavorites, setFavorites } from "./favorites";
 import { getOwned, setOwned } from "./ownership";
 import { loadInventory, saveInventory } from "./inventory";
+import { getWishState, setWishState, type WishState } from "./wishes";
 
 const FORMAT = "glm-backup";
 const VERSION = 1;
@@ -17,6 +18,7 @@ export interface Backup {
   favorites: string[];
   owned: { characters: string[]; weapons: string[] };
   inventory: OwnedArtifact[];
+  wishes?: WishState;
 }
 
 /** Gather all saved data into a backup object (works in both HTTP and static modes). */
@@ -31,6 +33,7 @@ export async function exportBackup(): Promise<Backup> {
     favorites: [...getFavorites()],
     owned: { characters: [...getOwned("characters")], weapons: [...getOwned("weapons")] },
     inventory: loadInventory(),
+    wishes: getWishState(),
   };
 }
 
@@ -61,6 +64,7 @@ export async function importBackup(raw: unknown): Promise<ImportSummary> {
   if (data.owned?.characters) setOwned("characters", [...getOwned("characters"), ...data.owned.characters]);
   if (data.owned?.weapons) setOwned("weapons", [...getOwned("weapons"), ...data.owned.weapons]);
   if (inventory.length) saveInventory(inventory);
+  if (data.wishes) setWishState(data.wishes);
 
   return { loadouts: loadouts.length, teams: teams.length, favorites: favorites.length, inventory: inventory.length };
 }
