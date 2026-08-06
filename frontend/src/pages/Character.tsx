@@ -65,6 +65,10 @@ export function CharacterPage() {
   const buildParam = searchParams.get("build");
   const [level, setLevel] = useState(90);
   const [talentLevel, setTalentLevel] = useState(10);
+  // Rotation builder (B): ordered talent-hit lines + a rotation length for DPS.
+  const [rotation, setRotation] = useState<{ instId: string; count: number }[]>([]);
+  const [rotSec, setRotSec] = useState(20);
+  const [addId, setAddId] = useState("");
   const resetLoadout = useLoadoutStore((s) => s.reset);
   const setWeapon = useLoadoutStore((s) => s.setWeapon);
   const setArtifact = useLoadoutStore((s) => s.setArtifact);
@@ -249,6 +253,38 @@ export function CharacterPage() {
       dmgBonusPct: finalStats[`${char.element.toUpperCase()}_DMG`] ?? 0,
       charLevel: level,
     });
+  };
+
+  // Every computable DMG hit across the talents, for the rotation builder (B).
+  const TYPE_ABBR: Record<string, string> = { NormalAttack: "NA", ElementalSkill: "Skill", ElementalBurst: "Burst" };
+  const damageInstances: { id: string; type: string; label: string; perHit: number }[] = [];
+  for (const s of char.skills) {
+    s.scaling.forEach((row, i) => {
+      const { label, stat } = describeScaling(row.label, row.percent);
+      const perHit = rowDamage(row, stat);
+      if (perHit != null) {
+        damageInstances.push({ id: `${s.id}-${i}`, type: s.type, label: `${TYPE_ABBR[s.type] ?? s.type} · ${label}`, perHit });
+      }
+    });
+  }
+  const instById = new Map(damageInstances.map((d) => [d.id, d]));
+  const rotTotal = rotation.reduce((sum, l) => sum + (instById.get(l.instId)?.perHit ?? 0) * l.count, 0);
+
+  const addLine = () => {
+    if (addId) setRotation((r) => [...r, { instId: addId, count: 1 }]);
+  };
+  // A quick generic rotation: best Skill hit, best Burst hit, and 6× the best Normal-attack hit.
+  const quickFill = () => {
+    const best = (type: string) =>
+      damageInstances.filter((d) => d.type === type).sort((a, b) => b.perHit - a.perHit)[0];
+    const lines: { instId: string; count: number }[] = [];
+    const skill = best("ElementalSkill");
+    const burst = best("ElementalBurst");
+    const na = best("NormalAttack");
+    if (skill) lines.push({ instId: skill.id, count: 1 });
+    if (burst) lines.push({ instId: burst.id, count: 1 });
+    if (na) lines.push({ instId: na.id, count: 6 });
+    setRotation(lines);
   };
 
   return (
@@ -471,6 +507,90 @@ export function CharacterPage() {
           <p className="muted small">≈ average crit damage for the equipped build vs a Lv 90 enemy (10% RES).</p>
         </Card>
       </div>
+
+      {damageInstances.length ? (
+        <Card title="Rotation damage">
+          <div className="rot-add">
+            <select value={addId} onChange={(e) => setAddId(e.target.value)} aria-label="Add a talent hit">
+              <option value="">— add a hit —</option>
+              {damageInstances.map((d) => (
+                <option key={d.id} value={d.id}>
+                  {d.label} (≈{Math.round(d.perHit).toLocaleString()})
+                </option>
+              ))}
+            </select>
+            <button type="button" className="mini" onClick={addLine} disabled={!addId}>
+              Add
+            </button>
+            <button type="button" className="mini" onClick={quickFill}>
+              Quick fill
+            </button>
+            {rotation.length ? (
+              <button type="button" className="mini" onClick={() => setRotation([])}>
+                Clear
+              </button>
+            ) : null}
+          </div>
+          {rotation.length ? (
+            <>
+              <ul className="rot-list">
+                {rotation.map((line, i) => {
+                  const inst = instById.get(line.instId);
+                  if (!inst) return null;
+                  return (
+                    <li key={i}>
+                      <span className="rot-label">{inst.label}</span>
+                      <input
+                        type="number"
+                        min={1}
+                        value={line.count}
+                        onChange={(e) =>
+                          setRotation((r) =>
+                            r.map((l, idx) => (idx === i ? { ...l, count: Math.max(1, Number(e.target.value) || 1) } : l)),
+                          )
+                        }
+                        aria-label={`${inst.label} count`}
+                        className="rot-count"
+                      />
+                      <span className="rot-total">≈ {Math.round(inst.perHit * line.count).toLocaleString()}</span>
+                      <button
+                        type="button"
+                        className="rot-remove"
+                        onClick={() => setRotation((r) => r.filter((_, idx) => idx !== i))}
+                        aria-label={`Remove ${inst.label}`}
+                      >
+                        ×
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+              <div className="rot-summary">
+                <div>
+                  <span className="wish-big">{Math.round(rotTotal).toLocaleString()}</span>
+                  <span className="muted"> total / rotation</span>
+                </div>
+                <label className="rot-dur">
+                  <span className="muted small">Rotation length</span>
+                  <input
+                    type="number"
+                    min={1}
+                    value={rotSec}
+                    onChange={(e) => setRotSec(Math.max(1, Number(e.target.value) || 1))}
+                    aria-label="Rotation length seconds"
+                  />
+                  <span className="muted small">s →</span>
+                  <strong>{Math.round(rotTotal / rotSec).toLocaleString()} DPS</strong>
+                </label>
+              </div>
+            </>
+          ) : (
+            <p className="muted small">
+              Add talent hits (or “Quick fill”) to estimate a rotation. Numbers use the equipped build + talent level.
+            </p>
+          )}
+        </Card>
+      ) : null}
 
       {char.constellations.length ? (
         <Card title="Constellations">
