@@ -24,6 +24,7 @@ const FoodDetailPage = lazy(() => import("./pages/FoodDetail").then((m) => ({ de
 const FarmablePage = lazy(() => import("./pages/Farmable").then((m) => ({ default: m.FarmablePage })));
 const TeamComparePage = lazy(() => import("./pages/TeamCompare").then((m) => ({ default: m.TeamComparePage })));
 const WishesPage = lazy(() => import("./pages/Wishes").then((m) => ({ default: m.WishesPage })));
+const InventoryPage = lazy(() => import("./pages/Inventory").then((m) => ({ default: m.InventoryPage })));
 
 export function App() {
   const [theme, setThemeState] = useState<Theme>(() => getTheme());
@@ -49,6 +50,7 @@ export function App() {
           <NavLink to="/team">Team</NavLink>
           <NavLink to="/compare">Compare</NavLink>
           <NavLink to="/optimize">Optimize</NavLink>
+          <NavLink to="/inventory">Inventory</NavLink>
           <NavLink to="/timeline">Timeline</NavLink>
           <NavLink to="/planner">Planner</NavLink>
           <NavLink to="/farmable">Farmable</NavLink>
@@ -87,6 +89,7 @@ export function App() {
             <Route path="/farmable" element={<FarmablePage />} />
             <Route path="/team-compare" element={<TeamComparePage />} />
             <Route path="/wishes" element={<WishesPage />} />
+            <Route path="/inventory" element={<InventoryPage />} />
             <Route path="/saved" element={<SavedPage />} />
           </Routes>
         </Suspense>

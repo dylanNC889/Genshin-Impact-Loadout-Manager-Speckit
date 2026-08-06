@@ -614,6 +614,47 @@ select {
   font-weight: 700;
 }
 
+/* Artifact inventory + CV grading (H). */
+.inv-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.cv-badge {
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.cv-badge.g-s { background: rgba(255, 214, 107, 0.2); color: #e0aa3e; }
+.cv-badge.g-a { background: rgba(76, 175, 80, 0.18); color: #4caf50; }
+.cv-badge.g-b { background: rgba(75, 183, 236, 0.16); color: #4bb7ec; }
+.cv-badge.g-c { background: var(--surface-2); color: var(--text); }
+.cv-badge.g-d,
+.cv-badge.g-e { background: var(--surface-2); color: var(--muted); }
+.inv-subs {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+.inv-subs li {
+  display: flex;
+  justify-content: space-between;
+  padding: 3px 0;
+  border-bottom: 1px solid var(--border);
+  color: var(--muted);
+}
+.inv-subs li.crit {
+  color: var(--text);
+  font-weight: 600;
+}
+
 /* Wish planner (G). */
 .wish-form {
   display: grid;

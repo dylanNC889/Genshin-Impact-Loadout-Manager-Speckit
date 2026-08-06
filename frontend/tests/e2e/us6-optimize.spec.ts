@@ -39,3 +39,20 @@ test("optimize a build from an imported GOOD inventory", async ({ page }) => {
   await apply.click();
   await expect(page).toHaveURL(/\/character\/hu-tao\?build=/);
 });
+
+// H — the imported inventory persists and shows on the Inventory page with Crit-Value grading.
+test("inventory page grades imported artifacts by Crit Value", async ({ page }) => {
+  await page.goto("/optimize");
+  await page.getByLabel("GOOD inventory JSON").fill(GOOD);
+  await page.getByRole("button", { name: "Import", exact: true }).click();
+  await expect(page.getByText(/Imported 5 artifacts/)).toBeVisible({ timeout: 15000 });
+
+  await page.goto("/inventory");
+  await expect(page.getByRole("heading", { name: "Artifact inventory" })).toBeVisible();
+  await expect(page.locator(".grid.wide > .card")).toHaveCount(5);
+  // highest-CV first: the flower (CRIT Rate 7 → ×2 + CRIT DMG 14 = 28 CV).
+  await expect(page.locator(".cv-badge").first()).toContainText("28 CV");
+  // filter by slot
+  await page.getByLabel("Filter by slot").selectOption("Circlet");
+  await expect(page.locator(".grid.wide > .card")).toHaveCount(1);
+});
