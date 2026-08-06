@@ -41,7 +41,11 @@ test("farmable-today lists domains for the current weekday", async ({ page }) =>
   await page.getByRole("link", { name: "Farmable", exact: true }).click();
   await expect(page).toHaveURL(/\/farmable$/);
   await expect(page.getByRole("heading", { name: "Farmable today" })).toBeVisible();
-  // fresh store => no owned/built => shows all characters; some domain is always open Mon–Sun.
+  // Other parallel tests may have saved builds into the shared store, flipping this to the
+  // owned/built view — check "Show all" (only rendered then) so all domains show regardless.
+  const showAll = page.getByRole("checkbox");
+  if (await showAll.count()) await showAll.first().check();
+  // some domain is always open Mon–Sun.
   await expect(page.locator(".detail-masonry .card").first()).toBeVisible();
   const char = page.locator(".farm-char").first();
   await expect(char).toBeVisible();
