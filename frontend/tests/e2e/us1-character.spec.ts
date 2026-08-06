@@ -139,6 +139,22 @@ test("filter roster to characters with a saved build", async ({ page }) => {
   }
 });
 
+// B — rotation-damage builder on the character page.
+test("rotation builder computes a total and DPS", async ({ page }) => {
+  await page.goto("/character/hu-tao");
+  const rot = page.locator(".card").filter({ has: page.getByRole("heading", { name: "Rotation damage" }) });
+  await expect(rot).toBeVisible();
+  await rot.getByRole("button", { name: "Quick fill" }).click();
+  // Skill + Burst + Normal = 3 lines, a total, and a DPS from the rotation length.
+  await expect(page.locator(".rot-list li")).toHaveCount(3);
+  await expect(page.locator(".rot-summary .wish-big")).not.toHaveText("0");
+  await expect(page.locator(".rot-dur strong")).toContainText("DPS");
+  // adding another hit grows the list
+  await page.getByLabel("Add a talent hit").selectOption({ index: 1 });
+  await rot.getByRole("button", { name: "Add", exact: true }).click();
+  await expect(page.locator(".rot-list li")).toHaveCount(4);
+});
+
 // K — download a shareable build card (PNG).
 test("download a character build card", async ({ page }) => {
   await page.goto("/character/hu-tao");

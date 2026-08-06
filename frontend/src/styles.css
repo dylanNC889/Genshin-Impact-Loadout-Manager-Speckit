@@ -614,6 +614,74 @@ select {
   font-weight: 700;
 }
 
+/* Rotation-damage builder (B). */
+.rot-add {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.rot-add select {
+  flex: 1;
+  min-width: 180px;
+}
+.rot-list {
+  list-style: none;
+  margin: 0 0 10px;
+  padding: 0;
+}
+.rot-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 0;
+  border-bottom: 1px solid var(--border);
+  font-variant-numeric: tabular-nums;
+}
+.rot-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rot-count {
+  width: 56px;
+}
+.rot-total {
+  color: var(--accent);
+  font-weight: 600;
+  min-width: 72px;
+  text-align: right;
+}
+.rot-remove {
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+}
+.rot-remove:hover {
+  color: #ff8a5c;
+}
+.rot-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+.rot-dur {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.rot-dur input {
+  width: 60px;
+}
+
 /* Artifact inventory + CV grading (H). */
 .inv-head {
   display: flex;
