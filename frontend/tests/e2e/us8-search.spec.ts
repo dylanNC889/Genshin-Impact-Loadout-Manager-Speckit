@@ -53,6 +53,22 @@ test("farmable-today lists domains for the current weekday", async ({ page }) =>
   await expect(page).toHaveURL(/\/character\//);
 });
 
+// G — wish planner computes pulls + odds and persists inputs.
+test("wish planner computes pulls and persists", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("link", { name: "Wishes", exact: true }).click();
+  await expect(page).toHaveURL(/\/wishes$/);
+  await page.getByLabel("Primogems", { exact: true }).fill("16000");
+  await page.getByLabel("Current pity", { exact: true }).fill("70");
+  // 16000 / 160 = 100 pulls; pity 70 + 100 easily reaches hard pity → 100% 5★.
+  await expect(page.locator(".wish-big").first()).toHaveText("100");
+  await expect(page.locator(".wish-odds li", { hasText: "Chance of a 5★" }).first().locator("strong")).toHaveText("100%");
+  await expect(page.locator(".wish-patches li")).toHaveCount(4);
+  // inputs persist across reload
+  await page.reload();
+  await expect(page.getByLabel("Primogems", { exact: true })).toHaveValue("16000");
+});
+
 // E2 — build planner aggregates materials across a wishlist.
 test("build planner aggregates a wishlist", async ({ page }) => {
   await page.goto("/planner?chars=hu-tao,yelan");
