@@ -5,6 +5,7 @@ import { z } from "zod";
 import {
   ArtifactSetSchema,
   CharacterSchema,
+  ConditionalBuffSchema,
   DatasetMetaSchema,
   FoodSchema,
   SlotStatRulesSchema,
@@ -14,6 +15,7 @@ import {
 import type {
   AscensionPhase,
   Character,
+  ConditionalBuff,
   Dataset,
   Element,
   Food,
@@ -146,6 +148,18 @@ function readJson(dir: string, file: string): unknown {
   return JSON.parse(readFileSync(join(dir, file), "utf8"));
 }
 
+/** Load the curated conditional-buff list (A) from data/modifiers/conditional-buffs.json. */
+function readConditionalBuffs(): ConditionalBuff[] {
+  try {
+    const raw = JSON.parse(readFileSync(join(REPO_ROOT, "data", "modifiers", "conditional-buffs.json"), "utf8")) as {
+      buffs?: unknown;
+    };
+    return z.array(ConditionalBuffSchema).parse(raw.buffs ?? []);
+  } catch {
+    return [];
+  }
+}
+
 /** Load a version-independent modifier table (A1); drops non-object keys like `_note`. */
 function readModifierTable(file: string): Record<string, Record<string, StatValue[]>> {
   try {
@@ -179,6 +193,7 @@ export function loadDatasetFromDir(dir: string): Dataset {
   const meta = DatasetMetaSchema.parse(metaFile.meta);
   const constellationBonuses = readModifierTable("constellations.json");
   const weaponRefinements = readModifierTable("weapon-refinements.json");
+  const conditionalBuffs = readConditionalBuffs();
   let foods: Food[] = [];
   try {
     foods = dedupeById(z.array(FoodSchema).parse(readJson(dir, "foods.json")));
@@ -196,6 +211,7 @@ export function loadDatasetFromDir(dir: string): Dataset {
     statValues,
     constellationBonuses,
     weaponRefinements,
+    conditionalBuffs,
     foods,
   };
 }

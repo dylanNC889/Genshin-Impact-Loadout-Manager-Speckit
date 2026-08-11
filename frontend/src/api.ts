@@ -82,6 +82,7 @@ export function fetchStatValues(): Promise<StatValuesTable> {
 export interface Modifiers {
   constellationBonuses: NonNullable<Dataset["constellationBonuses"]>;
   weaponRefinements: NonNullable<Dataset["weaponRefinements"]>;
+  conditionalBuffs: NonNullable<Dataset["conditionalBuffs"]>;
 }
 export function fetchModifiers(): Promise<Modifiers> {
   if (STATIC) return staticApi.fetchModifiers();

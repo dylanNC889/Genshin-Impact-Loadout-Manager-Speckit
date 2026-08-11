@@ -1,0 +1,16 @@
+{
+  "_note": "Curated conditional buffs (A): weapon passives + artifact 4pc effects whose bonuses map to sheet-additive stats our engine models. Values are approximate R1/C0, ~full-uptime. Effects that scale per-hit (NA/CA/Skill/Burst DMG%) or shred enemy RES are intentionally omitted — the engine only folds sheet stats. Keyed by nothing; each entry declares its unlock (weaponId / setId+minPieces).",
+  "buffs": [
+    { "id": "cw4-pyro", "label": "Crimson Witch 4pc — +Pyro DMG after reaction (3 stacks)", "setId": "crimson-witch-of-flames", "minPieces": 4, "defaultOn": true, "effects": [{ "key": "PYRO_DMG", "value": 22.5 }] },
+    { "id": "mh4-crit", "label": "Marechaussee Hunter 4pc — +CRIT Rate on HP change (3 stacks)", "setId": "marechaussee-hunter", "minPieces": 4, "defaultOn": true, "effects": [{ "key": "CRIT_RATE", "value": 36 }] },
+    { "id": "bs4-crit", "label": "Blizzard Strayer 4pc — +CRIT Rate vs Frozen/Cryo enemies", "setId": "blizzard-strayer", "minPieces": 4, "defaultOn": true, "effects": [{ "key": "CRIT_RATE", "value": 40 }] },
+    { "id": "gd4-em", "label": "Gilded Dreams 4pc — +EM / +ATK% from party elements", "setId": "gilded-dreams", "minPieces": 4, "defaultOn": true, "effects": [{ "key": "EM", "value": 50 }, { "key": "ATK_PCT", "value": 14 }] },
+    { "id": "no4-atk", "label": "Noblesse Oblige 4pc — +20% team ATK after Burst", "setId": "noblesse-oblige", "minPieces": 4, "defaultOn": true, "effects": [{ "key": "ATK_PCT", "value": 20 }] },
+    { "id": "tom4-atk", "label": "Tenacity of the Millelith 4pc — +20% ATK after Skill hit", "setId": "tenacity-of-the-millelith", "minPieces": 4, "defaultOn": true, "effects": [{ "key": "ATK_PCT", "value": 20 }] },
+    { "id": "vh4-atk", "label": "Vermillion Hereafter 4pc — +ATK (Nascent Light, ~full stacks)", "setId": "vermillion-hereafter", "minPieces": 4, "defaultOn": true, "effects": [{ "key": "ATK_PCT", "value": 16 }] },
+    { "id": "nd4-hydro", "label": "Nymph's Dream 4pc — +Hydro DMG / +ATK% (3 stacks)", "setId": "nymph-s-dream", "minPieces": 4, "defaultOn": true, "effects": [{ "key": "HYDRO_DMG", "value": 24 }, { "key": "ATK_PCT", "value": 15 }] },
+    { "id": "homa-hp", "label": "Staff of Homa — +HP% (Reckless Cinnabar)", "weaponId": "staff-of-homa", "defaultOn": true, "effects": [{ "key": "HP_PCT", "value": 20 }] },
+    { "id": "wgs-atk", "label": "Wolf's Gravestone — +40% ATK vs low-HP enemies", "weaponId": "wolf-s-gravestone", "defaultOn": false, "effects": [{ "key": "ATK_PCT", "value": 40 }] },
+    { "id": "aqua-cd", "label": "Aqua Simulacra — +20% CRIT DMG with enemies nearby", "weaponId": "aqua-simulacra", "defaultOn": true, "effects": [{ "key": "CRIT_DMG", "value": 20 }] }
+  ]
+}

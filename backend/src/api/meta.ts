@@ -9,6 +9,7 @@ export function registerMetaRoutes(app: FastifyInstance, dataset: Dataset): void
   app.get("/meta/modifiers", async () => ({
     constellationBonuses: dataset.constellationBonuses ?? {},
     weaponRefinements: dataset.weaponRefinements ?? {},
+    conditionalBuffs: dataset.conditionalBuffs ?? [],
   }));
   app.get("/foods", async () => dataset.foods ?? []);
 }

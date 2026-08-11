@@ -51,6 +51,16 @@ describe("computeFinalStats (T028 / FR-008, FR-009, SC-003)", () => {
     expect(activeSetBonuses).toContainEqual({ setId: "crimson", pieces: 4 });
   });
 
+  it("folds an enabled conditional buff into the sheet, but not a disabled one (A)", () => {
+    const ds = {
+      ...testDataset,
+      conditionalBuffs: [{ id: "cw4", label: "CW 4pc", effects: [{ key: "PYRO_DMG", value: 22.5 }], defaultOn: true }],
+    };
+    const off = statRecord(computeFinalStats({ ...fullLoadout, activeConditionals: [] }, ds).stats);
+    const on = statRecord(computeFinalStats({ ...fullLoadout, activeConditionals: ["cw4"] }, ds).stats);
+    expect(on.PYRO_DMG - off.PYRO_DMG).toBeCloseTo(22.5, 6);
+  });
+
   it("computes a partial/empty loadout without error (FR-011)", () => {
     const partial: LoadoutInput = {
       name: "Bare",
