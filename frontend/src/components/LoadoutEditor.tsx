@@ -11,7 +11,7 @@ import type {
   StatValuesTable,
   Weapon,
 } from "@app/contracts";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useHref } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { computeFinalStats, statRecord, validateArtifact } from "@app/stat-engine";
@@ -63,8 +63,8 @@ interface Props {
   artifactSets: ArtifactSet[];
   rules: SlotStatRules;
   statValues: StatValuesTable;
-  /** Static constellation/weapon-refinement stat bonuses (A1). */
-  modifiers: Pick<Dataset, "constellationBonuses" | "weaponRefinements">;
+  /** Static constellation/weapon-refinement stat bonuses (A1) + conditional buffs (A). */
+  modifiers: Pick<Dataset, "constellationBonuses" | "weaponRefinements" | "conditionalBuffs">;
   level: number;
   /** When set, the editor was opened on an existing saved loadout (FR-018 edit). */
   editingLoadoutId?: string | null;
@@ -96,6 +96,33 @@ export function LoadoutEditor({
   const tags = useLoadoutStore((s) => s.tags);
   const setNotes = useLoadoutStore((s) => s.setNotes);
   const setTags = useLoadoutStore((s) => s.setTags);
+  const activeConditionals = useLoadoutStore((s) => s.activeConditionals);
+  const toggleConditional = useLoadoutStore((s) => s.toggleConditional);
+  const setActiveConditionals = useLoadoutStore((s) => s.setActiveConditionals);
+
+  // Conditional buffs (A) applicable to the equipped weapon / sets / constellation.
+  const setCounts = new Map<string, number>();
+  for (const slot of SLOTS) {
+    const d = artifacts[slot];
+    if (d) setCounts.set(d.setId, (setCounts.get(d.setId) ?? 0) + 1);
+  }
+  const applicableBuffs = (modifiers.conditionalBuffs ?? []).filter((b) => {
+    if (b.weaponId && b.weaponId !== weaponId) return false;
+    if (b.setId && (setCounts.get(b.setId) ?? 0) < (b.minPieces ?? 2)) return false;
+    if (b.minConstellation && constellation < b.minConstellation) return false;
+    return true;
+  });
+  const applicableKey = applicableBuffs.map((b) => b.id).join(",");
+  const seenRef = useRef<Set<string>>(new Set());
+  // When the applicable set changes: prune inapplicable ids and enable newly-applicable defaults.
+  useEffect(() => {
+    const cur = useLoadoutStore.getState().activeConditionals;
+    const applicableIds = new Set(applicableBuffs.map((b) => b.id));
+    const defaults = applicableBuffs.filter((b) => b.defaultOn && !seenRef.current.has(b.id)).map((b) => b.id);
+    seenRef.current = applicableIds;
+    const next = [...new Set([...cur.filter((id) => applicableIds.has(id)), ...defaults])];
+    if (next.join(",") !== cur.join(",")) setActiveConditionals(next);
+  }, [applicableKey]);
 
   // Recommended weapons/artifact sets (KQM-sourced) surfaced at the top of the pickers.
   const recs = recommendedFor(character, weapons, artifactSets);
@@ -126,6 +153,7 @@ export function LoadoutEditor({
     slotStatRules: rules,
     constellationBonuses: modifiers.constellationBonuses,
     weaponRefinements: modifiers.weaponRefinements,
+    conditionalBuffs: modifiers.conditionalBuffs,
   };
 
   const loadout: LoadoutInput = {
@@ -138,6 +166,7 @@ export function LoadoutEditor({
     refinement,
     notes,
     tags,
+    activeConditionals,
     artifacts: SLOTS.flatMap((slot) => {
       const d = artifacts[slot];
       return d ? [{ slot, setId: d.setId, mainStat: d.mainStat, subStats: d.subStats }] : [];
@@ -282,8 +311,26 @@ export function LoadoutEditor({
                 ))}
               </select>
             </label>
-            <span className="muted small">Static bonuses only; conditional effects aren’t modeled.</span>
+            <span className="muted small">Static bonuses only; toggle conditional effects below.</span>
           </div>
+
+          {applicableBuffs.length ? (
+            <div className="cond-buffs">
+              <div className="cond-head">
+                Conditional buffs <span className="muted small">approx · fold into Final Stats when on</span>
+              </div>
+              {applicableBuffs.map((b) => (
+                <label key={b.id} className="cond-buff">
+                  <input
+                    type="checkbox"
+                    checked={activeConditionals.includes(b.id)}
+                    onChange={(e) => toggleConditional(b.id, e.target.checked)}
+                  />
+                  <span>{b.label}</span>
+                </label>
+              ))}
+            </div>
+          ) : null}
 
           {SLOTS.map((slot) => (
             <ArtifactSlotEditor

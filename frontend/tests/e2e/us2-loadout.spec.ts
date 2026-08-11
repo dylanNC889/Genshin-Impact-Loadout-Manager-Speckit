@@ -45,6 +45,31 @@ test("optimised build suggestion applies to the editor", async ({ page }) => {
   await expect(page.getByText("Upgrades: 4/4").first()).toBeVisible();
 });
 
+// A — conditional buff toggles (weapon passive / 4pc set) fold into Final Stats.
+test("conditional buff toggle changes final stats", async ({ page }) => {
+  await page.goto("/character/hu-tao");
+  await page.getByRole("button", { name: "Apply", exact: true }).click();
+  await expect(page.getByLabel("Goblet set")).toHaveValue("crimson-witch-of-flames");
+
+  // Crimson Witch 4pc conditional buff appears and is on by default.
+  const cw = page.locator(".cond-buff", { hasText: "Crimson Witch" });
+  await expect(cw).toBeVisible();
+  const cwBox = cw.locator("input");
+  await expect(cwBox).toBeChecked();
+
+  const pyroPct = async () => {
+    const row = page.locator(".final-stats .stat-row").filter({ hasText: /pyro dmg bonus/i });
+    const v = (await row.locator(".stat-value").first().textContent().catch(() => null)) ?? "";
+    const m = v.match(/([\d.]+)%/);
+    return m ? Number(m[1]) : null;
+  };
+  const before = (await pyroPct()) ?? 0;
+  expect(before).toBeGreaterThan(40); // goblet 46.6 + 2pc 15 + buff 22.5
+  // Toggling the 4pc buff off drops the Pyro DMG bonus by ~22.5%.
+  await cwBox.uncheck();
+  await expect.poll(pyroPct).toBeCloseTo(before - 22.5, 0);
+});
+
 // A1 — weapon refinement feeds the final stats (Staff of Homa gives HP%).
 test("weapon refinement changes final stats", async ({ page }) => {
   await page.goto("/character/hu-tao");

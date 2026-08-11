@@ -315,7 +315,24 @@ export interface Dataset {
   constellationBonuses?: Record<string, Record<string, StatValue[]>>;
   /** Static weapon refinement stat bonuses (A1): weaponId → rank ("1".."5") → StatValue[]. */
   weaponRefinements?: Record<string, Record<string, StatValue[]>>;
+  /** Curated conditional buffs (weapon passives / 4pc sets / con DMG effects), opt-in per build (A). */
+  conditionalBuffs?: ConditionalBuff[];
 }
+
+/** A togglable conditional buff — weapon passive, artifact 4pc effect, or a constellation DMG
+ *  effect — whose (approximate, sheet-additive) stat effects fold into Final Stats when enabled (A). */
+export const ConditionalBuffSchema = z.object({
+  id: z.string(),
+  label: z.string(),
+  effects: z.array(StatValueSchema),
+  defaultOn: z.boolean().default(false),
+  /** Unlock conditions — the editor shows a buff only when its source is equipped. */
+  weaponId: z.string().optional(),
+  setId: z.string().optional(),
+  minPieces: z.number().optional(),
+  minConstellation: z.number().optional(),
+});
+export type ConditionalBuff = z.infer<typeof ConditionalBuffSchema>;
 
 // ---------------------------------------------------------------------------
 // Loadout / artifact instance (user-entered)
@@ -350,6 +367,8 @@ export const LoadoutInputSchema = z.object({
   /** Freeform note + tags to organise saved builds (B10). */
   notes: z.string().default(""),
   tags: z.array(z.string()).default([]),
+  /** Ids of enabled conditional buffs (A). */
+  activeConditionals: z.array(z.string()).default([]),
 });
 export type LoadoutInput = z.infer<typeof LoadoutInputSchema>;
 

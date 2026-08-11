@@ -614,6 +614,35 @@ select {
   font-weight: 700;
 }
 
+/* Conditional buff toggles (A). */
+.cond-buffs {
+  margin: 12px 0;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-2);
+}
+.cond-head {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--accent);
+  margin-bottom: 6px;
+}
+.cond-buff {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  padding: 3px 0;
+  font-size: 13px;
+  cursor: pointer;
+}
+.cond-buff input {
+  margin-top: 2px;
+  accent-color: var(--accent);
+}
+
 /* Rotation-damage builder (B). */
 .rot-add {
   display: flex;

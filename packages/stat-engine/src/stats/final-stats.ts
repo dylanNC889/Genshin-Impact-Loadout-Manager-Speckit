@@ -113,6 +113,12 @@ export function computeFinalStats(input: LoadoutInput, dataset: Dataset): FinalS
     }
   }
 
+  // Enabled conditional buffs (weapon passive / 4pc set / con DMG effects) — opt-in, approximate (A).
+  for (const id of input.activeConditionals ?? []) {
+    const cb = dataset.conditionalBuffs?.find((b) => b.id === id);
+    if (cb) for (const e of cb.effects) route(pools, e.key, e.value);
+  }
+
   const finalHP = base.baseHP * (1 + pools.hpPct / 100) + pools.flatHP;
   const finalATK = (base.baseATK + weaponBaseATK) * (1 + pools.atkPct / 100) + pools.flatATK;
   const finalDEF = base.baseDEF * (1 + pools.defPct / 100) + pools.flatDEF;

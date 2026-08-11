@@ -76,11 +76,13 @@ export function CharacterPage() {
   const setRefinement = useLoadoutStore((s) => s.setRefinement);
   const setNotes = useLoadoutStore((s) => s.setNotes);
   const setTags = useLoadoutStore((s) => s.setTags);
+  const setActiveConditionals = useLoadoutStore((s) => s.setActiveConditionals);
   // Equipped-build state, for per-talent damage (A7).
   const weaponId = useLoadoutStore((s) => s.weaponId);
   const artifacts = useLoadoutStore((s) => s.artifacts);
   const constellation = useLoadoutStore((s) => s.constellation);
   const refinement = useLoadoutStore((s) => s.refinement);
+  const activeConditionals = useLoadoutStore((s) => s.activeConditionals);
 
   const detail = useQuery({
     queryKey: ["character", id],
@@ -159,6 +161,7 @@ export function CharacterPage() {
     setRefinement(saved.refinement ?? 1);
     setNotes(saved.notes ?? "");
     setTags(saved.tags ?? []);
+    setActiveConditionals(saved.activeConditionals ?? []);
     for (const a of saved.artifacts) {
       setArtifact(a.slot, { setId: a.setId, mainStat: a.mainStat, subStats: a.subStats });
     }
@@ -200,7 +203,7 @@ export function CharacterPage() {
 
   // Modifiers (A1) are additive extras: if that request is unavailable, the gear editor still
   // loads — it just applies no constellation/refinement bonuses (graceful degradation).
-  const modifiers = modifiersQ.data ?? { constellationBonuses: {}, weaponRefinements: {} };
+  const modifiers = modifiersQ.data ?? { constellationBonuses: {}, weaponRefinements: {}, conditionalBuffs: [] };
   const gearReady = weaponsQ.data && setsQ.data && rulesQ.data && statValsQ.data;
 
   // Final stats from the currently-equipped build (A7) — for per-talent damage. Falls back to
@@ -217,6 +220,7 @@ export function CharacterPage() {
         slotStatRules: rulesQ.data,
         constellationBonuses: modifiers.constellationBonuses,
         weaponRefinements: modifiers.weaponRefinements,
+        conditionalBuffs: modifiers.conditionalBuffs,
       };
       const loadout: LoadoutInput = {
         name: "",
@@ -228,6 +232,7 @@ export function CharacterPage() {
         refinement,
         notes: "",
         tags: [],
+        activeConditionals,
         artifacts: (Object.entries(artifacts) as [ArtifactSlot, (typeof artifacts)[ArtifactSlot]][])
           .filter(([, d]) => d)
           .map(([slot, d]) => ({ slot, setId: d!.setId, mainStat: d!.mainStat, subStats: d!.subStats })),

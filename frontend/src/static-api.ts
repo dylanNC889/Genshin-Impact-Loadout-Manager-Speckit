@@ -71,7 +71,11 @@ export async function fetchStatValues(): Promise<StatValuesTable> {
 
 export async function fetchModifiers() {
   const d = await ds();
-  return { constellationBonuses: d.constellationBonuses ?? {}, weaponRefinements: d.weaponRefinements ?? {} };
+  return {
+    constellationBonuses: d.constellationBonuses ?? {},
+    weaponRefinements: d.weaponRefinements ?? {},
+    conditionalBuffs: d.conditionalBuffs ?? [],
+  };
 }
 
 export async function fetchFoods() {

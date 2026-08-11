@@ -89,6 +89,7 @@ export function optimize(inventory: OwnedArtifact[], dataset: Dataset, q: Optimi
     refinement: q.refinement ?? 1,
     notes: "",
     tags: [],
+    activeConditionals: [],
   };
 
   const results: OptimizedBuild[] = [];
