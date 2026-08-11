@@ -96,3 +96,14 @@ _None open._
   shareable roster filters, ownership tracking, auto-detect reactions, release timeline,
   loadout notes & tags, multi-character material planner, enemy presets (per-element RES),
   food buffs page, light theme, and approximate per-member ER requirements. Merged (PRs #51–#62).
+- **Batch 5** (user-listed refinements) — roster "has build" filter, light-mode icon contrast,
+  full-splash character hero, owned toggle + saved-builds picker on the detail page, timeline
+  release dates, planner persistence + material source tooltips, character-compare builds, per-food
+  detail pages (+ real-world recipe mapping), and the live team-damage UX. Plus image fixes (food
+  icons via Project Amber, `_HD` skill-icon fix, self-healing splash verification → 0 dead URLs).
+  Merged (PRs #64–#77).
+- **Batch 6** (`improvements-backlog-4.md`, 14 items) — loading skeletons, "in your teams" lookup,
+  recently viewed, element-scoped RES shred + readout, "farmable today" calendar, talent priority,
+  team compare, meta team templates, shareable PNG cards, mobile/responsive pass, wish/pity planner,
+  artifact inventory + Crit-Value grading, rotation-damage builder, and conditional buff toggles.
+  Merged (PRs #79–#92).
