@@ -337,6 +337,10 @@ export function CharacterPage() {
       <section className="card char-intro">
         {char.title ? <div className="intro-title">“{char.title}”</div> : null}
         <p className="intro-playstyle">{playstyleFor(char)}</p>
+        <div className="intro-advice">
+          <span className="ta-label">Talents</span> <strong>{advice.priority}</strong>
+          <span className="muted"> · {advice.note}</span>
+        </div>
         {char.description ? <p className="intro-lore">{char.description}</p> : null}
         {char.region || char.affiliation || char.constellation || char.cv ? (
           <dl className="intro-meta">
