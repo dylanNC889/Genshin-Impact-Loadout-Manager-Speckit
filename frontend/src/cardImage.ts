@@ -37,12 +37,20 @@ function download(canvas: HTMLCanvasElement, filename: string): void {
   }, "image/png");
 }
 
-/** object-fit: cover for an image into a target rect. */
-function drawCover(ctx: CanvasRenderingContext2D, img: HTMLImageElement, x: number, y: number, w: number, h: number) {
+/** object-fit: cover for an image into a target rect. `alignY` 0 = top, 0.5 = centre. */
+function drawCover(
+  ctx: CanvasRenderingContext2D,
+  img: HTMLImageElement,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  alignY = 0.5,
+) {
   const scale = Math.max(w / img.width, h / img.height);
   const dw = img.width * scale;
   const dh = img.height * scale;
-  ctx.drawImage(img, x + (w - dw) / 2, y + (h - dh) / 2, dw, dh);
+  ctx.drawImage(img, x + (w - dw) / 2, y + (h - dh) * alignY, dw, dh);
 }
 
 const S = 2; // render at 2× for crispness
@@ -130,7 +138,7 @@ export async function downloadTeamCard(opts: {
   members: { name: string; imageUrl: string }[];
 }): Promise<void> {
   const W = 640;
-  const H = 260;
+  const H = 320;
   const canvas = document.createElement("canvas");
   canvas.width = W * S;
   canvas.height = H * S;
@@ -156,7 +164,7 @@ export async function downloadTeamCard(opts: {
   // 4 portraits
   const imgs = await Promise.all(opts.members.slice(0, 4).map((m) => loadImage(m.imageUrl)));
   const slotW = 150;
-  const slotH = 130;
+  const slotH = 195;
   const gap = 8;
   const startX = 24;
   const yTop = 92;
@@ -169,7 +177,9 @@ export async function downloadTeamCard(opts: {
       ctx.beginPath();
       ctx.rect(x, yTop, slotW, slotH);
       ctx.clip();
-      drawCover(ctx, img, x, yTop, slotW, slotH);
+      // Bias toward the top so the face/upper body shows (a little below the very top, which is
+      // usually hair/decoration), not the midsection.
+      drawCover(ctx, img, x, yTop, slotW, slotH, 0.12);
       ctx.restore();
     }
     // name plate

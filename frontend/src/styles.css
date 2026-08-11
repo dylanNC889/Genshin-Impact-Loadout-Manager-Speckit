@@ -826,6 +826,15 @@ select {
   color: var(--accent);
 }
 
+/* Talent priority surfaced in the intro panel (M refinement). */
+.intro-advice {
+  margin: 6px 0;
+  font-size: 14px;
+}
+.intro-advice .ta-label {
+  margin-right: 4px;
+}
+
 /* Talent priority + how-to-play (M). */
 .talent-advice {
   margin: 0 0 12px;
