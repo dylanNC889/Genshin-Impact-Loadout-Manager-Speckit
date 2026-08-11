@@ -4,6 +4,7 @@ import { useSearchParams } from "react-router-dom";
 import type { Weapon } from "@app/contracts";
 import { fetchWeapons } from "../api";
 import { Card } from "../components/ui";
+import { CompareNav } from "../components/CompareNav";
 import { formatStat, statLabel } from "../format";
 import { renderEffect } from "../components/renderEffect";
 
@@ -60,6 +61,7 @@ export function WeaponComparePage() {
   return (
     <div className="compare">
       <h1>Compare weapons</h1>
+      <CompareNav />
       <div className="compare-pickers">
         {picker("a", a)}
         <span className="muted">vs</span>
