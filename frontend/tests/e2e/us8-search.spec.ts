@@ -45,12 +45,15 @@ test("farmable-today lists domains for the current weekday", async ({ page }) =>
   // owned/built view — check "Show all" (only rendered then) so all domains show regardless.
   const showAll = page.getByRole("checkbox");
   if (await showAll.count()) await showAll.first().check();
-  // some domain is always open Mon–Sun.
+  // some domain is always open Mon–Sun — both talent-book and weapon-material sections.
+  await expect(page.getByRole("heading", { name: "Talent books" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Weapon materials" })).toBeVisible();
   await expect(page.locator(".detail-masonry .card").first()).toBeVisible();
-  const char = page.locator(".farm-char").first();
-  await expect(char).toBeVisible();
-  await char.click();
-  await expect(page).toHaveURL(/\/character\//);
+  // a weapon chip links to its weapon page (#26 — weapon icons).
+  const wpn = page.locator('.farm-char[href^="/weapon/"]').first();
+  await expect(wpn.locator("img")).toBeVisible();
+  await wpn.click();
+  await expect(page).toHaveURL(/\/weapon\//);
 });
 
 // G — wish planner computes pulls + odds and persists inputs.

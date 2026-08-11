@@ -893,6 +893,10 @@ select {
 }
 
 /* Farmable-today calendar (D). */
+.farm-section {
+  margin: 20px 0 6px;
+  font-size: 17px;
+}
 .farm-chars {
   display: flex;
   flex-wrap: wrap;

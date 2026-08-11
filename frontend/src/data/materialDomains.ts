@@ -2378,3 +2378,1799 @@ export const CHARACTER_TALENT_DOMAINS: Record<string, { book: string; domain: st
     ]
   }
 };
+
+/** Each weapon's ascension-material domain, for the Farmable calendar. */
+export const WEAPON_DOMAINS: Record<string, { domain: string; days: string[] }> = {
+  "the-catch": {
+    "domain": "Domain of Forgery: Sand Burial",
+    "days": [
+      "Wednesday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "ultimate-overlord-s-mega-magic-sword": {
+    "domain": "Domain of Forgery: Curious Contraptions",
+    "days": [
+      "Wednesday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "a-teaspoon-of-transcendence": {
+    "domain": "Domain of Forgery: Lunar Oblation",
+    "days": [
+      "Wednesday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "a-thousand-blazing-suns": {
+    "domain": "Domain of Forgery: Scrying Shadows",
+    "days": [
+      "Monday",
+      "Thursday",
+      "Sunday"
+    ]
+  },
+  "a-thousand-floating-dreams": {
+    "domain": "Domain of Forgery: Obsession",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "absolution": {
+    "domain": "Domain of Forgery: Robotic Ruse",
+    "days": [
+      "Monday",
+      "Thursday",
+      "Sunday"
+    ]
+  },
+  "akuoumaru": {
+    "domain": "Domain of Forgery: Sunken Sands",
+    "days": [
+      "Monday",
+      "Thursday",
+      "Sunday"
+    ]
+  },
+  "alley-hunter": {
+    "domain": "Domain of Forgery: Ruins of Thirsting Capital",
+    "days": [
+      "Wednesday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "amenoma-kageuchi": {
+    "domain": "Domain of Forgery: Sunken Sands",
+    "days": [
+      "Monday",
+      "Thursday",
+      "Sunday"
+    ]
+  },
+  "amos-bow": {
+    "domain": "Domain of Forgery: Ruins of Thirsting Capital",
+    "days": [
+      "Wednesday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "angelos-heptades": {
+    "domain": "Domain of Forgery: Radiant Splendor",
+    "days": [
+      "Monday",
+      "Thursday",
+      "Sunday"
+    ]
+  },
+  "aqua-simulacra": {
+    "domain": "Domain of Forgery: Thundercloud Altar",
+    "days": [
+      "Monday",
+      "Thursday",
+      "Sunday"
+    ]
+  },
+  "aquila-favonia": {
+    "domain": "Domain of Forgery: City of Reflections",
+    "days": [
+      "Monday",
+      "Thursday",
+      "Sunday"
+    ]
+  },
+  "ash-graven-drinking-horn": {
+    "domain": "Domain of Forgery: Estimation",
+    "days": [
+      "Wednesday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "astral-vulture-s-crimson-plumage": {
+    "domain": "Domain of Forgery: Estimation",
+    "days": [
+      "Wednesday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "athame-artis": {
+    "domain": "Domain of Forgery: City of Reflections",
+    "days": [
+      "Monday",
+      "Thursday",
+      "Sunday"
+    ]
+  },
+  "azurelight": {
+    "domain": "Domain of Forgery: Estimation",
+    "days": [
+      "Wednesday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "ballad-of-the-boundless-blue": {
+    "domain": "Domain of Forgery: Submerged Valley",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "ballad-of-the-fjords": {
+    "domain": "Domain of Forgery: Curious Contraptions",
+    "days": [
+      "Wednesday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "beacon-of-the-reed-sea": {
+    "domain": "Domain of Forgery: Leading Karma",
+    "days": [
+      "Wednesday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "black-tassel": {
+    "domain": "Domain of Forgery: Trial Grounds of Thunder",
+    "days": [
+      "Wednesday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "blackcliff-agate": {
+    "domain": "Domain of Forgery: Thundercloud Altar",
+    "days": [
+      "Monday",
+      "Thursday",
+      "Sunday"
+    ]
+  },
+  "blackcliff-longsword": {
+    "domain": "Domain of Forgery: Thundercloud Altar",
+    "days": [
+      "Monday",
+      "Thursday",
+      "Sunday"
+    ]
+  },
+  "blackcliff-pole": {
+    "domain": "Domain of Forgery: Thundering Ruins",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "blackcliff-slasher": {
+    "domain": "Domain of Forgery: Thundering Ruins",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "blackcliff-warbow": {
+    "domain": "Domain of Forgery: Thundercloud Altar",
+    "days": [
+      "Monday",
+      "Thursday",
+      "Sunday"
+    ]
+  },
+  "blackmarrow-lantern": {
+    "domain": "Domain of Forgery: Radiant Splendor",
+    "days": [
+      "Monday",
+      "Thursday",
+      "Sunday"
+    ]
+  },
+  "bloodsoaked-ruins": {
+    "domain": "Domain of Forgery: Prayers Sung",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "bloodtainted-greatsword": {
+    "domain": "Domain of Forgery: Submerged Valley",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "calamity-of-eshu": {
+    "domain": "Domain of Forgery: Attentive Observation",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "calamity-queller": {
+    "domain": "Domain of Forgery: Thundering Ruins",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "cashflow-supervision": {
+    "domain": "Domain of Forgery: Curious Contraptions",
+    "days": [
+      "Wednesday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "chain-breaker": {
+    "domain": "Domain of Forgery: Estimation",
+    "days": [
+      "Wednesday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "cinnabar-spindle": {
+    "domain": "Domain of Forgery: City of Reflections",
+    "days": [
+      "Monday",
+      "Thursday",
+      "Sunday"
+    ]
+  },
+  "cloudforged": {
+    "domain": "Domain of Forgery: Trial Grounds of Thunder",
+    "days": [
+      "Wednesday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "compound-bow": {
+    "domain": "Domain of Forgery: Trial Grounds of Thunder",
+    "days": [
+      "Wednesday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "cool-steel": {
+    "domain": "Domain of Forgery: City of Reflections",
+    "days": [
+      "Monday",
+      "Thursday",
+      "Sunday"
+    ]
+  },
+  "crane-s-echoing-call": {
+    "domain": "Domain of Forgery: Thundering Ruins",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "crescent-pike": {
+    "domain": "Domain of Forgery: Thundercloud Altar",
+    "days": [
+      "Monday",
+      "Thursday",
+      "Sunday"
+    ]
+  },
+  "crimson-moon-s-semblance": {
+    "domain": "Domain of Forgery: Curious Contraptions",
+    "days": [
+      "Wednesday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "dark-iron-sword": {
+    "domain": "Domain of Forgery: Thundercloud Altar",
+    "days": [
+      "Monday",
+      "Thursday",
+      "Sunday"
+    ]
+  },
+  "dawning-frost": {
+    "domain": "Domain of Forgery: Radiant Splendor",
+    "days": [
+      "Monday",
+      "Thursday",
+      "Sunday"
+    ]
+  },
+  "deathmatch": {
+    "domain": "Domain of Forgery: Submerged Valley",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "debate-club": {
+    "domain": "Domain of Forgery: Thundering Ruins",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "dialogues-of-the-desert-sages": {
+    "domain": "Domain of Forgery: Tainted Clouds",
+    "days": [
+      "Monday",
+      "Thursday",
+      "Sunday"
+    ]
+  },
+  "disaster-and-remorse": {
+    "domain": "Domain of Forgery: City of Reflections",
+    "days": [
+      "Monday",
+      "Thursday",
+      "Sunday"
+    ]
+  },
+  "dodoco-tales": {
+    "domain": "Domain of Forgery: Submerged Valley",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "dragon-s-bane": {
+    "domain": "Domain of Forgery: Thundering Ruins",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "dragonspine-spear": {
+    "domain": "Domain of Forgery: Submerged Valley",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "earth-shaker": {
+    "domain": "Domain of Forgery: Scrying Shadows",
+    "days": [
+      "Monday",
+      "Thursday",
+      "Sunday"
+    ]
+  },
+  "elegy-for-the-end": {
+    "domain": "Domain of Forgery: Submerged Valley",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "emerald-orb": {
+    "domain": "Domain of Forgery: Thundercloud Altar",
+    "days": [
+      "Monday",
+      "Thursday",
+      "Sunday"
+    ]
+  },
+  "end-of-the-line": {
+    "domain": "Domain of Forgery: Leading Karma",
+    "days": [
+      "Wednesday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "engulfing-lightning": {
+    "domain": "Domain of Forgery: Sand Burial",
+    "days": [
+      "Wednesday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "etherlight-spindlelute": {
+    "domain": "Domain of Forgery: Lunar Oblation",
+    "days": [
+      "Wednesday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "everlasting-moonglow": {
+    "domain": "Domain of Forgery: Sunken Sands",
+    "days": [
+      "Monday",
+      "Thursday",
+      "Sunday"
+    ]
+  },
+  "eye-of-perception": {
+    "domain": "Domain of Forgery: Thundering Ruins",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "fading-twilight": {
+    "domain": "Domain of Forgery: Trial Grounds of Thunder",
+    "days": [
+      "Wednesday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "fang-of-the-mountain-king": {
+    "domain": "Domain of Forgery: Attentive Observation",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "favonius-codex": {
+    "domain": "Domain of Forgery: City of Reflections",
+    "days": [
+      "Monday",
+      "Thursday",
+      "Sunday"
+    ]
+  },
+  "favonius-greatsword": {
+    "domain": "Domain of Forgery: Ruins of Thirsting Capital",
+    "days": [
+      "Wednesday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "favonius-lance": {
+    "domain": "Domain of Forgery: Ruins of Thirsting Capital",
+    "days": [
+      "Wednesday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "favonius-sword": {
+    "domain": "Domain of Forgery: City of Reflections",
+    "days": [
+      "Monday",
+      "Thursday",
+      "Sunday"
+    ]
+  },
+  "favonius-warbow": {
+    "domain": "Domain of Forgery: Ruins of Thirsting Capital",
+    "days": [
+      "Wednesday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "ferrous-shadow": {
+    "domain": "Domain of Forgery: City of Reflections",
+    "days": [
+      "Monday",
+      "Thursday",
+      "Sunday"
+    ]
+  },
+  "festering-desire": {
+    "domain": "Domain of Forgery: Ruins of Thirsting Capital",
+    "days": [
+      "Wednesday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "fillet-blade": {
+    "domain": "Domain of Forgery: Thundering Ruins",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "finale-of-the-deep": {
+    "domain": "Domain of Forgery: Artisanship",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "flame-forged-insight": {
+    "domain": "Domain of Forgery: Attentive Observation",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "fleuve-cendre-ferryman": {
+    "domain": "Domain of Forgery: Robotic Ruse",
+    "days": [
+      "Monday",
+      "Thursday",
+      "Sunday"
+    ]
+  },
+  "flower-wreathed-feathers": {
+    "domain": "Domain of Forgery: Estimation",
+    "days": [
+      "Wednesday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "flowing-purity": {
+    "domain": "Domain of Forgery: Artisanship",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "flute-of-ezpitzal": {
+    "domain": "Domain of Forgery: Scrying Shadows",
+    "days": [
+      "Monday",
+      "Thursday",
+      "Sunday"
+    ]
+  },
+  "footprint-of-the-rainbow": {
+    "domain": "Domain of Forgery: Attentive Observation",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "forest-regalia": {
+    "domain": "Domain of Forgery: Tainted Clouds",
+    "days": [
+      "Monday",
+      "Thursday",
+      "Sunday"
+    ]
+  },
+  "fractured-halo": {
+    "domain": "Domain of Forgery: Scrying Shadows",
+    "days": [
+      "Monday",
+      "Thursday",
+      "Sunday"
+    ]
+  },
+  "freedom-sworn": {
+    "domain": "Domain of Forgery: Ruins of Thirsting Capital",
+    "days": [
+      "Wednesday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "frostbearer": {
+    "domain": "Domain of Forgery: Ruins of Thirsting Capital",
+    "days": [
+      "Wednesday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "fruit-of-fulfillment": {
+    "domain": "Domain of Forgery: Obsession",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "fruitful-hook": {
+    "domain": "Domain of Forgery: Estimation",
+    "days": [
+      "Wednesday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "gest-of-the-mighty-wolf": {
+    "domain": "Domain of Forgery: Submerged Valley",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "golden-frostbound-oath": {
+    "domain": "Domain of Forgery: Prayers Sung",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "hakushin-ring": {
+    "domain": "Domain of Forgery: Sunken Sands",
+    "days": [
+      "Monday",
+      "Thursday",
+      "Sunday"
+    ]
+  },
+  "halberd": {
+    "domain": "Domain of Forgery: Thundering Ruins",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "hamayumi": {
+    "domain": "Domain of Forgery: Altar of Sands",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "haran-geppaku-futsu": {
+    "domain": "Domain of Forgery: Altar of Sands",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "harbinger-of-dawn": {
+    "domain": "Domain of Forgery: Submerged Valley",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "hunter-s-path": {
+    "domain": "Domain of Forgery: Leading Karma",
+    "days": [
+      "Wednesday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "ibis-piercer": {
+    "domain": "Domain of Forgery: Tainted Clouds",
+    "days": [
+      "Monday",
+      "Thursday",
+      "Sunday"
+    ]
+  },
+  "iron-sting": {
+    "domain": "Domain of Forgery: Trial Grounds of Thunder",
+    "days": [
+      "Wednesday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "jadefall-s-splendor": {
+    "domain": "Domain of Forgery: Thundercloud Altar",
+    "days": [
+      "Monday",
+      "Thursday",
+      "Sunday"
+    ]
+  },
+  "kagotsurube-isshin": {
+    "domain": "Domain of Forgery: Sand Burial",
+    "days": [
+      "Wednesday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "kagura-s-verity": {
+    "domain": "Domain of Forgery: Sand Burial",
+    "days": [
+      "Wednesday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "katsuragikiri-nagamasa": {
+    "domain": "Domain of Forgery: Altar of Sands",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "key-of-khaj-nisut": {
+    "domain": "Domain of Forgery: Tainted Clouds",
+    "days": [
+      "Monday",
+      "Thursday",
+      "Sunday"
+    ]
+  },
+  "king-s-squire": {
+    "domain": "Domain of Forgery: Leading Karma",
+    "days": [
+      "Wednesday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "kitain-cross-spear": {
+    "domain": "Domain of Forgery: Sand Burial",
+    "days": [
+      "Wednesday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "light-of-foliar-incision": {
+    "domain": "Domain of Forgery: Tainted Clouds",
+    "days": [
+      "Monday",
+      "Thursday",
+      "Sunday"
+    ]
+  },
+  "lightbearing-moonshard": {
+    "domain": "Domain of Forgery: Trial Grounds of Thunder",
+    "days": [
+      "Wednesday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "lion-s-roar": {
+    "domain": "Domain of Forgery: Thundercloud Altar",
+    "days": [
+      "Monday",
+      "Thursday",
+      "Sunday"
+    ]
+  },
+  "lithic-blade": {
+    "domain": "Domain of Forgery: Thundercloud Altar",
+    "days": [
+      "Monday",
+      "Thursday",
+      "Sunday"
+    ]
+  },
+  "lithic-spear": {
+    "domain": "Domain of Forgery: Trial Grounds of Thunder",
+    "days": [
+      "Wednesday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "lost-prayer-to-the-sacred-winds": {
+    "domain": "Domain of Forgery: Ruins of Thirsting Capital",
+    "days": [
+      "Wednesday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "lumidouce-elegy": {
+    "domain": "Domain of Forgery: Curious Contraptions",
+    "days": [
+      "Wednesday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "luxurious-sea-lord": {
+    "domain": "Domain of Forgery: Trial Grounds of Thunder",
+    "days": [
+      "Wednesday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "magic-guide": {
+    "domain": "Domain of Forgery: City of Reflections",
+    "days": [
+      "Monday",
+      "Thursday",
+      "Sunday"
+    ]
+  },
+  "mailed-flower": {
+    "domain": "Domain of Forgery: Ruins of Thirsting Capital",
+    "days": [
+      "Wednesday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "makhaira-aquamarine": {
+    "domain": "Domain of Forgery: Leading Karma",
+    "days": [
+      "Wednesday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "mappa-mare": {
+    "domain": "Domain of Forgery: Trial Grounds of Thunder",
+    "days": [
+      "Wednesday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "master-key": {
+    "domain": "Domain of Forgery: Lunar Oblation",
+    "days": [
+      "Wednesday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "memory-of-dust": {
+    "domain": "Domain of Forgery: Trial Grounds of Thunder",
+    "days": [
+      "Wednesday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "messenger": {
+    "domain": "Domain of Forgery: Thundering Ruins",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "missive-windspear": {
+    "domain": "Domain of Forgery: Submerged Valley",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "mistsplitter-reforged": {
+    "domain": "Domain of Forgery: Sunken Sands",
+    "days": [
+      "Monday",
+      "Thursday",
+      "Sunday"
+    ]
+  },
+  "mitternachts-waltz": {
+    "domain": "Domain of Forgery: City of Reflections",
+    "days": [
+      "Monday",
+      "Thursday",
+      "Sunday"
+    ]
+  },
+  "moonpiercer": {
+    "domain": "Domain of Forgery: Obsession",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "moonweaver-s-dawn": {
+    "domain": "Domain of Forgery: Lunar Oblation",
+    "days": [
+      "Wednesday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "mountain-bracing-bolt": {
+    "domain": "Domain of Forgery: Attentive Observation",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "mouun-s-moon": {
+    "domain": "Domain of Forgery: Altar of Sands",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "nightweaver-s-looking-glass": {
+    "domain": "Domain of Forgery: Radiant Splendor",
+    "days": [
+      "Monday",
+      "Thursday",
+      "Sunday"
+    ]
+  },
+  "nocturne-s-curtain-call": {
+    "domain": "Domain of Forgery: Lunar Oblation",
+    "days": [
+      "Wednesday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "oathsworn-eye": {
+    "domain": "Domain of Forgery: Sunken Sands",
+    "days": [
+      "Monday",
+      "Thursday",
+      "Sunday"
+    ]
+  },
+  "otherworldly-story": {
+    "domain": "Domain of Forgery: Ruins of Thirsting Capital",
+    "days": [
+      "Wednesday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "peak-patrol-song": {
+    "domain": "Domain of Forgery: Estimation",
+    "days": [
+      "Wednesday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "polar-star": {
+    "domain": "Domain of Forgery: Sand Burial",
+    "days": [
+      "Wednesday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "portable-power-saw": {
+    "domain": "Domain of Forgery: Curious Contraptions",
+    "days": [
+      "Wednesday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "predator": {
+    "domain": "Domain of Forgery: Altar of Sands",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "primordial-jade-cutter": {
+    "domain": "Domain of Forgery: Thundering Ruins",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "primordial-jade-winged-spear": {
+    "domain": "Domain of Forgery: Thundercloud Altar",
+    "days": [
+      "Monday",
+      "Thursday",
+      "Sunday"
+    ]
+  },
+  "prospector-s-drill": {
+    "domain": "Domain of Forgery: Robotic Ruse",
+    "days": [
+      "Monday",
+      "Thursday",
+      "Sunday"
+    ]
+  },
+  "prospector-s-shovel": {
+    "domain": "Domain of Forgery: Prayers Sung",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "prototype-amber": {
+    "domain": "Domain of Forgery: Thundering Ruins",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "prototype-archaic": {
+    "domain": "Domain of Forgery: Trial Grounds of Thunder",
+    "days": [
+      "Wednesday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "prototype-crescent": {
+    "domain": "Domain of Forgery: Thundering Ruins",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "prototype-rancour": {
+    "domain": "Domain of Forgery: Thundering Ruins",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "prototype-starglitter": {
+    "domain": "Domain of Forgery: Trial Grounds of Thunder",
+    "days": [
+      "Wednesday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "rainbow-serpent-s-rain-bow": {
+    "domain": "Domain of Forgery: Estimation",
+    "days": [
+      "Wednesday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "rainslasher": {
+    "domain": "Domain of Forgery: Thundering Ruins",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "range-gauge": {
+    "domain": "Domain of Forgery: Robotic Ruse",
+    "days": [
+      "Monday",
+      "Thursday",
+      "Sunday"
+    ]
+  },
+  "raven-bow": {
+    "domain": "Domain of Forgery: City of Reflections",
+    "days": [
+      "Monday",
+      "Thursday",
+      "Sunday"
+    ]
+  },
+  "recurve-bow": {
+    "domain": "Domain of Forgery: Ruins of Thirsting Capital",
+    "days": [
+      "Wednesday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "redhorn-stonethresher": {
+    "domain": "Domain of Forgery: Altar of Sands",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "reliquary-of-truth": {
+    "domain": "Domain of Forgery: Obsession",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "rightful-reward": {
+    "domain": "Domain of Forgery: Curious Contraptions",
+    "days": [
+      "Wednesday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "ring-of-yaxche": {
+    "domain": "Domain of Forgery: Attentive Observation",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "royal-bow": {
+    "domain": "Domain of Forgery: Ruins of Thirsting Capital",
+    "days": [
+      "Wednesday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "royal-greatsword": {
+    "domain": "Domain of Forgery: Ruins of Thirsting Capital",
+    "days": [
+      "Wednesday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "royal-grimoire": {
+    "domain": "Domain of Forgery: City of Reflections",
+    "days": [
+      "Monday",
+      "Thursday",
+      "Sunday"
+    ]
+  },
+  "royal-longsword": {
+    "domain": "Domain of Forgery: City of Reflections",
+    "days": [
+      "Monday",
+      "Thursday",
+      "Sunday"
+    ]
+  },
+  "royal-spear": {
+    "domain": "Domain of Forgery: Thundering Ruins",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "rust": {
+    "domain": "Domain of Forgery: Thundercloud Altar",
+    "days": [
+      "Monday",
+      "Thursday",
+      "Sunday"
+    ]
+  },
+  "sacrificer-s-staff": {
+    "domain": "Domain of Forgery: Prayers Sung",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "sacrificial-bow": {
+    "domain": "Domain of Forgery: Submerged Valley",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "sacrificial-fragments": {
+    "domain": "Domain of Forgery: Ruins of Thirsting Capital",
+    "days": [
+      "Wednesday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "sacrificial-greatsword": {
+    "domain": "Domain of Forgery: Submerged Valley",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "sacrificial-jade": {
+    "domain": "Domain of Forgery: Thundercloud Altar",
+    "days": [
+      "Monday",
+      "Thursday",
+      "Sunday"
+    ]
+  },
+  "sacrificial-sword": {
+    "domain": "Domain of Forgery: Ruins of Thirsting Capital",
+    "days": [
+      "Wednesday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "sapwood-blade": {
+    "domain": "Domain of Forgery: Tainted Clouds",
+    "days": [
+      "Monday",
+      "Thursday",
+      "Sunday"
+    ]
+  },
+  "scion-of-the-blazing-sun": {
+    "domain": "Domain of Forgery: Leading Karma",
+    "days": [
+      "Wednesday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "sequence-of-solitude": {
+    "domain": "Domain of Forgery: Robotic Ruse",
+    "days": [
+      "Monday",
+      "Thursday",
+      "Sunday"
+    ]
+  },
+  "serenity-s-call": {
+    "domain": "Domain of Forgery: Radiant Splendor",
+    "days": [
+      "Monday",
+      "Thursday",
+      "Sunday"
+    ]
+  },
+  "serpent-spine": {
+    "domain": "Domain of Forgery: Trial Grounds of Thunder",
+    "days": [
+      "Wednesday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "sharpshooter-s-oath": {
+    "domain": "Domain of Forgery: Submerged Valley",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "silvershower-heartstrings": {
+    "domain": "Domain of Forgery: Artisanship",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "skyrider-greatsword": {
+    "domain": "Domain of Forgery: Trial Grounds of Thunder",
+    "days": [
+      "Wednesday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "skyrider-sword": {
+    "domain": "Domain of Forgery: Trial Grounds of Thunder",
+    "days": [
+      "Wednesday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "skyward-atlas": {
+    "domain": "Domain of Forgery: Submerged Valley",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "skyward-blade": {
+    "domain": "Domain of Forgery: Submerged Valley",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "skyward-harp": {
+    "domain": "Domain of Forgery: Submerged Valley",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "skyward-pride": {
+    "domain": "Domain of Forgery: Submerged Valley",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "skyward-spine": {
+    "domain": "Domain of Forgery: Ruins of Thirsting Capital",
+    "days": [
+      "Wednesday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "slingshot": {
+    "domain": "Domain of Forgery: Thundercloud Altar",
+    "days": [
+      "Monday",
+      "Thursday",
+      "Sunday"
+    ]
+  },
+  "snare-hook": {
+    "domain": "Domain of Forgery: Prayers Sung",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "snow-tombed-starsilver": {
+    "domain": "Domain of Forgery: City of Reflections",
+    "days": [
+      "Monday",
+      "Thursday",
+      "Sunday"
+    ]
+  },
+  "solar-pearl": {
+    "domain": "Domain of Forgery: Thundercloud Altar",
+    "days": [
+      "Monday",
+      "Thursday",
+      "Sunday"
+    ]
+  },
+  "song-of-broken-pines": {
+    "domain": "Domain of Forgery: City of Reflections",
+    "days": [
+      "Monday",
+      "Thursday",
+      "Sunday"
+    ]
+  },
+  "song-of-stillness": {
+    "domain": "Domain of Forgery: Robotic Ruse",
+    "days": [
+      "Monday",
+      "Thursday",
+      "Sunday"
+    ]
+  },
+  "splendor-of-tranquil-waters": {
+    "domain": "Domain of Forgery: Artisanship",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "staff-of-homa": {
+    "domain": "Domain of Forgery: Trial Grounds of Thunder",
+    "days": [
+      "Wednesday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "staff-of-the-scarlet-sands": {
+    "domain": "Domain of Forgery: Obsession",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "starcaller-s-watch": {
+    "domain": "Domain of Forgery: Attentive Observation",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "sturdy-bone": {
+    "domain": "Domain of Forgery: Scrying Shadows",
+    "days": [
+      "Monday",
+      "Thursday",
+      "Sunday"
+    ]
+  },
+  "summit-shaper": {
+    "domain": "Domain of Forgery: Thundercloud Altar",
+    "days": [
+      "Monday",
+      "Thursday",
+      "Sunday"
+    ]
+  },
+  "sunny-morning-sleep-in": {
+    "domain": "Domain of Forgery: Altar of Sands",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "surf-s-up": {
+    "domain": "Domain of Forgery: Scrying Shadows",
+    "days": [
+      "Monday",
+      "Thursday",
+      "Sunday"
+    ]
+  },
+  "sword-of-descension": {
+    "domain": "Domain of Forgery: Submerged Valley",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "sword-of-narzissenkreuz": {
+    "domain": "Domain of Forgery: Robotic Ruse",
+    "days": [
+      "Monday",
+      "Thursday",
+      "Sunday"
+    ]
+  },
+  "symphonist-of-scents": {
+    "domain": "Domain of Forgery: Artisanship",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "talking-stick": {
+    "domain": "Domain of Forgery: Obsession",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "tamayuratei-no-ohanashi": {
+    "domain": "Domain of Forgery: Sand Burial",
+    "days": [
+      "Wednesday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "the-alley-flash": {
+    "domain": "Domain of Forgery: City of Reflections",
+    "days": [
+      "Monday",
+      "Thursday",
+      "Sunday"
+    ]
+  },
+  "the-bell": {
+    "domain": "Domain of Forgery: City of Reflections",
+    "days": [
+      "Monday",
+      "Thursday",
+      "Sunday"
+    ]
+  },
+  "the-black-sword": {
+    "domain": "Domain of Forgery: Submerged Valley",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "the-daybreak-chronicles": {
+    "domain": "Domain of Forgery: Ruins of Thirsting Capital",
+    "days": [
+      "Wednesday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "the-dockhand-s-assistant": {
+    "domain": "Domain of Forgery: Artisanship",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "the-first-great-magic": {
+    "domain": "Domain of Forgery: Robotic Ruse",
+    "days": [
+      "Monday",
+      "Thursday",
+      "Sunday"
+    ]
+  },
+  "the-flute": {
+    "domain": "Domain of Forgery: Submerged Valley",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "the-stringless": {
+    "domain": "Domain of Forgery: City of Reflections",
+    "days": [
+      "Monday",
+      "Thursday",
+      "Sunday"
+    ]
+  },
+  "the-unforged": {
+    "domain": "Domain of Forgery: Thundering Ruins",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "the-viridescent-hunt": {
+    "domain": "Domain of Forgery: City of Reflections",
+    "days": [
+      "Monday",
+      "Thursday",
+      "Sunday"
+    ]
+  },
+  "the-widsith": {
+    "domain": "Domain of Forgery: Submerged Valley",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "thrilling-tales-of-dragon-slayers": {
+    "domain": "Domain of Forgery: Submerged Valley",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "thundering-pulse": {
+    "domain": "Domain of Forgery: Altar of Sands",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "tidal-shadow": {
+    "domain": "Domain of Forgery: Curious Contraptions",
+    "days": [
+      "Wednesday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "tome-of-the-eternal-flow": {
+    "domain": "Domain of Forgery: Artisanship",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "toukabou-shigure": {
+    "domain": "Domain of Forgery: Altar of Sands",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "traveler-s-handy-sword": {
+    "domain": "Domain of Forgery: Ruins of Thirsting Capital",
+    "days": [
+      "Wednesday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "tulaytullah-s-remembrance": {
+    "domain": "Domain of Forgery: Leading Karma",
+    "days": [
+      "Wednesday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "twin-nephrite": {
+    "domain": "Domain of Forgery: Thundering Ruins",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "uraku-misugiri": {
+    "domain": "Domain of Forgery: Sunken Sands",
+    "days": [
+      "Monday",
+      "Thursday",
+      "Sunday"
+    ]
+  },
+  "verdict": {
+    "domain": "Domain of Forgery: Robotic Ruse",
+    "days": [
+      "Monday",
+      "Thursday",
+      "Sunday"
+    ]
+  },
+  "vivid-notions": {
+    "domain": "Domain of Forgery: Attentive Observation",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "vortex-vanquisher": {
+    "domain": "Domain of Forgery: Trial Grounds of Thunder",
+    "days": [
+      "Wednesday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "wandering-evenstar": {
+    "domain": "Domain of Forgery: Obsession",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "wavebreaker-s-fin": {
+    "domain": "Domain of Forgery: Sand Burial",
+    "days": [
+      "Wednesday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "waveriding-whirl": {
+    "domain": "Domain of Forgery: Scrying Shadows",
+    "days": [
+      "Monday",
+      "Thursday",
+      "Sunday"
+    ]
+  },
+  "white-iron-greatsword": {
+    "domain": "Domain of Forgery: Ruins of Thirsting Capital",
+    "days": [
+      "Wednesday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "white-tassel": {
+    "domain": "Domain of Forgery: Thundercloud Altar",
+    "days": [
+      "Monday",
+      "Thursday",
+      "Sunday"
+    ]
+  },
+  "whiteblind": {
+    "domain": "Domain of Forgery: Thundercloud Altar",
+    "days": [
+      "Monday",
+      "Thursday",
+      "Sunday"
+    ]
+  },
+  "windblume-ode": {
+    "domain": "Domain of Forgery: Ruins of Thirsting Capital",
+    "days": [
+      "Wednesday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "wine-and-song": {
+    "domain": "Domain of Forgery: Submerged Valley",
+    "days": [
+      "Tuesday",
+      "Friday",
+      "Sunday"
+    ]
+  },
+  "wolf-fang": {
+    "domain": "Domain of Forgery: City of Reflections",
+    "days": [
+      "Monday",
+      "Thursday",
+      "Sunday"
+    ]
+  },
+  "wolf-s-gravestone": {
+    "domain": "Domain of Forgery: Ruins of Thirsting Capital",
+    "days": [
+      "Wednesday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "xiphos-moonlight": {
+    "domain": "Domain of Forgery: Tainted Clouds",
+    "days": [
+      "Monday",
+      "Thursday",
+      "Sunday"
+    ]
+  }
+};

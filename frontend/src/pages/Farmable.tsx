@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import { fetchCharacters, listLoadouts } from "../api";
+import { fetchCharacters, fetchWeapons, listLoadouts } from "../api";
 import { Card, Icon } from "../components/ui";
 import { getOwned } from "../ownership";
-import { CHARACTER_TALENT_DOMAINS, MATERIAL_DOMAINS } from "../data/materialDomains";
+import { CHARACTER_TALENT_DOMAINS, WEAPON_DOMAINS } from "../data/materialDomains";
 
 const DAY_ABBR: Record<string, string> = {
   Monday: "Mon",
@@ -16,64 +16,71 @@ const DAY_ABBR: Record<string, string> = {
   Sunday: "Sun",
 };
 
-/** "Farmable today" (D): which talent/weapon domains are open on the current weekday, and which of
- *  your owned/built characters need them. Every domain's day list includes Sunday, so Sunday
- *  naturally shows everything. */
+/** "Farmable today" (D): the talent + weapon domains open on the current weekday, grouped, with the
+ *  characters / weapons that need them. Every domain's day list includes Sunday, so Sunday shows all. */
 export function FarmablePage() {
   const [showAll, setShowAll] = useState(false);
   const rosterQ = useQuery({ queryKey: ["characters", "all"], queryFn: () => fetchCharacters({}) });
+  const weaponsQ = useQuery({ queryKey: ["weapons"], queryFn: () => fetchWeapons() });
   const loadoutsQ = useQuery({ queryKey: ["loadouts"], queryFn: listLoadouts });
   const roster = (rosterQ.data ?? []).slice().sort((a, b) => a.name.localeCompare(b.name));
+  const weapons = (weaponsQ.data ?? []).slice().sort((a, b) => a.name.localeCompare(b.name));
   const built = new Set((loadoutsQ.data ?? []).map((l) => l.characterId));
-  const owned = getOwned("characters");
+  const ownedChars = getOwned("characters");
+  const ownedWeapons = getOwned("weapons");
   const today = new Date().toLocaleDateString("en-US", { weekday: "long" });
-  const hasAccount = owned.size > 0 || built.size > 0;
+  const hasAccount = ownedChars.size > 0 || built.size > 0 || ownedWeapons.size > 0;
+  const daysLabel = (days: string[]) => days.map((d) => DAY_ABBR[d] ?? d).join(" · ");
+  const cleanDomain = (d: string) => d.replace(/^Domain of (Mastery|Forgery):\s*/, "");
 
-  // Group the relevant characters by their talent-book domain.
-  const relevant = roster.filter((c) => showAll || !hasAccount || owned.has(c.id) || built.has(c.id));
-  const byDomain = new Map<string, { domain: string; days: string[]; chars: typeof roster }>();
-  for (const c of relevant) {
+  // Talent domains → characters that farm them.
+  const relevantChars = roster.filter((c) => showAll || !hasAccount || ownedChars.has(c.id) || built.has(c.id));
+  const charGroups = new Map<string, { domain: string; days: string[]; items: typeof roster }>();
+  for (const c of relevantChars) {
     const d = CHARACTER_TALENT_DOMAINS[c.id];
     if (!d) continue;
-    const g = byDomain.get(d.domain) ?? { domain: d.domain, days: d.days, chars: [] };
-    g.chars.push(c);
-    byDomain.set(d.domain, g);
+    const g = charGroups.get(d.domain) ?? { domain: d.domain, days: d.days, items: [] };
+    g.items.push(c);
+    charGroups.set(d.domain, g);
   }
-  const groups = [...byDomain.values()].sort((a, b) => a.domain.localeCompare(b.domain));
-  const openToday = groups.filter((g) => g.days.includes(today));
+  const talentToday = [...charGroups.values()].filter((g) => g.days.includes(today)).sort((a, b) => a.domain.localeCompare(b.domain));
 
-  // Weapon-material domains open today (no per-character mapping — just what's available).
-  const weaponDomainsToday = [
-    ...new Set(
-      Object.values(MATERIAL_DOMAINS)
-        .filter((m) => m.kind === "weapon" && m.days.includes(today))
-        .map((m) => m.domain),
-    ),
-  ].sort();
-
-  const daysLabel = (days: string[]) => days.map((d) => DAY_ABBR[d] ?? d).join(" · ");
+  // Weapon domains → weapons that farm them. Owned when you have any; else 5★ as a sensible default.
+  const relevantWeapons = weapons.filter((w) =>
+    showAll ? true : ownedWeapons.size > 0 ? ownedWeapons.has(w.id) : w.rarity === 5,
+  );
+  const weaponGroups = new Map<string, { domain: string; days: string[]; items: typeof weapons }>();
+  for (const w of relevantWeapons) {
+    const d = WEAPON_DOMAINS[w.id];
+    if (!d) continue;
+    const g = weaponGroups.get(d.domain) ?? { domain: d.domain, days: d.days, items: [] };
+    g.items.push(w);
+    weaponGroups.set(d.domain, g);
+  }
+  const weaponToday = [...weaponGroups.values()].filter((g) => g.days.includes(today)).sort((a, b) => a.domain.localeCompare(b.domain));
 
   return (
     <div className="farmable">
       <h1>Farmable today</h1>
       <p className="muted small">
-        Talent domains open on <strong>{today}</strong>
-        {hasAccount ? " for your owned / built characters" : ""}. On Sunday every domain is open.
+        Domains open on <strong>{today}</strong>
+        {hasAccount ? " for your owned / built roster" : ""}. On Sunday every domain is open.
       </p>
       {hasAccount ? (
         <label className="saved-only-toggle">
           <input type="checkbox" checked={showAll} onChange={(e) => setShowAll(e.target.checked)} />
-          Show all characters (not just owned / built)
+          Show everything (not just owned / built)
         </label>
       ) : null}
 
-      {openToday.length ? (
+      <h2 className="farm-section">Talent books</h2>
+      {talentToday.length ? (
         <div className="detail-masonry">
-          {openToday.map((g) => (
-            <Card key={g.domain} title={g.domain.replace(/^Domain of Mastery:\s*/, "")}>
+          {talentToday.map((g) => (
+            <Card key={g.domain} title={cleanDomain(g.domain)}>
               <p className="muted small">Talent books · {daysLabel(g.days)}</p>
               <div className="farm-chars">
-                {g.chars.map((c) => (
+                {g.items.map((c) => (
                   <Link key={c.id} to={`/character/${c.id}`} className="farm-char" title={c.name}>
                     <Icon src={c.icon} alt={c.name} size={44} />
                     <span className="farm-char-name">{c.name}</span>
@@ -84,20 +91,32 @@ export function FarmablePage() {
           ))}
         </div>
       ) : (
-        <p className="muted">No talent domains match — try “Show all characters”.</p>
+        <p className="muted">No talent domains match — try “Show everything”.</p>
       )}
 
-      {weaponDomainsToday.length ? (
-        <Card title="Weapon domains open today">
-          <ul className="chips">
-            {weaponDomainsToday.map((d) => (
-              <li key={d} className="chip">
-                {d.replace(/^Forgotten Hall:\s*|^Domain of Forgery:\s*/, "")}
-              </li>
-            ))}
-          </ul>
-        </Card>
-      ) : null}
+      <h2 className="farm-section">Weapon materials</h2>
+      {weaponToday.length ? (
+        <div className="detail-masonry">
+          {weaponToday.map((g) => (
+            <Card key={g.domain} title={cleanDomain(g.domain)}>
+              <p className="muted small">
+                Weapon ascension · {daysLabel(g.days)}
+                {ownedWeapons.size === 0 && !showAll ? " · 5★" : ""}
+              </p>
+              <div className="farm-chars">
+                {g.items.map((w) => (
+                  <Link key={w.id} to={`/weapon/${w.id}`} className={`farm-char rarity-${w.rarity}`} title={w.name}>
+                    <Icon src={w.icon} alt={w.name} size={44} />
+                    <span className="farm-char-name">{w.name}</span>
+                  </Link>
+                ))}
+              </div>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        <p className="muted">No weapon domains match — try “Show everything”.</p>
+      )}
     </div>
   );
 }
