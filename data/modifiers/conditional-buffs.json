@@ -11,6 +11,19 @@
     { "id": "nd4-hydro", "label": "Nymph's Dream 4pc — +Hydro DMG / +ATK% (3 stacks)", "setId": "nymph-s-dream", "minPieces": 4, "defaultOn": true, "effects": [{ "key": "HYDRO_DMG", "value": 24 }, { "key": "ATK_PCT", "value": 15 }] },
     { "id": "homa-hp", "label": "Staff of Homa — +HP% (Reckless Cinnabar)", "weaponId": "staff-of-homa", "defaultOn": true, "effects": [{ "key": "HP_PCT", "value": 20 }] },
     { "id": "wgs-atk", "label": "Wolf's Gravestone — +40% ATK vs low-HP enemies", "weaponId": "wolf-s-gravestone", "defaultOn": false, "effects": [{ "key": "ATK_PCT", "value": 40 }] },
-    { "id": "aqua-cd", "label": "Aqua Simulacra — +20% CRIT DMG with enemies nearby", "weaponId": "aqua-simulacra", "defaultOn": true, "effects": [{ "key": "CRIT_DMG", "value": 20 }] }
+    { "id": "aqua-cd", "label": "Aqua Simulacra — +20% CRIT DMG with enemies nearby", "weaponId": "aqua-simulacra", "defaultOn": true, "effects": [{ "key": "CRIT_DMG", "value": 20 }] },
+    { "id": "beacon-atk", "label": "Beacon of the Reed Sea — +ATK on Skill / taking DMG", "weaponId": "beacon-of-the-reed-sea", "defaultOn": true, "effects": [{ "key": "ATK_PCT", "value": 40 }] },
+    { "id": "calamity-atk", "label": "Calamity Queller — Consummation +ATK (6 stacks)", "weaponId": "calamity-queller", "defaultOn": true, "effects": [{ "key": "ATK_PCT", "value": 19 }] },
+    { "id": "freedom-atk", "label": "Freedom-Sworn — Millennial Movement +20% team ATK", "weaponId": "freedom-sworn", "defaultOn": true, "effects": [{ "key": "ATK_PCT", "value": 20 }] },
+    { "id": "elegy-buff", "label": "Elegy for the End — Sigil +100 EM & +20% team ATK", "weaponId": "elegy-for-the-end", "defaultOn": true, "effects": [{ "key": "EM", "value": 100 }, { "key": "ATK_PCT", "value": 20 }] },
+    { "id": "sobp-atk", "label": "Song of Broken Pines — Millennial Movement +20% team ATK", "weaponId": "song-of-broken-pines", "defaultOn": true, "effects": [{ "key": "ATK_PCT", "value": 20 }] },
+    { "id": "cashflow-atk", "label": "Cashflow Supervision — +ATK on HP change (3 stacks)", "weaponId": "cashflow-supervision", "defaultOn": true, "effects": [{ "key": "ATK_PCT", "value": 28 }] },
+    { "id": "verdict-atk", "label": "Verdict — +20% ATK (Sundered stacks)", "weaponId": "verdict", "defaultOn": true, "effects": [{ "key": "ATK_PCT", "value": 20 }] },
+    { "id": "husk4", "label": "Husk of Opulent Dreams 4pc — Curiosity +DEF & +Geo DMG (4 stacks)", "setId": "husk-of-opulent-dreams", "minPieces": 4, "defaultOn": true, "effects": [{ "key": "DEF_PCT", "value": 24 }, { "key": "GEO_DMG", "value": 24 }] },
+    { "id": "nw4", "label": "Nighttime Whispers 4pc — +20% ATK & +20% Geo DMG on Skill", "setId": "nighttime-whispers-in-the-echoing-woods", "minPieces": 4, "defaultOn": true, "effects": [{ "key": "ATK_PCT", "value": 20 }, { "key": "GEO_DMG", "value": 20 }] },
+    { "id": "fhw4", "label": "Fragment of Harmonic Whimsy 4pc — +ATK on Bond-of-Life change (3 stacks)", "setId": "fragment-of-harmonic-whimsy", "minPieces": 4, "defaultOn": true, "effects": [{ "key": "ATK_PCT", "value": 54 }] },
+    { "id": "obsidian4", "label": "Obsidian Codex 4pc — +40% CRIT DMG while on Nightsoul", "setId": "obsidian-codex", "minPieces": 4, "defaultOn": true, "effects": [{ "key": "CRIT_DMG", "value": 40 }] },
+    { "id": "paleflame4", "label": "Pale Flame 4pc — +25% Physical DMG & +ATK (2 stacks)", "setId": "pale-flame", "minPieces": 4, "defaultOn": true, "effects": [{ "key": "PHYS_DMG", "value": 25 }, { "key": "ATK_PCT", "value": 18 }] },
+    { "id": "bsc4", "label": "Bloodstained Chivalry 4pc — +50% Physical DMG after a kill", "setId": "bloodstained-chivalry", "minPieces": 4, "defaultOn": false, "effects": [{ "key": "PHYS_DMG", "value": 50 }] }
   ]
 }
