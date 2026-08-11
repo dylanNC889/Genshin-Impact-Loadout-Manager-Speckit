@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { fetchCharacterDetail, listLoadouts, listTeams } from "../api";
 import type { CharacterDetail, SavedLoadout, SavedTeam } from "../api";
 import { Card } from "../components/ui";
+import { CompareNav } from "../components/CompareNav";
 import { computeTeamDamage } from "../teamDamage";
 
 /** Shared assumptions so the two damage totals are comparable. */
@@ -75,6 +76,7 @@ export function TeamComparePage() {
   return (
     <div className="compare">
       <h1>Compare teams</h1>
+      <CompareNav />
       {teams.length < 2 ? (
         <p className="muted small">Save at least two teams on the Team page to compare them.</p>
       ) : null}

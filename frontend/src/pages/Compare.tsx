@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
 import { listLoadouts, type SavedLoadout } from "../api";
 import { Card } from "../components/ui";
+import { CompareNav } from "../components/CompareNav";
 import { formatStat, statLabel } from "../format";
 
 const ORDER = ["HP", "ATK", "DEF", "CRIT_RATE", "CRIT_DMG", "EM", "ER"];
@@ -48,6 +49,7 @@ export function ComparePage() {
   return (
     <div className="compare">
       <h1>Compare builds</h1>
+      <CompareNav />
       {loadouts.length < 2 ? (
         <p className="muted">Save at least two loadouts (on a character page) to compare them here.</p>
       ) : null}

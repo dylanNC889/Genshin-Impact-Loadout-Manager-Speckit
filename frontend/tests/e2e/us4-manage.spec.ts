@@ -25,6 +25,12 @@ test("compare page with loadout pickers", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Compare builds" })).toBeVisible();
   await expect(page.getByLabel("Loadout A")).toBeVisible();
   await expect(page.getByLabel("Loadout B")).toBeVisible();
+
+  // The compare sub-nav links to characters/weapons/teams (#28).
+  await page.locator(".compare-nav").getByRole("link", { name: "Teams" }).click();
+  await expect(page).toHaveURL(/\/team-compare$/);
+  await page.locator(".compare-nav").getByRole("link", { name: "Characters" }).click();
+  await expect(page).toHaveURL(/\/character-compare$/);
 });
 
 // B2 — the comparison table lists each stat once (CRIT DMG must not appear twice).

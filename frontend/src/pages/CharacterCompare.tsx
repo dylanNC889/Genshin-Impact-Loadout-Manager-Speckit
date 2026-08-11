@@ -5,6 +5,7 @@ import type { CharacterDetail } from "../types";
 import type { SavedLoadout } from "../api";
 import { fetchCharacters, fetchCharacterDetail, fetchWeapons, fetchArtifactSets, listLoadouts } from "../api";
 import { Card } from "../components/ui";
+import { CompareNav } from "../components/CompareNav";
 import { statLabel, formatStat } from "../format";
 import { RECOMMENDATIONS } from "../data/recommendations";
 
@@ -122,6 +123,7 @@ export function CharacterComparePage() {
   return (
     <div className="compare">
       <h1>Compare characters</h1>
+      <CompareNav />
       <div className="compare-pickers">
         {picker("a", a)}
         <span className="muted">vs</span>
