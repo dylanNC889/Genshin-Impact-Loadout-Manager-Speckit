@@ -1,5 +1,8 @@
 import { useMemo, useState } from "react";
-import { Card } from "../components/ui";
+import { useQuery } from "@tanstack/react-query";
+import { Link } from "react-router-dom";
+import { fetchCharacters, fetchWeapons } from "../api";
+import { Card, Icon } from "../components/ui";
 import { fiveStarChance, getWishState, setWishState, pullsFrom, PULL_COST, type WishState } from "../wishes";
 import { VERSION_DATES } from "../data/versionDates";
 
@@ -11,6 +14,21 @@ const iso = (d: Date) => d.toISOString().slice(0, 10);
 export function WishesPage() {
   const [state, setState] = useState<WishState>(() => getWishState());
   const [target, setTarget] = useState<string>(() => iso(new Date(Date.now() + 42 * DAY)));
+  const rosterQ = useQuery({ queryKey: ["characters", "all"], queryFn: () => fetchCharacters({}) });
+  const weaponsQ = useQuery({ queryKey: ["weapons"], queryFn: () => fetchWeapons() });
+  const roster = (rosterQ.data ?? []).filter((c) => c.rarity === 5).slice().sort((a, b) => a.name.localeCompare(b.name));
+  const fiveStarWeapons = (weaponsQ.data ?? []).filter((w) => w.rarity === 5).slice().sort((a, b) => a.name.localeCompare(b.name));
+  const targetChar = roster.find((c) => c.id === state.targetCharId);
+  const targetWeapon = fiveStarWeapons.find((w) => w.id === state.targetWeaponId);
+  // Name the featured target in the odds rows, based on the selected banner + target.
+  const featuredLabel =
+    state.banner === "weapon"
+      ? targetWeapon
+        ? targetWeapon.name
+        : "the featured 5★ weapon"
+      : targetChar
+        ? targetChar.name
+        : "the featured 5★";
   const update = (patch: Partial<WishState>) => {
     const next = { ...state, ...patch };
     setState(next);
@@ -85,6 +103,52 @@ export function WishesPage() {
           <p className="muted small stat-foot">1 pull = {PULL_COST} primogems.</p>
         </Card>
 
+        <Card title="Pulling for">
+          <p className="muted small">
+            Banner contents aren't predicted — pick who you're saving for and the odds below name them.
+          </p>
+          <div className="wish-target-pick">
+            <label>
+              <span>Character</span>
+              <select value={state.targetCharId} onChange={(e) => update({ targetCharId: e.target.value })} aria-label="Target character">
+                <option value="">— none —</option>
+                {roster.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              <span>Weapon (5★)</span>
+              <select value={state.targetWeaponId} onChange={(e) => update({ targetWeaponId: e.target.value })} aria-label="Target weapon">
+                <option value="">— none —</option>
+                {fiveStarWeapons.map((w) => (
+                  <option key={w.id} value={w.id}>
+                    {w.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+          {targetChar || targetWeapon ? (
+            <div className="wish-targets">
+              {targetChar ? (
+                <Link to={`/character/${targetChar.id}`} className="wish-target-item" title={targetChar.name}>
+                  <Icon src={targetChar.icon} alt={targetChar.name} size={48} />
+                  <span>{targetChar.name}</span>
+                </Link>
+              ) : null}
+              {targetWeapon ? (
+                <Link to={`/weapon/${targetWeapon.id}`} className="wish-target-item" title={targetWeapon.name}>
+                  <Icon src={targetWeapon.icon} alt={targetWeapon.name} size={48} />
+                  <span>{targetWeapon.name}</span>
+                </Link>
+              ) : null}
+            </div>
+          ) : null}
+        </Card>
+
         <Card title="Right now">
           <div className="wish-stat">
             <span className="wish-big">{model.pullsNow}</span>
@@ -96,7 +160,7 @@ export function WishesPage() {
               <strong>{pct(nowOdds.any)}</strong>
             </li>
             <li>
-              <span>Chance of the featured 5★</span>
+              <span>Chance of {featuredLabel}</span>
               <strong>{pct(nowOdds.featured)}</strong>
             </li>
           </ul>
@@ -117,7 +181,7 @@ export function WishesPage() {
               <strong>{pct(targetOdds.any)}</strong>
             </li>
             <li>
-              <span>Chance of the featured 5★</span>
+              <span>Chance of {featuredLabel}</span>
               <strong>{pct(targetOdds.featured)}</strong>
             </li>
           </ul>

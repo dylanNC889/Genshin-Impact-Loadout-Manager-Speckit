@@ -36,10 +36,22 @@ export interface WishState {
   pity: number;
   guaranteed: boolean;
   banner: "character" | "weapon";
+  /** The featured character / weapon you're saving for (banner contents aren't predicted). */
+  targetCharId: string;
+  targetWeaponId: string;
 }
 
 const KEY = "glm.wishes";
-const DEFAULT: WishState = { primos: 0, fates: 0, perDay: 60, pity: 0, guaranteed: false, banner: "character" };
+const DEFAULT: WishState = {
+  primos: 0,
+  fates: 0,
+  perDay: 60,
+  pity: 0,
+  guaranteed: false,
+  banner: "character",
+  targetCharId: "",
+  targetWeaponId: "",
+};
 
 export function getWishState(): WishState {
   try {
