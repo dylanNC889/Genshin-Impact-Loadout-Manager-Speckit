@@ -12,39 +12,49 @@ export interface TeamTemplate {
 
 export const TEAM_TEMPLATES: TeamTemplate[] = [
   {
-    name: "Pyro National",
-    description: "Vaporize/Overload staple: Pyro DPS + Hydro + Pyro battery + grouper.",
-    slots: [["xiangling"], ["xingqiu", "yelan"], ["bennett"], ["kaedehara-kazuha", "sucrose", "venti"]],
-  },
-  {
     name: "Hu Tao Vaporize",
-    description: "Charged-attack Pyro carry with off-field Hydro and a shielder.",
-    slots: [["hu-tao"], ["xingqiu", "yelan"], ["zhongli"], ["kaedehara-kazuha", "sucrose"]],
+    description: "Charged-attack Pyro carry with Furina + off-field Hydro and a shielder.",
+    slots: [["hu-tao"], ["furina"], ["yelan", "xingqiu"], ["zhongli", "kaedehara-kazuha"]],
   },
   {
-    name: "Freeze",
-    description: "Cryo DPS + Hydro applicator held frozen, with a Cryo buffer and grouper.",
-    slots: [["kamisato-ayaka", "ganyu"], ["sangonomiya-kokomi", "mona"], ["shenhe", "kaedehara-kazuha"], ["kaedehara-kazuha", "venti"]],
+    name: "Neuvillette",
+    description: "Charged-attack Hydro carry buffed by Furina, grouped and shielded.",
+    slots: [["neuvillette"], ["furina"], ["kaedehara-kazuha", "jean"], ["zhongli", "baizhu"]],
   },
   {
-    name: "Aggravate",
-    description: "On-field Electro with a Dendro driver and off-field Electro, grouped by Anemo.",
-    slots: [["raiden-shogun", "yae-miko"], ["fischl"], ["nahida"], ["kaedehara-kazuha", "sucrose"]],
+    name: "Arlecchino",
+    description: "Pyro NA/charged carry — double-Pyro Vaporize with Bennett + Furina.",
+    slots: [["arlecchino"], ["kaedehara-kazuha"], ["bennett"], ["furina"]],
+  },
+  {
+    name: "Mavuika Pyro",
+    description: "Nightsoul Pyro carry with a Pyro battery and Anemo/Dendro support.",
+    slots: [["mavuika"], ["xiangling"], ["bennett"], ["citlali", "kaedehara-kazuha"]],
+  },
+  {
+    name: "Pyro National",
+    description: "Evergreen Vaporize/Overload: Pyro + Hydro + Pyro battery + grouper.",
+    slots: [["xiangling"], ["xingqiu", "yelan"], ["bennett"], ["kaedehara-kazuha", "sucrose"]],
+  },
+  {
+    name: "Clorinde Aggravate",
+    description: "On-field Electro carry, Dendro driver + off-field Electro, grouped by Anemo.",
+    slots: [["clorinde", "raiden-shogun"], ["fischl"], ["nahida"], ["kaedehara-kazuha", "sucrose"]],
   },
   {
     name: "Hyperbloom",
     description: "Dendro + Hydro seed Blooms; an Electro trigger detonates them.",
-    slots: [["nahida"], ["xingqiu", "yelan"], ["kuki-shinobu", "raiden-shogun"], ["zhongli", "kaedehara-kazuha"]],
+    slots: [["nahida"], ["xingqiu", "yelan"], ["kuki-shinobu", "raiden-shogun"], ["furina", "zhongli"]],
+  },
+  {
+    name: "Ayaka Freeze",
+    description: "Cryo carry held Frozen, buffed by Shenhe/Furina and grouped by Anemo.",
+    slots: [["kamisato-ayaka"], ["furina", "sangonomiya-kokomi"], ["shenhe"], ["kaedehara-kazuha"]],
   },
   {
     name: "Nilou Bloom",
     description: "Nilou's Bountiful Cores in a Hydro/Dendro-only team.",
-    slots: [["nilou"], ["nahida"], ["xingqiu", "yelan"], ["sangonomiya-kokomi"]],
-  },
-  {
-    name: "Mono Geo",
-    description: "Geo DPS with a Geo buffer, an off-field Geo, and a shielder.",
-    slots: [["arataki-itto"], ["gorou"], ["albedo"], ["zhongli"]],
+    slots: [["nilou"], ["nahida"], ["xingqiu", "yelan"], ["furina", "sangonomiya-kokomi"]],
   },
 ];
 
