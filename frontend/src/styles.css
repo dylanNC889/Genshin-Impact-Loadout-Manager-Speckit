@@ -806,6 +806,41 @@ select {
   width: auto;
   accent-color: var(--accent);
 }
+.wish-target-pick {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.wish-target-pick label {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.wish-target-pick select {
+  width: 100%;
+}
+.wish-targets {
+  display: flex;
+  gap: 12px;
+  margin-top: 10px;
+}
+.wish-target-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-2);
+  text-decoration: none;
+  color: var(--text);
+  font-weight: 600;
+}
+.wish-target-item:hover {
+  border-color: var(--accent);
+}
 .wish-stat {
   margin: 6px 0 10px;
 }

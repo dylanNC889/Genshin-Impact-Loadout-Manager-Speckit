@@ -67,9 +67,16 @@ test("wish planner computes pulls and persists", async ({ page }) => {
   await expect(page.locator(".wish-big").first()).toHaveText("100");
   await expect(page.locator(".wish-odds li", { hasText: "Chance of a 5★" }).first().locator("strong")).toHaveText("100%");
   await expect(page.locator(".wish-patches li")).toHaveCount(4);
-  // inputs persist across reload
+
+  // pick a banner target (#27) — it shows with an icon and names the odds row.
+  await page.getByLabel("Target character").selectOption("furina");
+  await expect(page.locator(".wish-target-item", { hasText: "Furina" })).toBeVisible();
+  await expect(page.locator(".wish-odds li", { hasText: "Chance of Furina" }).first()).toBeVisible();
+
+  // inputs + target persist across reload
   await page.reload();
   await expect(page.getByLabel("Primogems", { exact: true })).toHaveValue("16000");
+  await expect(page.getByLabel("Target character")).toHaveValue("furina");
 });
 
 // E2 — build planner aggregates materials across a wishlist.
