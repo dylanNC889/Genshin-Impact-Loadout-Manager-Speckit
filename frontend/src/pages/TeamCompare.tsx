@@ -1,7 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
-import { fetchCharacterDetail, listLoadouts, listTeams } from "../api";
+import { fetchCharacterDetail, fetchModifiers, listLoadouts, listTeams } from "../api";
 import type { CharacterDetail, SavedLoadout, SavedTeam } from "../api";
+import type { ConditionalBuff } from "@app/contracts";
 import { Card } from "../components/ui";
 import { CompareNav } from "../components/CompareNav";
 import { computeTeamDamage } from "../teamDamage";
@@ -9,14 +10,19 @@ import { computeTeamDamage } from "../teamDamage";
 /** Shared assumptions so the two damage totals are comparable. */
 const ASSUMPTIONS = { reaction: "none", transformative: "none", enemyLevel: 90, enemyRes: 10 } as const;
 
-function teamDamageTotal(team: SavedTeam, details: CharacterDetail[], loadouts: SavedLoadout[]): number {
+function teamDamageTotal(
+  team: SavedTeam,
+  details: CharacterDetail[],
+  loadouts: SavedLoadout[],
+  conditionalBuffs?: ConditionalBuff[],
+): number {
   const entries = team.slots
     .map((s, i) => ({
       detail: details[i],
       loadout: s.loadoutId ? (loadouts.find((l) => l.id === s.loadoutId) ?? null) : null,
     }))
     .filter((e): e is { detail: CharacterDetail; loadout: SavedLoadout | null } => Boolean(e.detail));
-  return computeTeamDamage(entries, ASSUMPTIONS).damage?.totalEstimated ?? 0;
+  return computeTeamDamage(entries, { ...ASSUMPTIONS, conditionalBuffs }).damage?.totalEstimated ?? 0;
 }
 
 /** Compare two saved teams side-by-side: synergy + damage under shared assumptions (F). */
@@ -24,6 +30,7 @@ export function TeamComparePage() {
   const [params, setParams] = useSearchParams();
   const teamsQ = useQuery({ queryKey: ["teams"], queryFn: listTeams });
   const loadoutsQ = useQuery({ queryKey: ["loadouts"], queryFn: listLoadouts });
+  const modifiersQ = useQuery({ queryKey: ["modifiers"], queryFn: fetchModifiers });
   const teams = (teamsQ.data ?? []).slice().sort((x, y) => x.name.localeCompare(y.name));
   const loadouts = loadoutsQ.data ?? [];
 
@@ -61,8 +68,9 @@ export function TeamComparePage() {
   );
 
   const ready = teamA && teamB && detailsA.data && detailsB.data;
-  const dmgA = ready ? teamDamageTotal(teamA, detailsA.data, loadouts) : 0;
-  const dmgB = ready ? teamDamageTotal(teamB, detailsB.data, loadouts) : 0;
+  const buffs = modifiersQ.data?.conditionalBuffs;
+  const dmgA = ready ? teamDamageTotal(teamA, detailsA.data, loadouts, buffs) : 0;
+  const dmgB = ready ? teamDamageTotal(teamB, detailsB.data, loadouts, buffs) : 0;
 
   const row = (label: string, x: React.ReactNode, y: React.ReactNode) => (
     <tr>

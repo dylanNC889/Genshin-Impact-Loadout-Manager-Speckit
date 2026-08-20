@@ -1,4 +1,5 @@
-import type { Element } from "@app/contracts";
+import type { Element, ResShred } from "@app/contracts";
+import { totalResShred } from "@app/stat-engine";
 
 /**
  * Approximate team-wide combat buffs from common enablers, folded into the live damage estimate
@@ -11,8 +12,10 @@ export interface TeamBuff {
   dmgBonusPct?: number;
   critRate?: number;
   critDmg?: number;
-  /** Enemy RES shred; `elements` scopes it (undefined = universal). VV shreds swirlable only. */
-  resShred?: { pct: number; elements?: Element[] };
+  /** Enemy RES shred; `elements` scopes it (undefined = universal). VV shreds swirlable only.
+   *  `source` de-duplicates against the same effect reached another way — a build wearing VV 4pc
+   *  contributes an identically-sourced shred, and the two take the max instead of stacking. */
+  resShred?: ResShred;
   /** When set, the offensive buffs apply only to this element's damage. */
   element?: Element;
   note: string;
@@ -21,19 +24,23 @@ export interface TeamBuff {
 /** Elements an Anemo unit can swirl (what Viridescent Venerer's 4pc shreds). */
 const SWIRLABLE: Element[] = ["Pyro", "Hydro", "Electro", "Cryo"];
 
+/** Shared shred source id — must match the `source` on the vv4 conditional buff in
+ *  data/modifiers/conditional-buffs.json, so the two never double-count. */
+const VV = "viridescent-venerer";
+
 export const TEAM_BUFFS: Record<string, TeamBuff> = {
   bennett: { flatATK: 800, note: "Bennett: ATK field (~+800 ATK, approx)" },
   "kujou-sara": { flatATK: 500, note: "Kujou Sara: Crowfeather ATK buff (approx)" },
   "kaedehara-kazuha": {
-    resShred: { pct: 40, elements: SWIRLABLE },
+    resShred: { pct: 40, elements: SWIRLABLE, source: VV },
     dmgBonusPct: 20,
     note: "Kazuha: VV −40% RES (swirled elements) + EM DMG% (approx)",
   },
-  sucrose: { resShred: { pct: 40, elements: SWIRLABLE }, dmgBonusPct: 20, note: "Sucrose: VV −40% RES + EM share (approx)" },
-  venti: { resShred: { pct: 40, elements: SWIRLABLE }, note: "Venti: VV −40% RES (swirled elements)" },
-  lynette: { resShred: { pct: 40, elements: SWIRLABLE }, note: "Lynette: VV −40% RES (swirled elements)" },
+  sucrose: { resShred: { pct: 40, elements: SWIRLABLE, source: VV }, dmgBonusPct: 20, note: "Sucrose: VV −40% RES + EM share (approx)" },
+  venti: { resShred: { pct: 40, elements: SWIRLABLE, source: VV }, note: "Venti: VV −40% RES (swirled elements)" },
+  lynette: { resShred: { pct: 40, elements: SWIRLABLE, source: VV }, note: "Lynette: VV −40% RES (swirled elements)" },
   faruzan: { dmgBonusPct: 30, element: "Anemo", note: "Faruzan: +Anemo DMG & RES shred (approx)" },
-  zhongli: { resShred: { pct: 20 }, note: "Zhongli: −20% universal RES" },
+  zhongli: { resShred: { pct: 20, source: "zhongli" }, note: "Zhongli: −20% universal RES" },
   furina: { dmgBonusPct: 60, note: "Furina: Fanfare team DMG% (approx, high stacks)" },
   mona: { dmgBonusPct: 60, note: "Mona: Omen +DMG taken (approx)" },
   yelan: { dmgBonusPct: 25, note: "Yelan: Exquisiteness +DMG% (approx)" },
@@ -63,19 +70,17 @@ export function teamBuffFor(
   return { flatATK, dmgBonusPct, critRate, critDmg };
 }
 
-/** Enemy RES shred that applies to `element` (element-scoped shred skipped when element is
- *  unknown). Capped at 60% — the game caps meaningful stacking around there. */
-export function resShredForElement(teamIds: string[], element: Element | undefined): number {
-  let shred = 0;
-  for (const id of teamIds) {
-    const rs = TEAM_BUFFS[id]?.resShred;
-    if (!rs) continue;
-    if (rs.elements) {
-      if (!element || !rs.elements.includes(element)) continue;
-    }
-    shred += rs.pct;
-  }
-  return Math.min(shred, 60);
+/** Enemy RES shred applying to `element`, from the team's enablers plus any `extra` shreds the
+ *  caller resolved elsewhere (e.g. a build's own VV/Deepwood 4pc via its conditional buffs).
+ *  Scoping, same-source de-duplication and the 60-point cap all live in the engine's
+ *  totalResShred so team buffs and conditional buffs are resolved by one set of rules. */
+export function resShredForElement(
+  teamIds: string[],
+  element: Element | undefined,
+  extra: ResShred[] = [],
+): number {
+  const fromTeam = teamIds.map((id) => TEAM_BUFFS[id]?.resShred).filter((rs): rs is ResShred => Boolean(rs));
+  return totalResShred([...fromTeam, ...extra], element);
 }
 
 /** Human notes for the active team buffs (for the assumptions display). */

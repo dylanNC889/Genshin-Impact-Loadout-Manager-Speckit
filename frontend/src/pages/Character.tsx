@@ -1,7 +1,14 @@
 import { useEffect, useState } from "react";
 import { useParams, useSearchParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { computeBaseSheet, computeFinalStats, instanceAvgDamage, statRecord } from "@app/stat-engine";
+import {
+  computeBaseSheet,
+  computeFinalStats,
+  conditionalCombatEffects,
+  instanceAvgDamage,
+  statRecord,
+  totalResShred,
+} from "@app/stat-engine";
 import {
   fetchArtifactSets,
   fetchCharacterDetail,
@@ -25,11 +32,14 @@ import { getOwned, toggleOwned } from "../ownership";
 import { pushRecent } from "../recent";
 import { downloadCharacterCard } from "../cardImage";
 import { useLoadoutStore } from "../state/loadoutStore";
-import type { ArtifactSlot, Dataset, LoadoutInput } from "@app/contracts";
+import type { ArtifactSlot, Dataset, Element, LoadoutInput } from "@app/contracts";
 
 const PRIMARY_ORDER = ["HP", "ATK", "DEF", "CRIT_RATE", "CRIT_DMG", "EM", "ER"];
 const ASCENSION_FOR_LEVEL: Record<number, number> = { 1: 0, 20: 1, 40: 2, 50: 3, 60: 4, 70: 5, 80: 6, 90: 6 };
 const SCALE_STAT_TO_KEY: Record<string, string> = { ATK: "ATK", "Max HP": "HP", DEF: "DEF" };
+// The neutral enemy the per-talent "≈ damage" figures assume — matches instanceAvgDamage's
+// default, and is what a build's own RES-shred buffs (VV/Deepwood 4pc) reduce.
+const DEFAULT_ENEMY_RES = 10;
 
 /** Format a talent scaling value at the chosen talent level (FR-004). */
 function fmtScale(row: { valuesByLevel: number[]; percent: boolean }, level: number): string {
@@ -243,9 +253,29 @@ export function CharacterPage() {
     }
   }
 
+  // Combat effects the enabled conditional buffs contribute that the stat sheet can't hold:
+  // per-hit DMG% scoped to one talent, and enemy RES shred (both were previously dropped).
+  const combat = conditionalCombatEffects(activeConditionals, modifiers.conditionalBuffs);
+  const enemyRes = DEFAULT_ENEMY_RES - totalResShred(combat.resShred, char.element as Element);
+
+  /** The per-hit DMG% that applies to a given talent row — Charged Attack rows live under the
+   *  Normal Attack talent but are buffed by different passives, so scope by the row's label. */
+  const rowTalentBonus = (talentType: string, rowLabel: string): number => {
+    if (talentType === "NormalAttack") {
+      return /charged/i.test(rowLabel) ? combat.talentDmgPct.ChargedAttack : combat.talentDmgPct.NormalAttack;
+    }
+    if (talentType === "ElementalSkill") return combat.talentDmgPct.ElementalSkill;
+    if (talentType === "ElementalBurst") return combat.talentDmgPct.ElementalBurst;
+    return 0;
+  };
+
   // Average (crit-weighted) damage of a talent scaling row at the current build, or null when
   // it's not a computable ATK/HP/DEF-scaling DMG row.
-  const rowDamage = (row: { valuesByLevel: number[]; percent: boolean }, scaleStat: string | null): number | null => {
+  const rowDamage = (
+    row: { valuesByLevel: number[]; percent: boolean; label: string },
+    scaleStat: string | null,
+    talentType: string,
+  ): number | null => {
     const key = scaleStat ? SCALE_STAT_TO_KEY[scaleStat] : undefined;
     if (!key) return null;
     const mult = row.valuesByLevel[talentLevel - 1] ?? row.valuesByLevel[row.valuesByLevel.length - 1] ?? 0;
@@ -256,7 +286,9 @@ export function CharacterPage() {
       critRate: finalStats.CRIT_RATE ?? 0,
       critDmg: finalStats.CRIT_DMG ?? 0,
       dmgBonusPct: finalStats[`${char.element.toUpperCase()}_DMG`] ?? 0,
+      talentDmgBonusPct: rowTalentBonus(talentType, row.label),
       charLevel: level,
+      enemyResistancePct: enemyRes,
     });
   };
 
@@ -266,7 +298,7 @@ export function CharacterPage() {
   for (const s of char.skills) {
     s.scaling.forEach((row, i) => {
       const { label, stat } = describeScaling(row.label, row.percent);
-      const perHit = rowDamage(row, stat);
+      const perHit = rowDamage(row, stat, s.type);
       if (perHit != null) {
         damageInstances.push({ id: `${s.id}-${i}`, type: s.type, label: `${TYPE_ABBR[s.type] ?? s.type} · ${label}`, perHit });
       }
@@ -495,7 +527,7 @@ export function CharacterPage() {
                     <tbody>
                       {s.scaling.map((row, i) => {
                         const { label, stat } = describeScaling(row.label, row.percent);
-                        const dmg = rowDamage(row, stat);
+                        const dmg = rowDamage(row, stat, s.type);
                         return (
                           <tr key={i}>
                             <td>{label}</td>

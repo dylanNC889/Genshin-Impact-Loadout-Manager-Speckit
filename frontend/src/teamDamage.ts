@@ -1,24 +1,37 @@
-import { computeBaseStats, estimateTeamDamage } from "@app/stat-engine";
+import { computeBaseStats, conditionalCombatEffects, estimateTeamDamage } from "@app/stat-engine";
 import type { DamageMember } from "@app/stat-engine";
-import type { DamageEstimate, Element } from "@app/contracts";
+import type { ConditionalBuff, DamageEstimate, Element, ResShred, TalentScope } from "@app/contracts";
 import type { CharacterDetail, SavedLoadout } from "./api";
 import { teamBuffFor, resShredForElement } from "./teamBuffs";
 
-/** An illustrative rotation (A4): the strongest %-DMG instance of each combat talent, at Lv10. */
-function rotationInstances(character: CharacterDetail["character"]): { label: string; multiplier: number }[] {
+/** An illustrative rotation (A4): the strongest %-DMG instance of each combat talent, at Lv10.
+ *  Each instance carries its talent `scope` so per-hit conditional buffs ("+25% Elemental Skill
+ *  DMG") land only on the hits they actually buff. */
+function rotationInstances(
+  character: CharacterDetail["character"],
+): { label: string; multiplier: number; scope?: TalentScope }[] {
   const LABELS: Record<string, string> = {
     NormalAttack: "Normal Attack",
     ElementalSkill: "Elemental Skill",
     ElementalBurst: "Elemental Burst",
   };
+  const SCOPES: Record<string, TalentScope> = {
+    NormalAttack: "NormalAttack",
+    ElementalSkill: "ElementalSkill",
+    ElementalBurst: "ElementalBurst",
+  };
   const valueAt = (row: { valuesByLevel: number[] }) =>
     row.valuesByLevel[9] ?? row.valuesByLevel[row.valuesByLevel.length - 1] ?? 0;
-  const out: { label: string; multiplier: number }[] = [];
+  const out: { label: string; multiplier: number; scope?: TalentScope }[] = [];
   for (const s of character.skills) {
     const dmgRows = s.scaling.filter((r) => r.percent && /DMG/i.test(r.label));
     if (!dmgRows.length) continue;
     const best = dmgRows.reduce((a, b) => (valueAt(b) > valueAt(a) ? b : a));
-    out.push({ label: LABELS[s.type] ?? s.name, multiplier: valueAt(best) });
+    // A Normal Attack talent's best row may itself be a Charged Attack line, which some
+    // passives buff and others don't — scope it by the row, not just the talent.
+    const scope =
+      s.type === "NormalAttack" && /charged/i.test(best.label) ? "ChargedAttack" : SCOPES[s.type];
+    out.push({ label: LABELS[s.type] ?? s.name, multiplier: valueAt(best), scope });
   }
   return out.length ? out : [{ label: "Rotation", multiplier: 200 }];
 }
@@ -43,8 +56,13 @@ export function deriveFromBase(detail: CharacterDetail): DamageMember {
   };
 }
 
-/** Damage inputs from a saved loadout's geared final stats (FR-017). */
-export function deriveFromLoadout(lo: SavedLoadout, character: CharacterDetail["character"]): DamageMember {
+/** Damage inputs from a saved loadout's geared final stats (FR-017). `buffs` is the conditional
+ *  buff catalogue — the loadout's enabled ones contribute per-hit DMG% that the sheet can't hold. */
+export function deriveFromLoadout(
+  lo: SavedLoadout,
+  character: CharacterDetail["character"],
+  buffs?: ConditionalBuff[],
+): DamageMember {
   const get = (k: string) => lo.computedFinalStats.find((s) => s.key === k)?.value ?? 0;
   const dmgBonusPct = lo.computedFinalStats
     .filter((s) => s.key.endsWith("_DMG"))
@@ -59,8 +77,15 @@ export function deriveFromLoadout(lo: SavedLoadout, character: CharacterDetail["
     element: character.element,
     talentMultiplier: 200,
     instances: rotationInstances(character),
+    talentDmgPct: conditionalCombatEffects(lo.activeConditionals, buffs).talentDmgPct,
     characterLevel: 90,
   };
+}
+
+/** The RES shreds a saved loadout's enabled conditional buffs put on the enemy (VV 4pc,
+ *  Deepwood 4pc…). These are target debuffs, so they apply team-wide, not just to their wearer. */
+export function loadoutResShreds(lo: SavedLoadout, buffs?: ConditionalBuff[]): ResShred[] {
+  return conditionalCombatEffects(lo.activeConditionals, buffs).resShred;
 }
 
 /** Amplifying-reaction presets applied to every member as a rough estimate assumption. */
@@ -84,6 +109,9 @@ export interface TeamDamageOpts {
   enemyRes: number;
   /** Per-element base RES from an enemy preset (before shred). */
   presetByElement?: Record<string, number>;
+  /** Conditional-buff catalogue, so each member's enabled buffs can contribute per-hit DMG%
+   *  and enemy RES shred. Omit and those effects are simply not applied. */
+  conditionalBuffs?: ConditionalBuff[];
 }
 
 /** Compute a team's damage estimate + the per-element effective RES it used (C). Shared by the
@@ -96,7 +124,11 @@ export function computeTeamDamage(
   const r = REACTIONS[opts.reaction] ?? { mult: 1, type: undefined };
 
   const dmg = entries
-    .map((e) => (e.loadout ? deriveFromLoadout(e.loadout, e.detail.character) : deriveFromBase(e.detail)))
+    .map((e) =>
+      e.loadout
+        ? deriveFromLoadout(e.loadout, e.detail.character, opts.conditionalBuffs)
+        : deriveFromBase(e.detail),
+    )
     // Fold in team-wide buffs (A2), then the amplifying reaction.
     .map((m) => {
       const buff = teamBuffFor(m.element, teamCharIds);
@@ -126,11 +158,19 @@ export function computeTeamDamage(
     if (bm) dmg[bestIdx] = { ...bm, transformative: opts.transformative };
   }
 
+  // Enemy RES shred the members' own gear applies (VV/Deepwood 4pc via their conditional
+  // buffs). It's a debuff on the target, so it counts for the whole team — and a shred that
+  // shares a `source` with a team-enabler's (both "VV 4pc") takes the max, never stacks.
+  const gearShreds = entries.flatMap((e) =>
+    e.loadout ? loadoutResShreds(e.loadout, opts.conditionalBuffs) : [],
+  );
+
   // Per-element effective RES (C): VV shreds swirlable only, Zhongli universal.
   const teamElements = [...new Set(dmg.map((m) => m.element).filter(Boolean))] as Element[];
   const byElement: Record<string, number> = {};
   for (const el of teamElements) {
-    byElement[el] = (opts.presetByElement?.[el] ?? opts.enemyRes) - resShredForElement(teamCharIds, el);
+    byElement[el] =
+      (opts.presetByElement?.[el] ?? opts.enemyRes) - resShredForElement(teamCharIds, el, gearShreds);
   }
   const resReadout = teamElements
     .map((el) => ({ element: el, res: byElement[el]! }))
@@ -139,7 +179,7 @@ export function computeTeamDamage(
   const damage = dmg.length
     ? estimateTeamDamage(dmg, {
         enemyLevel: opts.enemyLevel,
-        enemyResistancePct: opts.enemyRes - resShredForElement(teamCharIds, undefined),
+        enemyResistancePct: opts.enemyRes - resShredForElement(teamCharIds, undefined, gearShreds),
         enemyResistanceByElement: byElement,
       })
     : null;

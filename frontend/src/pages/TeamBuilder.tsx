@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link, useSearchParams, useHref } from "react-router-dom";
 import { assessSynergy, computeBaseStats } from "@app/stat-engine";
 import type { DamageEstimate, Element, SynergyAssessment } from "@app/contracts";
-import { createTeam, fetchCharacters, fetchCharacterDetail, getTeam, listLoadouts, updateTeam } from "../api";
+import { createTeam, fetchCharacters, fetchCharacterDetail, fetchModifiers, getTeam, listLoadouts, updateTeam } from "../api";
 import { Card, Icon } from "../components/ui";
 import { encodeShare, decodeShare } from "../share";
 import { activeBuffNotes } from "../teamBuffs";
@@ -92,6 +92,8 @@ export function TeamBuilder() {
 
   const rosterQ = useQuery({ queryKey: ["characters", "team"], queryFn: () => fetchCharacters({}) });
   const loadoutsQ = useQuery({ queryKey: ["loadouts"], queryFn: listLoadouts });
+  // Conditional buffs, so each slot's enabled ones contribute their per-hit DMG% and RES shred.
+  const modifiersQ = useQuery({ queryKey: ["modifiers"], queryFn: fetchModifiers });
   const savedTeamQ = useQuery({
     queryKey: ["saved-team", teamParam],
     queryFn: () => getTeam(teamParam ?? ""),
@@ -229,9 +231,21 @@ export function TeamBuilder() {
       enemyLevel: preset.level ?? enemyLevel,
       enemyRes: preset.res ?? enemyRes,
       presetByElement: preset.byElement,
+      conditionalBuffs: modifiersQ.data?.conditionalBuffs,
     });
     return { damage: est, autoChoice: autoChoiceLabel, resReadout };
-  }, [slots, details, savedLoadouts, reaction, transformative, autoReact, enemyPreset, enemyLevel, enemyRes]);
+  }, [
+    slots,
+    details,
+    savedLoadouts,
+    reaction,
+    transformative,
+    autoReact,
+    enemyPreset,
+    enemyLevel,
+    enemyRes,
+    modifiersQ.data,
+  ]);
 
   return (
     <div className="team">
