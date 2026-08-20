@@ -4,6 +4,10 @@
  * lowers them substantially, and rotation length matters, so treat these as a rough guideline,
  * not a hard rule. Particle-generation data isn't in genshin-db, so this is curated end-values
  * rather than a computed model; characters absent here have no target shown.
+ *
+ * Deliberately partial: only characters with a well-established community ER target get an
+ * entry. Characters whose Burst is cheap, rarely used, or too new for a settled consensus are
+ * left out on purpose so the team builder shows nothing rather than a made-up number.
  */
 export const ER_REQUIREMENTS: Record<string, number> = {
   "raiden-shogun": 200,
@@ -31,4 +35,39 @@ export const ER_REQUIREMENTS: Record<string, number> = {
   "kamisato-ayaka": 130,
   zhongli: 130,
   "sangonomiya-kokomi": 130,
+  // --- Batch-7 refresh: energy-hungry supports/sub-DPS that previously showed no target. ---
+  thoma: 200,
+  chevreuse: 180,
+  candace: 180,
+  dori: 180,
+  faruzan: 170,
+  sayu: 160,
+  mika: 160,
+  xinyan: 160,
+  "yun-jin": 160,
+  mona: 160,
+  kaveh: 160,
+  lisa: 150,
+  gorou: 150,
+  kirara: 150,
+  charlotte: 150,
+  collei: 150,
+  noelle: 150,
+  "kuki-shinobu": 150,
+  dehya: 150,
+  baizhu: 150,
+  "lan-yan": 150,
+  xianyun: 150,
+  xilonen: 150,
+  citlali: 150,
+  escoffier: 150,
+  kaeya: 140,
+  yaoyao: 140,
+  lynette: 140,
+  ororon: 140,
+  iansan: 140,
+  emilie: 130,
+  layla: 130,
+  barbara: 130,
+  sigewinne: 130,
 };

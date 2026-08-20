@@ -1,7 +1,8 @@
 // AUTO-GENERATED build recommendations — do not hand-edit large swaths; regenerate instead.
 // Source: KeqingMains (KQM) quick guides (https://keqingmains.com), extracted per character and
 // mapped to our dataset weapon/artifact-set ids (top 6 weapons / 5 sets, ranked).
-// 114/115 characters covered; the rest fall back to element heuristics (see recommendations.ts).
+// 114/116 characters covered. Uncovered: nicole + sandrone (6.6/6.7 debuts with no KQM quick
+// guide yet) — they fall back to the element-set heuristic in recommendations.ts.
 
 export interface BuildRec {
   weapons: string[];
