@@ -132,12 +132,26 @@ changes per record) before committing — the files are one-record-per-line.
 - **Modifiers** (`data/modifiers/`) are applied additively via `route(pools, key, value)` in
   `packages/stat-engine/src/stats/final-stats.ts`: constellation bonuses, weapon refinements, and
   **conditional buffs** (opt-in via `LoadoutInput.activeConditionals`, keyed to weapon id / set+pieces).
-  The engine only folds **sheet-additive** stats (ATK%/CRIT/EM/ER/HP%/DEF%/element & physical DMG) —
-  per-hit-only (NA/CA/Skill/Burst DMG%) and RES-shred effects are intentionally out of scope.
+  `computeFinalStats` folds only **sheet-additive** stats (ATK%/CRIT/EM/ER/HP%/DEF%/element &
+  physical DMG) — and that is correct, not a gap. A `ConditionalBuff` carries three effect kinds
+  and each has its own path (`packages/stat-engine/src/stats/combat-effects.ts`):
+  - `effects` → sheet stats, folded by `computeFinalStats`.
+  - `talentDmgBonuses` → **per-hit DMG%** scoped to NA/CA/Skill/Burst. Folding "+50% Charged
+    Attack DMG" into the sheet would inflate every other hit, so instead each damage instance
+    carries a `scope` and `conditionalCombatEffects` supplies `talentDmgPct` per scope.
+  - `resShred` → an **enemy** debuff, so it lands on the damage calc. `totalResShred` resolves
+    element scoping, the 60-point cap, and same-`source` de-duplication — a Kazuha teammate and
+    the build's own VV 4pc are one debuff and take the max instead of stacking.
+  A buff may also declare `element` to gate it to one element's characters (VV's shred fires on
+  the **wearer's** Swirl, so it is Anemo-only). Buffs with no `effects` show "· damage only" in
+  the editor, since toggling them can't move the stat sheet.
 - Damage: amplifying reactions (`teamDamage.ts` `REACTIONS`), transformative + catalyze
-  (Aggravate/Spread add to the hit), EM scaling. Team buffs + **element-scoped RES shred** live in
-  `frontend/src/teamBuffs.ts` (`resShredForElement` — VV shreds swirlable only, Zhongli universal).
-  `frontend/src/teamDamage.ts` `computeTeamDamage` is shared by the team builder and team compare.
+  (Aggravate/Spread add to the hit), EM scaling. Enemy RES uses the game's **piecewise** curve
+  (`resMultiplier`): linear 0–75%, `1/(1+4·RES)` above that, and **halved below zero** — so a −30%
+  effective RES is ×1.15, not ×1.30. Team buffs live in `frontend/src/teamBuffs.ts`
+  (`resShredForElement` merges them with a build's own gear shreds and delegates the rules to the
+  engine). `frontend/src/teamDamage.ts` `computeTeamDamage` is shared by the team builder and team
+  compare; pass it `conditionalBuffs` or per-hit/RES effects are silently not applied.
 
 ---
 

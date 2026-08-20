@@ -1,4 +1,4 @@
-import type { DamageCalcOptions, DamageEstimate } from "@app/contracts";
+import type { DamageCalcOptions, DamageEstimate, TalentScope } from "@app/contracts";
 
 /** Per-character inputs for the on-demand quantitative estimate (FR-016, research D5). */
 export interface DamageMember {
@@ -12,8 +12,12 @@ export interface DamageMember {
   dmgBonusPct: number;
   /** talent scaling as a percent (e.g., 400 = 400% of ATK) */
   talentMultiplier: number;
-  /** Optional per-instance rotation (NA/Skill/Burst); if given, overrides talentMultiplier. */
-  instances?: { label: string; multiplier: number }[];
+  /** Optional per-instance rotation (NA/Skill/Burst); if given, overrides talentMultiplier.
+   *  `scope` opts an instance into the matching per-hit DMG% from `talentDmgPct`. */
+  instances?: { label: string; multiplier: number; scope?: TalentScope }[];
+  /** Per-hit DMG% (percent points) by talent scope — from conditional buffs that buff only one
+   *  talent ("+50% Charged Attack DMG"). Applied per instance, never to the sheet. */
+  talentDmgPct?: Partial<Record<TalentScope, number>>;
   reactionMultiplier?: number;
   reactionType?: string;
   /** A transformative reaction this member triggers (Overloaded/Superconduct/…) — separate DMG. */
@@ -74,6 +78,21 @@ export function emReactionBonus(em: number): number {
   return 1 + (2.78 * e) / (e + 1400);
 }
 
+/**
+ * Damage multiplier from an enemy's RES, as the game computes it — piecewise, not linear:
+ *   RES >= 75%  ->  1 / (1 + 4·RES)   (heavy diminishing returns on very resistant targets)
+ *   0..75%      ->  1 − RES
+ *   RES < 0     ->  1 − RES/2         (shred past 0 is HALVED)
+ * The negative branch matters now that RES shred can come from a build's own artifacts as well
+ * as its teammates: a −30% effective RES is worth ×1.15, not the ×1.30 a linear form would give.
+ */
+export function resMultiplier(resPct: number): number {
+  const res = resPct / 100;
+  if (res < 0) return 1 - res / 2;
+  if (res >= 0.75) return 1 / (1 + 4 * res);
+  return 1 - res;
+}
+
 const DEFAULTS: DamageCalcOptions = {
   enemyLevel: 90,
   enemyResistancePct: 10,
@@ -93,7 +112,7 @@ export function estimateTeamDamage(
   // Per-element RES (A8): a member's element can override the uniform enemy RES.
   const resFactorFor = (element?: string) => {
     const perElement = element ? opts.enemyResistanceByElement?.[element] : undefined;
-    return 1 - (perElement ?? opts.enemyResistancePct) / 100;
+    return resMultiplier(perElement ?? opts.enemyResistancePct);
   };
   const reactionTypes = new Set<string>();
 
@@ -107,13 +126,21 @@ export function estimateTeamDamage(
     // Amplifying reactions scale with the triggerer's EM (A3).
     const reaction = m.reactionMultiplier ? m.reactionMultiplier * emReactionBonus(m.em ?? 0) : 1;
     if (m.reactionType) reactionTypes.add(m.reactionType);
-    const common = dmgMult * avgCrit * defFactor * resFactor * reaction;
+    // Everything except the DMG% multiplier, which now varies per instance.
+    const commonNoDmg = avgCrit * defFactor * resFactor * reaction;
+    const common = dmgMult * commonNoDmg;
     // Per-instance rotation (A4) when provided, else a single generic-rotation instance.
     const rotation = m.instances?.length ? m.instances : [{ label: "Rotation", multiplier: m.talentMultiplier }];
-    const instances = rotation.map((ins) => ({
-      label: ins.label,
-      estimated: (ins.multiplier / 100) * m.finalATK * common,
-    }));
+    const instances = rotation.map((ins) => {
+      // A scoped per-hit bonus ("+25% Elemental Skill DMG") adds to the DMG% multiplier for
+      // THIS instance only — the whole reason it can't be folded into the sheet.
+      const scoped = ins.scope ? (m.talentDmgPct?.[ins.scope] ?? 0) : 0;
+      const insDmgMult = 1 + (m.dmgBonusPct + scoped) / 100;
+      return {
+        label: ins.label,
+        estimated: (ins.multiplier / 100) * m.finalATK * insDmgMult * commonNoDmg,
+      };
+    });
     // Extra reactions (A6). Transformative = flat DMG, no crit, ignores DEF/DMG%. Catalyze
     // (Aggravate/Spread) adds base DMG to the hit, so it crits and takes DMG%/DEF/RES.
     if (m.transformative) {
@@ -158,16 +185,19 @@ export function instanceAvgDamage(p: {
   critRate: number;
   critDmg: number;
   dmgBonusPct: number;
+  /** Per-hit DMG% for this instance's talent only (e.g. Golden Troupe's +25% Skill DMG). Kept
+   *  separate from dmgBonusPct so callers can't accidentally apply it to every hit. */
+  talentDmgBonusPct?: number;
   charLevel?: number;
   enemyLevel?: number;
   enemyResistancePct?: number;
 }): number {
   const charLevel = p.charLevel ?? 90;
   const enemyLevel = p.enemyLevel ?? 90;
-  const resFactor = 1 - (p.enemyResistancePct ?? 10) / 100;
+  const resFactor = resMultiplier(p.enemyResistancePct ?? 10);
   const critRate = Math.min(Math.max(p.critRate, 0), 100) / 100;
   const avgCrit = 1 + critRate * (p.critDmg / 100);
-  const dmgMult = 1 + p.dmgBonusPct / 100;
+  const dmgMult = 1 + (p.dmgBonusPct + (p.talentDmgBonusPct ?? 0)) / 100;
   const defFactor = (charLevel + 100) / (charLevel + 100 + (enemyLevel + 100));
   return (p.multiplier / 100) * p.statValue * dmgMult * avgCrit * defFactor * resFactor;
 }

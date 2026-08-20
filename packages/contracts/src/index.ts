@@ -319,18 +319,63 @@ export interface Dataset {
   conditionalBuffs?: ConditionalBuff[];
 }
 
+/** Talents a per-hit DMG bonus can be scoped to. Charged Attack is its own scope because plenty
+ *  of passives buff only CA (Wanderer's Troupe) or only NA (Gladiator's Finale). */
+export const TALENT_SCOPES = [
+  "NormalAttack",
+  "ChargedAttack",
+  "ElementalSkill",
+  "ElementalBurst",
+] as const;
+export const TalentScopeSchema = z.enum(TALENT_SCOPES);
+export type TalentScope = z.infer<typeof TalentScopeSchema>;
+
+/** A DMG% bonus that applies only to hits of the listed talents. It multiplies the matching
+ *  damage instances instead of folding into the stat sheet — "+50% Charged Attack DMG" is not
+ *  a sheet stat and adding it to one would inflate every other hit. */
+export const TalentDmgBonusSchema = z.object({
+  scopes: z.array(TalentScopeSchema).min(1),
+  /** Percent points, e.g. 50 = +50% DMG on the scoped hits. */
+  value: z.number(),
+});
+export type TalentDmgBonus = z.infer<typeof TalentDmgBonusSchema>;
+
+/** An enemy RES debuff. `elements` scopes it to damage of those elements (Viridescent Venerer
+ *  only shreds what it swirled); omit for a universal shred (Zhongli). Two shreds sharing a
+ *  `source` are the SAME in-game effect reached by different routes — they take the max rather
+ *  than stacking, so e.g. "Kazuha is on the team" and "this build wears VV 4pc" can't double-count. */
+export const ResShredSchema = z.object({
+  /** Percent points of RES removed, e.g. 40 = −40% RES. */
+  pct: z.number(),
+  elements: z.array(ElementSchema).optional(),
+  source: z.string().optional(),
+});
+export type ResShred = z.infer<typeof ResShredSchema>;
+
 /** A togglable conditional buff — weapon passive, artifact 4pc effect, or a constellation DMG
- *  effect — whose (approximate, sheet-additive) stat effects fold into Final Stats when enabled (A). */
+ *  effect — enabled per build (A). Three kinds of effect, applied in different places:
+ *   - `effects`: sheet-additive stats, folded into Final Stats by computeFinalStats.
+ *   - `talentDmgBonuses`: per-hit DMG% that only multiplies matching damage instances.
+ *   - `resShred`: an enemy RES debuff, which lands on the damage calc rather than the sheet.
+ *  A buff may carry any combination; all values are approximate (R1/C0, ~full uptime). */
 export const ConditionalBuffSchema = z.object({
   id: z.string(),
   label: z.string(),
   effects: z.array(StatValueSchema),
+  /** Per-hit DMG% — see TalentDmgBonusSchema. Absent for buffs that are purely sheet stats. */
+  talentDmgBonuses: z.array(TalentDmgBonusSchema).optional(),
+  /** Enemy RES shred contributed while this buff is enabled. */
+  resShred: ResShredSchema.optional(),
   defaultOn: z.boolean().default(false),
   /** Unlock conditions — the editor shows a buff only when its source is equipped. */
   weaponId: z.string().optional(),
   setId: z.string().optional(),
   minPieces: z.number().optional(),
   minConstellation: z.number().optional(),
+  /** Restrict to characters of this element. Viridescent Venerer's shred triggers on the
+   *  WEARER's own Swirl, so only an Anemo character can set it off — without this gate the
+   *  editor would offer a Pyro build a shred it can never apply to itself. */
+  element: ElementSchema.optional(),
 });
 export type ConditionalBuff = z.infer<typeof ConditionalBuffSchema>;
 

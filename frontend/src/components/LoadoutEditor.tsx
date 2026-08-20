@@ -110,6 +110,7 @@ export function LoadoutEditor({
     if (b.weaponId && b.weaponId !== weaponId) return false;
     if (b.setId && (setCounts.get(b.setId) ?? 0) < (b.minPieces ?? 2)) return false;
     if (b.minConstellation && constellation < b.minConstellation) return false;
+    if (b.element && b.element !== character.element) return false;
     return true;
   });
   const applicableKey = applicableBuffs.map((b) => b.id).join(",");
@@ -317,18 +318,28 @@ export function LoadoutEditor({
           {applicableBuffs.length ? (
             <div className="cond-buffs">
               <div className="cond-head">
-                Conditional buffs <span className="muted small">approx · fold into Final Stats when on</span>
+                Conditional buffs{" "}
+                <span className="muted small">approx · sheet stats fold into Final Stats when on</span>
               </div>
-              {applicableBuffs.map((b) => (
-                <label key={b.id} className="cond-buff">
-                  <input
-                    type="checkbox"
-                    checked={activeConditionals.includes(b.id)}
-                    onChange={(e) => toggleConditional(b.id, e.target.checked)}
-                  />
-                  <span>{b.label}</span>
-                </label>
-              ))}
+              {applicableBuffs.map((b) => {
+                // Per-hit DMG% and RES shred can't be sheet stats, so a buff made only of those
+                // leaves Final Stats unchanged and shows up in the damage numbers instead. Say so,
+                // or toggling it looks broken.
+                const combatOnly = !b.effects.length && Boolean(b.talentDmgBonuses?.length || b.resShred);
+                return (
+                  <label key={b.id} className="cond-buff">
+                    <input
+                      type="checkbox"
+                      checked={activeConditionals.includes(b.id)}
+                      onChange={(e) => toggleConditional(b.id, e.target.checked)}
+                    />
+                    <span>
+                      {b.label}
+                      {combatOnly ? <span className="muted small"> · damage only</span> : null}
+                    </span>
+                  </label>
+                );
+              })}
             </div>
           ) : null}
 
