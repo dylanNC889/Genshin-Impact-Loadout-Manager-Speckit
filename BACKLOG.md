@@ -107,3 +107,37 @@ _None open._
   team compare, meta team templates, shareable PNG cards, mobile/responsive pass, wish/pity planner,
   artifact inventory + Crit-Value grading, rotation-damage builder, and conditional buff toggles.
   Merged (PRs #79–#92).
+- **Follow-ups after batch 6** (PRs #101–#103) — three targeted items, no spec doc:
+  - **#101 curated-data refresh.** Verified the dataset and both material generators are already
+    current (genshin-db 5.2.12 is the latest published version — regenerating produced
+    byte-identical output), then closed the coverage gaps that audit exposed: `talentPriority`
+    35/116 → 116/116 characters, `erRequirements` 25 → 59 entries, and a stale coverage comment in
+    `recommendations.ts`.
+  - **#102 E2E reliability.** From "needs `--workers=3/4`" to 8 consecutive green runs at
+    `--workers=12`. Three causes: the dev server compiling lazy routes on demand under parallel
+    load (E2E now serves a production build via `vite preview`), a button whose `disabled` didn't
+    mirror its handler's guard (silent no-op clicks — a real UX bug too), and Playwright adopting
+    an unrelated local app squatting on the readiness port (`port:` → app-specific `url:`).
+  - **#103 engine gap closure.** Per-hit DMG% (`talentDmgBonuses`, scoped NA/CA/Skill/Burst) and
+    enemy RES shred (`resShred`, de-duplicated by `source`) now apply, via the new
+    `stats/combat-effects.ts`. Enemy RES moved to the game's piecewise curve, which halves shred
+    below 0%. 10 previously-omitted buffs added (24 → 34).
+
+## 📋 Next up
+
+**Batch 7** is spec'd in `specs/improvements-backlog-5.md` — 9 items, sequenced smallest → largest,
+each grounded in a specific defect found by reading the current code:
+
+1. Share links silently drop conditional buffs, notes and tags (S) — **bug**
+2. Nothing enforces that modifier ids resolve (S) — **bug**
+3. The optimizer ranks builds blind to conditional buffs (S–M) — **bug**
+4. Per-talent levels instead of one slider (S–M)
+5. Conditional buff values ignore weapon refinement (M)
+6. Reaction and enemy controls on the character page (M)
+7. Team buffs can't express Elemental Mastery (M)
+8. Constellation-gated conditional buffs (M–L)
+9. Team rotations instead of one hit per talent (L)
+
+Items 1–3 are defect fixes worth landing regardless. Items 4–7 hold the accuracy gain. Items 8–9
+are the ambitious end and depend on the earlier contract changes settling first.
+
