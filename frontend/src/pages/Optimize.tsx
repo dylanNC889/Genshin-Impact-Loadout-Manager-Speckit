@@ -66,8 +66,13 @@ export function OptimizePage() {
     return m;
   }, [inventory]);
 
+  // Each button's `disabled` must mirror its handler's guard exactly. When it doesn't, there's
+  // a window where the button looks clickable but the handler early-returns, so the click is a
+  // silent no-op — the user gets no feedback, and E2E clicks land in the gap under parallel load.
+  const importReady = Boolean(setsQ.data && statValsQ.data);
+
   function onImport() {
-    if (!setsQ.data || !statValsQ.data) return;
+    if (!importReady || !setsQ.data || !statValsQ.data) return;
     try {
       const res: ImportResult = parseGOOD(importText, setsQ.data, statValsQ.data.mainStatValues);
       setInventory(res.artifacts);
@@ -126,7 +131,11 @@ export function OptimizePage() {
     navigate(`/character/${characterId}?build=${code}`);
   }
 
-  const ready = Boolean(character && inventory.length >= 5);
+  // Same rule as importReady: everything onOptimize dereferences has to be loaded before the
+  // button is enabled, or an early click silently does nothing.
+  const ready = Boolean(
+    character && inventory.length >= 5 && detailQ.data && weaponsQ.data && modifiersQ.data,
+  );
 
   return (
     <div className="optimize">
@@ -148,7 +157,7 @@ export function OptimizePage() {
           aria-label="GOOD inventory JSON"
         />
         <div className="row-gap">
-          <button className="btn" onClick={onImport} disabled={!importText.trim() || !setsQ.data}>
+          <button className="btn" onClick={onImport} disabled={!importText.trim() || !importReady}>
             Import
           </button>
           <button className="btn ghost" onClick={onClear} disabled={!inventory.length}>
@@ -221,7 +230,13 @@ export function OptimizePage() {
           <button className="btn primary" onClick={onOptimize} disabled={!ready || running}>
             {running ? "Optimizing…" : "Optimize"}
           </button>
-          {!ready ? <span className="muted small">Pick a character and import ≥5 artifacts.</span> : null}
+          {!ready ? (
+            <span className="muted small">
+              {character && inventory.length >= 5
+                ? "Loading character data…"
+                : "Pick a character and import ≥5 artifacts."}
+            </span>
+          ) : null}
           {error ? <span className="error small">{error}</span> : null}
         </div>
       </Card>

@@ -59,17 +59,29 @@ resolves) importing `chromium`, e.g. `frontend/shot.mjs`, then `cd frontend && n
 ```bash
 pnpm typecheck          # tsc -b across the workspace
 pnpm test               # vitest (unit) — 75 tests
-cd frontend && npx playwright test --workers=4   # E2E — 46 tests
+cd frontend && npx playwright test   # E2E — 46 tests, ~14s
 npx eslint <changed files>
 ```
 
-- **E2E runs its own isolated servers** (backend `:3100`, frontend `:5199`) via
-  `frontend/playwright.config.ts` — independent of the `:3001/:5174` dev servers.
+- **E2E runs its own isolated servers** (backend `:3199`, frontend `:5199`) via
+  `frontend/playwright.config.ts` — independent of the `:3001/:5174` dev servers. Both ports are
+  overridable: `E2E_BACKEND_PORT=… E2E_FRONTEND_PORT=… npx playwright test`.
+- The frontend serves a **production build through `vite preview`**, not the dev server (which
+  compiles lazy routes on demand — the first worker to hit `/optimize` used to starve the rest).
+  `vite build` is ~1s and runs every time, so `dist/` is never stale. `vite preview` needs its own
+  `preview.proxy` in `vite.config.ts` — it does **not** inherit `server.proxy`.
 - The E2E store is wiped in the backend web-server **command**
   (`rm -f backend/.data/e2e-store.json && …`) — `globalSetup` alone races startup.
-- **Parallel flakiness**: the suite shares one backend store across workers, and heavy pages under
-  full load can time out. If a full run flakes, re-run with `--workers=3/4` — that's the tell it's
-  contention, not a regression. Robust-test rules learned here:
+- Web-server readiness is checked with an **app-specific url** (`/api/v1/characters`), never a bare
+  `port:`. A bare port only proves *something* is listening, and `reuseExistingServer` will adopt
+  it — an unrelated local app on the port silently 404s every `/api` call and ~42 tests fail as if
+  the app broke. (This happened: something owns `:3100` on this machine, which is why the default
+  moved to `:3199`.) With a url check you get a clean `EADDRINUSE` instead.
+- **The suite is stable at full parallelism** — verified with 8 consecutive green runs at
+  `--workers=12`. If it flakes now, suspect a real regression, not contention. Robust-test rules:
+  - A button's `disabled` must mirror its handler's guard **exactly**. A handler that early-returns
+    on data the `disabled` check omits makes the click a silent no-op — that mismatch on
+    `/optimize` was the suite's last flake source (and a real UX bug).
   - Tests that create/delete loadouts/teams **loop-delete all** matching rows to clean up.
   - Other tests seed builds into the shared store, so anything that assumes "empty account" must
     handle the populated case (e.g. Farmable checks "Show everything" when present).
