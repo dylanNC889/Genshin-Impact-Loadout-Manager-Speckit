@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
+  ampReactionFactor,
   computeFinalStats,
   conditionalCombatEffects,
   estimateTeamDamage,
@@ -265,5 +266,37 @@ describe("refinement scaling of conditional buffs (batch 7 #5)", () => {
     expect(at(5)).toBeGreaterThan(at(1));
     // base HP 1700 -> +20% = 2040 at R1, +40% = 2380 at R5.
     expect(at(5) - at(1)).toBeCloseTo(1700 * 0.2, 4);
+  });
+});
+
+describe("ampReactionFactor — 'no reaction' must not pick up the EM bonus", () => {
+  it("returns 1 for no multiplier, or a multiplier of exactly 1", () => {
+    // The "none" preset is passed through as mult: 1. Treating that as truthy applied the EM
+    // reaction bonus to every hit, silently inflating any build with EM by up to ~35%.
+    expect(ampReactionFactor(undefined, 200)).toBe(1);
+    expect(ampReactionFactor(1, 200)).toBe(1);
+    expect(ampReactionFactor(0, 200)).toBe(1);
+  });
+
+  it("scales a real amplifying multiplier by the EM bonus", () => {
+    expect(ampReactionFactor(2, 0)).toBeCloseTo(2, 6);
+    // 1 + 2.78*200/(200+1400) = 1.3475
+    expect(ampReactionFactor(2, 200)).toBeCloseTo(2 * 1.3475, 4);
+    expect(ampReactionFactor(1.5, 200)).toBeCloseTo(1.5 * 1.3475, 4);
+  });
+
+  it("EM changes nothing when no reaction is selected", () => {
+    const member = {
+      characterId: "t",
+      finalATK: 2000,
+      critRate: 0,
+      critDmg: 0,
+      dmgBonusPct: 0,
+      talentMultiplier: 100,
+      reactionMultiplier: 1,
+    };
+    const noEm = estimateTeamDamage([{ ...member, em: 0 }]).totalEstimated;
+    const highEm = estimateTeamDamage([{ ...member, em: 800 }]).totalEstimated;
+    expect(highEm).toBeCloseTo(noEm, 6);
   });
 });

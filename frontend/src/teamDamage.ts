@@ -148,13 +148,16 @@ export function computeTeamDamage(
     )
     // Fold in team-wide buffs (A2), then the amplifying reaction.
     .map((m) => {
-      const buff = teamBuffFor(m.element, teamCharIds);
+      const buff = teamBuffFor(m.element, teamCharIds, m.characterId);
       return {
         ...m,
         finalATK: m.finalATK + buff.flatATK,
         dmgBonusPct: m.dmgBonusPct + buff.dmgBonusPct,
         critRate: m.critRate + buff.critRate,
         critDmg: m.critDmg + buff.critDmg,
+        // Shared EM must land BEFORE the reaction bonuses, which are what it actually powers
+        // (amplifying, transformative and catalyze all scale off the triggerer's EM).
+        em: (m.em ?? 0) + buff.em,
         reactionMultiplier: r.mult,
         reactionType: r.type,
       };

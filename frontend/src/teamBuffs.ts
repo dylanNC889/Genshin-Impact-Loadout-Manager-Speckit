@@ -12,6 +12,11 @@ export interface TeamBuff {
   dmgBonusPct?: number;
   critRate?: number;
   critDmg?: number;
+  /** Shared Elemental Mastery (batch 7 #7). Reactions scale off EM, so a team that picks its
+   *  buffer FOR the EM share was materially undercounted while this went unmodelled. */
+  em?: number;
+  /** The buffer doesn't buff themselves — Sucrose's A4 explicitly excludes her. */
+  excludeSelf?: boolean;
   /** Enemy RES shred; `elements` scopes it (undefined = universal). VV shreds swirlable only.
    *  `source` de-duplicates against the same effect reached another way — a build wearing VV 4pc
    *  contributes an identically-sourced shred, and the two take the max instead of stacking. */
@@ -36,7 +41,6 @@ export const TEAM_BUFFS: Record<string, TeamBuff> = {
     dmgBonusPct: 20,
     note: "Kazuha: VV −40% RES (swirled elements) + EM DMG% (approx)",
   },
-  sucrose: { resShred: { pct: 40, elements: SWIRLABLE, source: VV }, dmgBonusPct: 20, note: "Sucrose: VV −40% RES + EM share (approx)" },
   venti: { resShred: { pct: 40, elements: SWIRLABLE, source: VV }, note: "Venti: VV −40% RES (swirled elements)" },
   lynette: { resShred: { pct: 40, elements: SWIRLABLE, source: VV }, note: "Lynette: VV −40% RES (swirled elements)" },
   faruzan: { dmgBonusPct: 30, element: "Anemo", note: "Faruzan: +Anemo DMG & RES shred (approx)" },
@@ -46,28 +50,43 @@ export const TEAM_BUFFS: Record<string, TeamBuff> = {
   yelan: { dmgBonusPct: 25, note: "Yelan: Exquisiteness +DMG% (approx)" },
   shenhe: { dmgBonusPct: 15, element: "Cryo", note: "Shenhe: +Cryo DMG (approx)" },
   gorou: { dmgBonusPct: 15, element: "Geo", note: "Gorou: +Geo DMG (approx)" },
-  nahida: { note: "Nahida: team EM buff (not modeled in this ATK-based estimate)" },
+  nahida: {
+    em: 200,
+    note: "Nahida: Shrine of Maya EM share (approx — assumes a Pyro teammate + a high-EM Nahida)",
+  },
+  sucrose: {
+    resShred: { pct: 40, elements: SWIRLABLE, source: VV },
+    dmgBonusPct: 20,
+    em: 160,
+    excludeSelf: true,
+    note: "Sucrose: VV −40% RES + A4 shares 20% of her EM (approx)",
+  },
 };
 
-/** Sum of offensive buffs applying to a member of `element` from the team's enablers. */
+/** Sum of offensive buffs applying to a member of `element` from the team's enablers.
+ *  `selfId` is the member being computed, so a buff marked `excludeSelf` skips its own owner. */
 export function teamBuffFor(
   element: string | undefined,
   teamIds: string[],
-): { flatATK: number; dmgBonusPct: number; critRate: number; critDmg: number } {
+  selfId?: string,
+): { flatATK: number; dmgBonusPct: number; critRate: number; critDmg: number; em: number } {
   let flatATK = 0;
   let dmgBonusPct = 0;
   let critRate = 0;
   let critDmg = 0;
+  let em = 0;
   for (const id of teamIds) {
     const b = TEAM_BUFFS[id];
     if (!b) continue;
     if (b.element && b.element !== element) continue;
+    if (b.excludeSelf && id === selfId) continue;
     flatATK += b.flatATK ?? 0;
     dmgBonusPct += b.dmgBonusPct ?? 0;
     critRate += b.critRate ?? 0;
     critDmg += b.critDmg ?? 0;
+    em += b.em ?? 0;
   }
-  return { flatATK, dmgBonusPct, critRate, critDmg };
+  return { flatATK, dmgBonusPct, critRate, critDmg, em };
 }
 
 /** Enemy RES shred applying to `element`, from the team's enablers plus any `extra` shreds the

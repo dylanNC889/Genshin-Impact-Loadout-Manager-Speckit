@@ -79,6 +79,19 @@ export function emReactionBonus(em: number): number {
 }
 
 /**
+ * The amplifying-reaction factor for a hit: the multiplier, scaled by the triggerer's EM.
+ *
+ * A multiplier of 1 means NO amplifying reaction, and gets no EM bonus. That distinction matters:
+ * callers pass the "none" preset through as `mult: 1`, and treating 1 as truthy applied
+ * `emReactionBonus` to every hit — so a build with Elemental Mastery had its damage silently
+ * inflated (200 EM ≈ +35%) with no reaction selected at all.
+ */
+export function ampReactionFactor(multiplier: number | undefined, em: number | undefined): number {
+  if (!multiplier || multiplier === 1) return 1;
+  return multiplier * emReactionBonus(em ?? 0);
+}
+
+/**
  * Damage multiplier from an enemy's RES, as the game computes it — piecewise, not linear:
  *   RES >= 75%  ->  1 / (1 + 4·RES)   (heavy diminishing returns on very resistant targets)
  *   0..75%      ->  1 − RES
@@ -123,8 +136,9 @@ export function estimateTeamDamage(
     const dmgMult = 1 + m.dmgBonusPct / 100;
     const defFactor = (charLevel + 100) / (charLevel + 100 + (opts.enemyLevel + 100));
     const resFactor = resFactorFor(m.element);
-    // Amplifying reactions scale with the triggerer's EM (A3).
-    const reaction = m.reactionMultiplier ? m.reactionMultiplier * emReactionBonus(m.em ?? 0) : 1;
+    // Amplifying reactions scale with the triggerer's EM (A3). A multiplier of 1 is "no
+    // reaction" and must not pick up the EM bonus — see ampReactionFactor.
+    const reaction = ampReactionFactor(m.reactionMultiplier, m.em);
     if (m.reactionType) reactionTypes.add(m.reactionType);
     // Everything except the DMG% multiplier, which now varies per instance.
     const commonNoDmg = avgCrit * defFactor * resFactor * reaction;
@@ -208,6 +222,6 @@ export function instanceAvgDamage(p: {
   const avgCrit = 1 + critRate * (p.critDmg / 100);
   const dmgMult = 1 + (p.dmgBonusPct + (p.talentDmgBonusPct ?? 0)) / 100;
   const defFactor = (charLevel + 100) / (charLevel + 100 + (enemyLevel + 100));
-  const reaction = p.reactionMultiplier ? p.reactionMultiplier * emReactionBonus(p.em ?? 0) : 1;
+  const reaction = ampReactionFactor(p.reactionMultiplier, p.em);
   return (p.multiplier / 100) * p.statValue * dmgMult * avgCrit * defFactor * resFactor * reaction;
 }
