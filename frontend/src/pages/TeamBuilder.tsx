@@ -199,10 +199,11 @@ export function TeamBuilder() {
   }
 
   // Damage updates live from the team, gear and assumptions — no button to press (#4 UX).
-  const { damage, autoChoice, resReadout } = useMemo<{
+  const { damage, autoChoice, resReadout, rot } = useMemo<{
     damage: DamageEstimate | null;
     autoChoice: string | null;
     resReadout: { element: Element; res: number }[];
+    rot: { characterIds: string[]; seconds: number };
   }>(() => {
     // Auto mode (A9) derives the reaction from the team's possible reactions; else use the manual picks.
     const auto = autoReact ? autoPickReaction(synergy.possibleReactions) : null;
@@ -214,7 +215,7 @@ export function TeamBuilder() {
       const loadout = s.loadoutId ? (savedLoadouts.find((l) => l.id === s.loadoutId) ?? null) : null;
       return [{ detail, loadout }];
     });
-    const { damage: est, resReadout } = computeTeamDamage(entries, {
+    const { damage: est, resReadout, rotation: rot } = computeTeamDamage(entries, {
       reaction: auto ? auto.reaction : reaction,
       transformative: auto ? auto.transformative : transformative,
       enemyLevel: preset.level ?? enemyLevel,
@@ -222,7 +223,7 @@ export function TeamBuilder() {
       presetByElement: preset.byElement,
       conditionalBuffs: modifiersQ.data?.conditionalBuffs,
     });
-    return { damage: est, autoChoice: autoChoiceLabel, resReadout };
+    return { damage: est, autoChoice: autoChoiceLabel, resReadout, rot };
   }, [
     slots,
     details,
@@ -564,6 +565,21 @@ export function TeamBuilder() {
                 <span className="dmg-num">{Math.round(damage.totalEstimated).toLocaleString()}</span>
                 <span className="dmg-total-label">estimated damage / rotation</span>
               </div>
+              {rot.characterIds.length && rot.seconds > 0 ? (
+                <p className="muted small dmg-rotation">
+                  <strong>{Math.round(damage.totalEstimated / rot.seconds).toLocaleString()} DPS</strong> over{" "}
+                  {rot.seconds}s — using the saved rotation of {rot.characterIds.map(nameById).join(", ")}
+                  {rot.characterIds.length < slots.filter((sl) => sl.characterId).length
+                    ? "; the rest use one illustrative hit per talent"
+                    : ""}
+                  .
+                </p>
+              ) : (
+                <p className="muted small dmg-rotation">
+                  One illustrative hit per talent. Build a rotation on a character page and save it to
+                  the loadout for a real per-member rotation and a DPS figure.
+                </p>
+              )}
               {autoChoice ? (
                 <p className="muted small dmg-auto">
                   Auto-detected reaction: <strong>{autoChoice}</strong>

@@ -437,6 +437,28 @@ export const DEFAULT_TALENT_LEVELS: TalentLevels = {
   ElementalBurst: 10,
 };
 
+/**
+ * A saved rotation (batch 7 #9). Team damage previously used one illustrative hit per talent,
+ * which is not a rotation: it ignores NA strings, multi-hit skills, burst uptime and field time,
+ * and weights a 4-member team as 12 hits regardless of who is actually on field. The character
+ * page has had a real rotation builder since #91; persisting it here lets the team view use it.
+ */
+export const RotationLineSchema = z.object({
+  /** `${skillId}-${scalingRowIndex}`, resolved against the character's own skill data. */
+  instId: z.string(),
+  count: z.number().int().min(1).max(99),
+});
+export type RotationLine = z.infer<typeof RotationLineSchema>;
+
+export const RotationSchema = z.object({
+  lines: z.array(RotationLineSchema).max(40).default([]),
+  /** Rotation length in seconds, for the DPS figure. */
+  seconds: z.number().min(1).max(600).default(20),
+});
+export type Rotation = z.infer<typeof RotationSchema>;
+
+export const DEFAULT_ROTATION: Rotation = { lines: [], seconds: 20 };
+
 export const LoadoutInputSchema = z.object({
   name: z.string().min(1),
   characterId: z.string(),
@@ -454,6 +476,8 @@ export const LoadoutInputSchema = z.object({
   activeConditionals: z.array(z.string()).default([]),
   /** Talent level per combat talent (batch 7 #4). */
   talentLevels: TalentLevelsSchema.default(DEFAULT_TALENT_LEVELS),
+  /** Saved rotation (batch 7 #9) — see RotationSchema. */
+  rotation: RotationSchema.default(DEFAULT_ROTATION),
 });
 export type LoadoutInput = z.infer<typeof LoadoutInputSchema>;
 

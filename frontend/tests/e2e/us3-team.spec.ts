@@ -221,3 +221,48 @@ test("effective RES readout is element-scoped", async ({ page }) => {
   await expect(page.locator(".res-chip", { hasText: "Pyro -50%" })).toBeVisible();
   await expect(page.locator(".res-chip", { hasText: "Anemo -10%" })).toBeVisible();
 });
+
+// Batch 7 #9 — team damage used one illustrative hit per talent, which isn't a rotation. It
+// ignores NA strings, multi-hit skills and burst uptime. The character page has had a real
+// rotation builder since #91; the team view now uses it when a member's build carries one.
+test("a team uses a member's saved rotation and reports DPS", async ({ page }) => {
+  const name = "Team Rotation E2E";
+
+  // Build a rotation on the character page and save it to a loadout.
+  await page.goto("/character/hu-tao");
+  await page.getByRole("button", { name: "Apply", exact: true }).click();
+  await expect(page.getByLabel("Goblet set")).toHaveValue("crimson-witch-of-flames");
+  await page.getByRole("button", { name: /Quick fill/ }).click();
+  await expect(page.locator(".wish-big").first()).toBeVisible();
+  await page.getByLabel("Loadout name").fill(name);
+  await page.getByRole("button", { name: "Save loadout" }).click();
+  await expect(page.getByText("Saved ✓")).toBeVisible();
+
+  // It comes back with the build — the rotation is persisted, not component state.
+  const total = await page.locator(".wish-big").first().innerText();
+  await page.reload();
+  await page.getByRole("link", { name: new RegExp(name) }).first().click();
+  await expect(page.locator(".wish-big").first()).toHaveText(total);
+
+  // The team view picks it up and reports a DPS figure naming the member.
+  await page.goto("/team");
+  await page.locator(".picker-cell", { hasText: "Hu Tao" }).first().click();
+  const slot = page.getByLabel("Hu Tao loadout");
+  await expect(slot.locator("option", { hasText: name })).toBeAttached();
+  await slot.selectOption({ label: `${name} (geared)` });
+  await expect(page.locator(".dmg-rotation")).toContainText("DPS over");
+  await expect(page.locator(".dmg-rotation")).toContainText("Hu Tao");
+
+  // A member with no rotation is called out rather than silently folded in.
+  await page.locator(".picker-cell", { hasText: "Xingqiu" }).first().click();
+  await expect(page.locator(".dmg-rotation")).toContainText("the rest use one illustrative hit");
+
+  // Loop-delete every matching row — the E2E store is shared across workers.
+  await page.goto("/saved");
+  for (;;) {
+    const row = page.locator(".saved-list li", { hasText: name }).first();
+    if (!(await row.count())) break;
+    await row.getByRole("button", { name: "delete" }).click();
+    await expect(row).toHaveCount(0);
+  }
+});
