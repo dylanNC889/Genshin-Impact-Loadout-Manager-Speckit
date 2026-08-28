@@ -11,6 +11,7 @@ import type {
 import { DEFAULT_TALENT_LEVELS } from "@app/contracts";
 import type { CharacterDetail, SavedLoadout } from "./api";
 import { teamBuffFor, resShredForElement } from "./teamBuffs";
+import { talentHits } from "./rotation";
 
 /** An illustrative rotation (A4): the strongest %-DMG instance of each combat talent, at Lv10.
  *  Each instance carries its talent `scope` so per-hit conditional buffs ("+25% Elemental Skill
@@ -73,6 +74,30 @@ export function deriveFromBase(detail: CharacterDetail): DamageMember {
   };
 }
 
+/**
+ * A saved rotation's instances (batch 7 #9): each line resolved against the character's own hits
+ * and repeated `count` times, so an NA string counts as an NA string. Lines whose hit no longer
+ * resolves are dropped rather than counted as zero, and an empty result makes the caller fall
+ * back to the illustrative one-hit-per-talent rotation.
+ */
+function savedRotationInstances(
+  character: CharacterDetail["character"],
+  lo: SavedLoadout,
+): { label: string; multiplier: number; scope?: TalentScope }[] {
+  const lines = lo.rotation?.lines ?? [];
+  if (!lines.length) return [];
+  const byId = new Map(talentHits(character, lo.talentLevels).map((h) => [h.id, h]));
+  const out: { label: string; multiplier: number; scope?: TalentScope }[] = [];
+  for (const line of lines) {
+    const hit = byId.get(line.instId);
+    if (!hit) continue;
+    for (let i = 0; i < line.count; i++) {
+      out.push({ label: hit.label, multiplier: hit.multiplier, scope: hit.scope });
+    }
+  }
+  return out;
+}
+
 /** Damage inputs from a saved loadout's geared final stats (FR-017). `buffs` is the conditional
  *  buff catalogue — the loadout's enabled ones contribute per-hit DMG% that the sheet can't hold. */
 export function deriveFromLoadout(
@@ -81,6 +106,9 @@ export function deriveFromLoadout(
   buffs?: ConditionalBuff[],
 ): DamageMember {
   const get = (k: string) => lo.computedFinalStats.find((s) => s.key === k)?.value ?? 0;
+  // Prefer the member's own saved rotation; fall back to one illustrative hit per talent so a
+  // team of un-rotated builds reports exactly what it did before.
+  const saved = savedRotationInstances(character, lo);
   const dmgBonusPct = lo.computedFinalStats
     .filter((s) => s.key.endsWith("_DMG"))
     .reduce((sum, s) => sum + s.value, 0);
@@ -93,7 +121,7 @@ export function deriveFromLoadout(
     em: get("EM"),
     element: character.element,
     talentMultiplier: 200,
-    instances: rotationInstances(character, lo.talentLevels),
+    instances: saved.length ? saved : rotationInstances(character, lo.talentLevels),
     talentDmgPct: conditionalCombatEffects(lo.activeConditionals, buffs, lo.refinement).talentDmgPct,
     characterLevel: 90,
   };
@@ -136,7 +164,13 @@ export interface TeamDamageOpts {
 export function computeTeamDamage(
   entries: TeamDamageEntry[],
   opts: TeamDamageOpts,
-): { damage: DamageEstimate | null; resReadout: { element: Element; res: number }[] } {
+): {
+  damage: DamageEstimate | null;
+  resReadout: { element: Element; res: number }[];
+  /** Members whose own saved rotation was used, and the longest rotation length among them —
+   *  the team's DPS window. Empty when every member fell back to the illustrative rotation. */
+  rotation: { characterIds: string[]; seconds: number };
+} {
   const teamCharIds = entries.map((e) => e.detail.character.id);
   const r = REACTIONS[opts.reaction] ?? { mult: 1, type: undefined };
 
@@ -204,5 +238,12 @@ export function computeTeamDamage(
       })
     : null;
 
-  return { damage, resReadout };
+  // A team's rotation is as long as its longest member rotation — everyone acts within it.
+  const rotated = entries.filter((e) => (e.loadout?.rotation?.lines?.length ?? 0) > 0);
+  const rotation = {
+    characterIds: rotated.map((e) => e.detail.character.id),
+    seconds: rotated.reduce((max, e) => Math.max(max, e.loadout?.rotation?.seconds ?? 0), 0),
+  };
+
+  return { damage, resReadout, rotation };
 }

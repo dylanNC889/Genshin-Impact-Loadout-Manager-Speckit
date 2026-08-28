@@ -28,6 +28,7 @@ import { formatStat, statLabel } from "../format";
 import { playstyleFor } from "../playstyle";
 import { talentAdviceFor } from "../data/talentPriority";
 import { decodeShare } from "../share";
+import { SCALE_STAT_TO_KEY, describeScaling, talentHits } from "../rotation";
 import { getOwned, toggleOwned } from "../ownership";
 import { pushRecent } from "../recent";
 import { downloadCharacterCard } from "../cardImage";
@@ -39,7 +40,6 @@ import type { ArtifactSlot, Dataset, Element, LoadoutInput } from "@app/contract
 
 const PRIMARY_ORDER = ["HP", "ATK", "DEF", "CRIT_RATE", "CRIT_DMG", "EM", "ER"];
 const ASCENSION_FOR_LEVEL: Record<number, number> = { 1: 0, 20: 1, 40: 2, 50: 3, 60: 4, 70: 5, 80: 6, 90: 6 };
-const SCALE_STAT_TO_KEY: Record<string, string> = { ATK: "ATK", "Max HP": "HP", DEF: "DEF" };
 /** The three combat talents, in the order the skills are listed. */
 const TALENT_CONTROLS = [
   { key: "NormalAttack", label: "Normal Attack" },
@@ -53,27 +53,6 @@ function fmtScale(row: { valuesByLevel: number[]; percent: boolean }, level: num
   return row.percent ? `${v.toFixed(1)}%` : String(v);
 }
 
-// genshin-db appends the scaling stat to a row's label for non-ATK scalers ("Skill DMG Max HP",
-// "… DMG DEF"); ATK-scaling DMG rows carry no suffix. Extract that trailing stat (or default a
-// DMG row to ATK) so a row can read "Skill DMG: 46.6% of Max HP" (#7).
-const SCALE_STAT_RX = /\s*:?\s*(Max HP|HP|DEF|ATK|Elemental Mastery|EM)\s*[+/]*\s*$/i;
-function normScaleStat(s: string): string {
-  const u = s.toUpperCase();
-  if (u.includes("HP")) return "Max HP";
-  if (u === "DEF") return "DEF";
-  if (u === "ATK") return "ATK";
-  return "EM";
-}
-function describeScaling(label: string, percent: boolean): { label: string; stat: string | null } {
-  if (!percent || !/DMG/i.test(label)) return { label, stat: null };
-  const m = label.match(SCALE_STAT_RX);
-  if (m) {
-    const cleaned = label.slice(0, m.index).replace(/[\s:/+]+$/, "").trim();
-    return { label: cleaned || label, stat: normScaleStat(m[1] ?? "") };
-  }
-  return { label, stat: "ATK" };
-}
-
 export function CharacterPage() {
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
@@ -81,9 +60,8 @@ export function CharacterPage() {
   const buildParam = searchParams.get("build");
   const [level, setLevel] = useState(90);
 
-  // Rotation builder (B): ordered talent-hit lines + a rotation length for DPS.
-  const [rotation, setRotation] = useState<{ instId: string; count: number }[]>([]);
-  const [rotSec, setRotSec] = useState(20);
+  // Rotation builder (B): ordered talent-hit lines + a rotation length for DPS. Lives on the
+  // loadout (batch 7 #9) so it is saved with the build and the team view can reuse it.
   const [addId, setAddId] = useState("");
   const resetLoadout = useLoadoutStore((s) => s.reset);
   const setWeapon = useLoadoutStore((s) => s.setWeapon);
@@ -118,6 +96,18 @@ export function CharacterPage() {
   const setTalentLevel = useLoadoutStore((s) => s.setTalentLevel);
   const setAllTalentLevels = useLoadoutStore((s) => s.setAllTalentLevels);
   const setTalentLevels = useLoadoutStore((s) => s.setTalentLevels);
+  const rotationState = useLoadoutStore((s) => s.rotation);
+  const setRotationState = useLoadoutStore((s) => s.setRotation);
+  const rotation = rotationState.lines;
+  const rotSec = rotationState.seconds;
+  // Accepts a value or an updater, matching the useState call sites this replaced.
+  type RotLines = typeof rotationState.lines;
+  const setRotation = (update: RotLines | ((lines: RotLines) => RotLines)) =>
+    setRotationState({
+      ...rotationState,
+      lines: typeof update === "function" ? update(rotationState.lines) : update,
+    });
+  const setRotSec = (seconds: number) => setRotationState({ ...rotationState, seconds });
 
   const detail = useQuery({
     queryKey: ["character", id],
@@ -188,6 +178,7 @@ export function CharacterPage() {
     setNotes(b.notes ?? "");
     setTags(b.tags ?? []);
     if (b.talentLevels) setTalentLevels(b.talentLevels);
+    if (b.rotation) setRotationState(b.rotation);
     if (b.activeConditionals) hydrateConditionals(b.activeConditionals);
   }, [
     buildParam,
@@ -199,6 +190,7 @@ export function CharacterPage() {
     setNotes,
     setTags,
     setTalentLevels,
+    setRotationState,
     hydrateConditionals,
   ]);
 
@@ -215,6 +207,7 @@ export function CharacterPage() {
     setTags(saved.tags ?? []);
     hydrateConditionals(saved.activeConditionals ?? []);
     if (saved.talentLevels) setTalentLevels(saved.talentLevels);
+    if (saved.rotation) setRotationState(saved.rotation);
     for (const a of saved.artifacts) {
       setArtifact(a.slot, { setId: a.setId, mainStat: a.mainStat, subStats: a.subStats });
     }
@@ -228,6 +221,7 @@ export function CharacterPage() {
     setNotes,
     setTags,
     setTalentLevels,
+    setRotationState,
     hydrateConditionals,
   ]);
 
@@ -366,18 +360,26 @@ export function CharacterPage() {
     });
   };
 
-  // Every computable DMG hit across the talents, for the rotation builder (B).
-  const TYPE_ABBR: Record<string, string> = { NormalAttack: "NA", ElementalSkill: "Skill", ElementalBurst: "Burst" };
-  const damageInstances: { id: string; type: string; label: string; perHit: number }[] = [];
-  for (const s of char.skills) {
-    s.scaling.forEach((row, i) => {
-      const { label, stat } = describeScaling(row.label, row.percent);
-      const perHit = rowDamage(row, stat, s.type);
-      if (perHit != null) {
-        damageInstances.push({ id: `${s.id}-${i}`, type: s.type, label: `${TYPE_ABBR[s.type] ?? s.type} · ${label}`, perHit });
-      }
-    });
-  }
+  // Every computable DMG hit across the talents, for the rotation builder (B). Enumerated by the
+  // shared helper so a rotation saved here resolves identically in the team estimate.
+  const damageInstances = talentHits(char, talentLevels).map((h) => ({
+    id: h.id,
+    type: h.talentType,
+    label: h.label,
+    perHit: instanceAvgDamage({
+      multiplier: h.multiplier,
+      statValue: finalStats[SCALE_STAT_TO_KEY[h.scaleStat ?? ""] ?? ""] ?? 0,
+      critRate: finalStats.CRIT_RATE ?? 0,
+      critDmg: finalStats.CRIT_DMG ?? 0,
+      dmgBonusPct: finalStats[`${char.element.toUpperCase()}_DMG`] ?? 0,
+      talentDmgBonusPct: h.scope ? combat.talentDmgPct[h.scope] : 0,
+      reactionMultiplier,
+      em: finalStats.EM ?? 0,
+      charLevel: level,
+      enemyLevel: enemy.level,
+      enemyResistancePct: enemyRes,
+    }),
+  }));
   const instById = new Map(damageInstances.map((d) => [d.id, d]));
   const rotTotal = rotation.reduce((sum, l) => sum + (instById.get(l.instId)?.perHit ?? 0) * l.count, 0);
 

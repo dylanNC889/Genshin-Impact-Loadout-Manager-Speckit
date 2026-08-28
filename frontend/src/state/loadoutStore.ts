@@ -1,6 +1,6 @@
 import { create } from "zustand";
-import type { ArtifactSlot, ArtifactSubStat, StatValue, TalentLevels } from "@app/contracts";
-import { DEFAULT_TALENT_LEVELS } from "@app/contracts";
+import type { ArtifactSlot, ArtifactSubStat, Rotation, StatValue, TalentLevels } from "@app/contracts";
+import { DEFAULT_ROTATION, DEFAULT_TALENT_LEVELS } from "@app/contracts";
 
 /** A single artifact being edited in the loadout (FR-006). */
 export interface ArtifactDraft {
@@ -22,6 +22,8 @@ interface LoadoutState {
   activeConditionals: string[];
   /** Talent level per combat talent — real builds are 10/9/9-ish, not uniform (batch 7 #4). */
   talentLevels: TalentLevels;
+  /** Saved rotation, so the team view can use it instead of one illustrative hit per talent. */
+  rotation: Rotation;
   /** True when `activeConditionals` came from a saved build or a share link rather than from the
    *  editor's own defaults. The editor auto-enables every applicable `defaultOn` buff it hasn't
    *  seen before; without this flag that pass runs right after hydration and silently re-enables
@@ -42,6 +44,7 @@ interface LoadoutState {
   toggleConditional: (id: string, on: boolean) => void;
   setTalentLevel: (talent: keyof TalentLevels, level: number) => void;
   setTalentLevels: (levels: TalentLevels) => void;
+  setRotation: (rotation: Rotation) => void;
   setAllTalentLevels: (level: number) => void;
   reset: () => void;
 }
@@ -60,6 +63,7 @@ export const useLoadoutStore = create<LoadoutState>((set) => ({
   activeConditionals: [],
   conditionalsHydrated: false,
   talentLevels: DEFAULT_TALENT_LEVELS,
+  rotation: DEFAULT_ROTATION,
   setWeapon: (id) => set({ weaponId: id }),
   setArtifact: (slot, draft) => set((s) => ({ artifacts: { ...s.artifacts, [slot]: draft } })),
   clearArtifact: (slot) =>
@@ -78,6 +82,7 @@ export const useLoadoutStore = create<LoadoutState>((set) => ({
   setTalentLevel: (talent, level) =>
     set((s) => ({ talentLevels: { ...s.talentLevels, [talent]: level } })),
   setTalentLevels: (talentLevels) => set({ talentLevels }),
+  setRotation: (rotation) => set({ rotation }),
   setAllTalentLevels: (level) =>
     set({ talentLevels: { NormalAttack: level, ElementalSkill: level, ElementalBurst: level } }),
   toggleConditional: (id, on) =>
@@ -95,5 +100,6 @@ export const useLoadoutStore = create<LoadoutState>((set) => ({
       activeConditionals: [],
       conditionalsHydrated: false,
       talentLevels: DEFAULT_TALENT_LEVELS,
+      rotation: DEFAULT_ROTATION,
     }),
 }));
