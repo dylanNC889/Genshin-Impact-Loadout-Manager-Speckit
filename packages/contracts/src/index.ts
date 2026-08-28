@@ -387,6 +387,9 @@ export const ConditionalBuffSchema = z.object({
   weaponId: z.string().optional(),
   setId: z.string().optional(),
   minPieces: z.number().optional(),
+  /** Restrict to one character. Required for a constellation buff: C6 is a property of a
+   *  specific character, so without this gate every C6 build would unlock every C6 buff. */
+  characterId: z.string().optional(),
   minConstellation: z.number().optional(),
   /** Restrict to characters of this element. Viridescent Venerer's shred triggers on the
    *  WEARER's own Swirl, so only an Anemo character can set it off — without this gate the

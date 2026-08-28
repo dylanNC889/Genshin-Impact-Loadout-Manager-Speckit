@@ -68,6 +68,20 @@ describe("conditional-buffs.json invariants the schema can't express", () => {
     expect(bad, `minPieces must be 2 or 4:\n${bad.join("\n")}`).toEqual([]);
   });
 
+  it("every characterId names a character in the dataset", () => {
+    const dangling = buffs
+      .filter((b) => b.characterId && !characterIds.has(b.characterId))
+      .map((b) => `${b.id} -> character "${b.characterId}"`);
+    expect(dangling, `dangling character ids (buff -> missing id):\n${dangling.join("\n")}`).toEqual([]);
+  });
+
+  it("every constellation buff is gated to its own character", () => {
+    // C6 is a property of one character. Without the characterId gate, every C6 build in the
+    // game would unlock every C6 buff in the file.
+    const bad = buffs.filter((b) => b.minConstellation && !b.characterId).map((b) => b.id);
+    expect(bad, `constellation buff with no characterId: ${bad.join(", ")}`).toEqual([]);
+  });
+
   it("every constellation gate is within C1–C6", () => {
     const bad = buffs
       .filter((b) => b.minConstellation !== undefined && (b.minConstellation < 1 || b.minConstellation > 6))

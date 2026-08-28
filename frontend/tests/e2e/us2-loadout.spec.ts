@@ -155,3 +155,58 @@ test("a legacy 5-field share link still opens", async ({ page }) => {
   await expect(page.getByLabel(/^Weapon/)).toHaveValue("staff-of-homa");
   await expect(page.getByLabel("Goblet set")).toHaveValue("crimson-witch-of-flames");
 });
+
+// Batch 7 #8 — `minConstellation` had been in the schema since batch 6 and was used by 0 of 34
+// buffs, so the conditional half of the constellation system was unmodelled and raising the
+// constellation barely changed a number.
+test("constellation buffs unlock at their gate and stay on their own character", async ({ page }) => {
+  await page.goto("/character/xingqiu");
+  await expect(page.locator("table.scaling").first()).toBeVisible();
+
+  const peak = (talent: string) =>
+    page.evaluate((want) => {
+      const nodes = [...document.querySelectorAll(".skill-type, table.scaling")];
+      let type: string | null = null;
+      for (const n of nodes) {
+        if (n.classList.contains("skill-type")) {
+          type = n.textContent!.trim();
+          continue;
+        }
+        if (type !== want) {
+          type = null;
+          continue;
+        }
+        const vals = [...n.querySelectorAll(".scale-dmg")]
+          .map((td) => Number(td.textContent!.replace(/[^0-9]/g, "")))
+          .filter(Boolean);
+        return vals.length ? Math.max(...vals) : 0;
+      }
+      return 0;
+    }, talent);
+
+  // C0: no constellation buffs offered.
+  await expect(page.locator(".cond-buff", { hasText: "Xingqiu C" })).toHaveCount(0);
+  await expect.poll(() => peak("ElementalSkill")).toBeGreaterThan(0);
+
+  // C4 unlocks his +50% Elemental Skill DMG — and only the Skill moves.
+  const naBefore = await peak("NormalAttack");
+  await page.getByLabel("Constellation").selectOption("4");
+  await expect(page.locator(".cond-buff", { hasText: "Xingqiu C4" })).toBeVisible();
+  const skillC4 = await peak("ElementalSkill");
+
+  await page.getByLabel("Constellation").selectOption("2"); // below the C4 gate again
+  await expect(page.locator(".cond-buff", { hasText: "Xingqiu C4" })).toHaveCount(0);
+  expect(await peak("ElementalSkill")).toBeLessThan(skillC4);
+  // The C2 RES shred is still on, so compare NA against C2 rather than C0.
+  expect(await peak("NormalAttack")).toBeGreaterThan(naBefore);
+
+  // Listed under their own heading, not mixed in with gear buffs.
+  await page.getByLabel("Constellation").selectOption("4");
+  await expect(page.locator(".cond-subhead", { hasText: "From constellations" })).toBeVisible();
+
+  // A different character at C6 sees none of them.
+  await page.goto("/character/hu-tao");
+  await page.getByLabel("Constellation").selectOption("6");
+  await expect(page.locator(".cond-buff", { hasText: "Xingqiu" })).toHaveCount(0);
+  await expect(page.getByText(/Constellation effects aren't modelled for this character yet/)).toBeVisible();
+});

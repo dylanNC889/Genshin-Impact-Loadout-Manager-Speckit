@@ -319,6 +319,9 @@ export function CharacterPage() {
   // Combat effects the enabled conditional buffs contribute that the stat sheet can't hold:
   // per-hit DMG% scoped to one talent, and enemy RES shred (both were previously dropped).
   const combat = conditionalCombatEffects(activeConditionals, modifiers.conditionalBuffs, refinement);
+  const constellationBuffCount = (modifiers.conditionalBuffs ?? []).filter(
+    (b) => b.characterId === char.id && b.minConstellation,
+  ).length;
   const enemy = resolveEnemy(dmgPrefs.enemyPreset, dmgPrefs.enemyLevel, dmgPrefs.enemyRes);
   // A preset can raise RES for one element specifically (the "-resistant" presets).
   const baseRes = enemy.byElement?.[char.element] ?? enemy.res;
@@ -756,6 +759,13 @@ export function CharacterPage() {
 
       {char.constellations.length ? (
         <Card title="Constellations">
+          {/* Say plainly whether this character's constellations feed the numbers. Partial
+              coverage otherwise reads as "this constellation does nothing". */}
+          <p className="muted small">
+            {constellationBuffCount
+              ? `${constellationBuffCount} of this character's constellation effects feed the damage numbers — toggle them in the loadout editor above.`
+              : "Constellation effects aren't modelled for this character yet, so raising the constellation only changes the text below."}
+          </p>
           <ul className="skills">
             {char.constellations.map((con) => (
               <li key={con.level}>
