@@ -88,6 +88,47 @@ describe("conditional-buffs.json invariants the schema can't express", () => {
     expect(bad, `empty resShred.elements (omit the field for a universal shred): ${bad.join(", ")}`).toEqual([]);
   });
 
+  it("every refinement series starts at the entry's own value", () => {
+    // Index 0 IS R1. If it drifted from `value`, adding a series would silently change what an
+    // unrefined weapon contributes — the one thing this feature must not do.
+    const bad: string[] = [];
+    for (const b of buffs) {
+      for (const e of b.effects) {
+        if (e.byRefinement && e.byRefinement[0] !== e.value) bad.push(`${b.id}.${e.key}: ${e.byRefinement[0]} != ${e.value}`);
+      }
+      for (const t of b.talentDmgBonuses ?? []) {
+        if (t.byRefinement && t.byRefinement[0] !== t.value) bad.push(`${b.id}.talent: ${t.byRefinement[0]} != ${t.value}`);
+      }
+      const rs = b.resShred;
+      if (rs?.byRefinement && rs.byRefinement[0] !== rs.pct) bad.push(`${b.id}.resShred: ${rs.byRefinement[0]} != ${rs.pct}`);
+    }
+    expect(bad, `byRefinement[0] must equal the base value:\n${bad.join("\n")}`).toEqual([]);
+  });
+
+  it("only weapon-gated buffs carry a refinement series", () => {
+    // Artifact sets have no refinement, so a series on one would never be reachable.
+    const bad = buffs
+      .filter((b) => !b.weaponId)
+      .filter((b) => b.effects.some((e) => e.byRefinement) || (b.talentDmgBonuses ?? []).some((t) => t.byRefinement))
+      .map((b) => b.id);
+    expect(bad, `byRefinement on a non-weapon buff: ${bad.join(", ")}`).toEqual([]);
+  });
+
+  it("every refinement series increases with rank", () => {
+    const bad: string[] = [];
+    const check = (id: string, series: number[] | undefined) => {
+      if (!series) return;
+      for (let i = 1; i < series.length; i++) {
+        if (series[i]! < series[i - 1]!) bad.push(`${id}: ${series.join("/")}`);
+      }
+    };
+    for (const b of buffs) {
+      for (const e of b.effects) check(`${b.id}.${e.key}`, e.byRefinement);
+      for (const t of b.talentDmgBonuses ?? []) check(`${b.id}.talent`, t.byRefinement);
+    }
+    expect(bad, `refinement series must be non-decreasing:\n${bad.join("\n")}`).toEqual([]);
+  });
+
   it("every per-hit DMG bonus carries a non-zero value", () => {
     const bad = buffs
       .flatMap((b) => (b.talentDmgBonuses ?? []).map((t) => ({ id: b.id, t })))

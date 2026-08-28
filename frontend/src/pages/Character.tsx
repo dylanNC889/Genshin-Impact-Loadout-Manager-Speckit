@@ -305,7 +305,7 @@ export function CharacterPage() {
 
   // Combat effects the enabled conditional buffs contribute that the stat sheet can't hold:
   // per-hit DMG% scoped to one talent, and enemy RES shred (both were previously dropped).
-  const combat = conditionalCombatEffects(activeConditionals, modifiers.conditionalBuffs);
+  const combat = conditionalCombatEffects(activeConditionals, modifiers.conditionalBuffs, refinement);
   const enemyRes = DEFAULT_ENEMY_RES - totalResShred(combat.resShred, char.element as Element);
 
   /** The per-hit DMG% that applies to a given talent row — Charged Attack rows live under the

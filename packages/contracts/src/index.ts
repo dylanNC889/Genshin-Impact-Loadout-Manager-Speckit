@@ -333,20 +333,35 @@ export type TalentScope = z.infer<typeof TalentScopeSchema>;
 /** A DMG% bonus that applies only to hits of the listed talents. It multiplies the matching
  *  damage instances instead of folding into the stat sheet — "+50% Charged Attack DMG" is not
  *  a sheet stat and adding it to one would inflate every other hit. */
+/**
+ * A weapon passive's R1–R5 series for one value (batch 7 #5). Index 0 is R1 and MUST equal the
+ * entry's own `value`, so a buff that gains a series keeps its previous (R1) behaviour exactly.
+ * Absent means the value is flat — correct for artifact 4pc effects, which have no refinement.
+ */
+const ByRefinementSchema = z.array(z.number()).length(5).optional();
+
 export const TalentDmgBonusSchema = z.object({
   scopes: z.array(TalentScopeSchema).min(1),
-  /** Percent points, e.g. 50 = +50% DMG on the scoped hits. */
+  /** Percent points, e.g. 50 = +50% DMG on the scoped hits. R1 when `byRefinement` is present. */
   value: z.number(),
+  byRefinement: ByRefinementSchema,
 });
 export type TalentDmgBonus = z.infer<typeof TalentDmgBonusSchema>;
+
+/** A conditional buff's sheet-additive stat — a StatValue that may scale with refinement. */
+export const ConditionalEffectSchema = StatValueSchema.extend({
+  byRefinement: ByRefinementSchema,
+});
+export type ConditionalEffect = z.infer<typeof ConditionalEffectSchema>;
 
 /** An enemy RES debuff. `elements` scopes it to damage of those elements (Viridescent Venerer
  *  only shreds what it swirled); omit for a universal shred (Zhongli). Two shreds sharing a
  *  `source` are the SAME in-game effect reached by different routes — they take the max rather
  *  than stacking, so e.g. "Kazuha is on the team" and "this build wears VV 4pc" can't double-count. */
 export const ResShredSchema = z.object({
-  /** Percent points of RES removed, e.g. 40 = −40% RES. */
+  /** Percent points of RES removed, e.g. 40 = −40% RES. R1 when `byRefinement` is present. */
   pct: z.number(),
+  byRefinement: ByRefinementSchema,
   elements: z.array(ElementSchema).optional(),
   source: z.string().optional(),
 });
@@ -357,11 +372,12 @@ export type ResShred = z.infer<typeof ResShredSchema>;
  *   - `effects`: sheet-additive stats, folded into Final Stats by computeFinalStats.
  *   - `talentDmgBonuses`: per-hit DMG% that only multiplies matching damage instances.
  *   - `resShred`: an enemy RES debuff, which lands on the damage calc rather than the sheet.
- *  A buff may carry any combination; all values are approximate (R1/C0, ~full uptime). */
+ *  A buff may carry any combination. Values are approximate and, unless an entry carries a
+ *  `byRefinement` series, are the R1 figure. */
 export const ConditionalBuffSchema = z.object({
   id: z.string(),
   label: z.string(),
-  effects: z.array(StatValueSchema),
+  effects: z.array(ConditionalEffectSchema),
   /** Per-hit DMG% — see TalentDmgBonusSchema. Absent for buffs that are purely sheet stats. */
   talentDmgBonuses: z.array(TalentDmgBonusSchema).optional(),
   /** Enemy RES shred contributed while this buff is enabled. */

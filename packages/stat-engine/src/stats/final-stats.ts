@@ -18,6 +18,20 @@ interface Pools {
   direct: StatMap;
 }
 
+/**
+ * The value of a refinement-scaling entry at rank `refinement` (1–5). Entries without a series
+ * are flat — artifact 4pc effects have no refinement — and an out-of-range rank falls back to the
+ * base value rather than reading past the array.
+ */
+export function atRefinement(
+  entry: { value: number; byRefinement?: number[] },
+  refinement: number | undefined,
+): number {
+  const series = entry.byRefinement;
+  if (!series) return entry.value;
+  return series[(refinement ?? 1) - 1] ?? entry.value;
+}
+
 /** Route a stat contribution into the correct aggregation pool (research D2). */
 function route(pools: Pools, key: StatKey, value: number): void {
   switch (key) {
@@ -114,9 +128,11 @@ export function computeFinalStats(input: LoadoutInput, dataset: Dataset): FinalS
   }
 
   // Enabled conditional buffs (weapon passive / 4pc set / con DMG effects) — opt-in, approximate (A).
+  // A weapon-passive buff can carry an R1–R5 series, so it scales with refinement the same way
+  // the weapon's static bonuses already do (batch 7 #5).
   for (const id of input.activeConditionals ?? []) {
     const cb = dataset.conditionalBuffs?.find((b) => b.id === id);
-    if (cb) for (const e of cb.effects) route(pools, e.key, e.value);
+    if (cb) for (const e of cb.effects) route(pools, e.key, atRefinement(e, input.refinement));
   }
 
   const finalHP = base.baseHP * (1 + pools.hpPct / 100) + pools.flatHP;
