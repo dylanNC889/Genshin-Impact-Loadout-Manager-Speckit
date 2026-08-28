@@ -12,6 +12,7 @@ import { getOwned } from "../ownership";
 import { ER_REQUIREMENTS } from "../data/erRequirements";
 import { TEAM_TEMPLATES, resolveTemplate, type TeamTemplate } from "../data/teamTemplates";
 import { downloadTeamCard } from "../cardImage";
+import { ENEMY_PRESETS, EnemyFieldset } from "../components/DamageAssumptions";
 
 interface Slot {
   characterId: string | null;
@@ -34,18 +35,6 @@ const TRANSFORMATIVE = [
   "Aggravate",
   "Spread",
 ] as const;
-
-/** Enemy presets (A8): level + RES, optionally per-element. Index 0 = Custom (uses the inputs). */
-const ENEMY_PRESETS: { name: string; level: number | null; res: number | null; byElement?: Record<string, number> }[] = [
-  { name: "Custom", level: null, res: null },
-  { name: "Standard — Lv 90, 10% RES", level: 90, res: 10 },
-  { name: "Abyss — Lv 100, 10% RES", level: 100, res: 10 },
-  { name: "No resistance — 0%", level: 90, res: 0 },
-  { name: "Pyro-resistant — +50% Pyro", level: 90, res: 10, byElement: { Pyro: 50 } },
-  { name: "Hydro-resistant — +50% Hydro", level: 90, res: 10, byElement: { Hydro: 50 } },
-  { name: "Electro-resistant — +50% Electro", level: 90, res: 10, byElement: { Electro: 50 } },
-  { name: "Cryo-resistant — +50% Cryo", level: 90, res: 10, byElement: { Cryo: 50 } },
-];
 
 /** Pick the most representative reaction from a team's possible reactions (A9): amplifying first
  *  (biggest impact), else the first damaging transformative/catalyze. */
@@ -526,43 +515,14 @@ export function TeamBuilder() {
 
         <Card title="Damage Estimate">
           <div className="dmg-form">
-            <fieldset className="dmg-group">
-              <legend>Enemy</legend>
-              <label className="enemy-preset">
-                <span>Preset</span>
-                <select value={enemyPreset} onChange={(e) => setEnemyPreset(Number(e.target.value))} aria-label="Enemy preset">
-                  {ENEMY_PRESETS.map((p, i) => (
-                    <option key={p.name} value={i}>
-                      {p.name}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label>
-                <span>Level</span>
-                <input
-                  type="number"
-                  min={1}
-                  max={110}
-                  value={enemyLevel}
-                  onChange={(e) => setEnemyLevel(Number(e.target.value))}
-                  aria-label="Enemy level"
-                  disabled={enemyPreset !== 0}
-                />
-              </label>
-              <label>
-                <span>RES %</span>
-                <input
-                  type="number"
-                  min={-100}
-                  max={90}
-                  value={enemyRes}
-                  onChange={(e) => setEnemyRes(Number(e.target.value))}
-                  aria-label="Enemy resistance percent"
-                  disabled={enemyPreset !== 0}
-                />
-              </label>
-            </fieldset>
+            <EnemyFieldset
+              preset={enemyPreset}
+              onPreset={setEnemyPreset}
+              level={enemyLevel}
+              onLevel={setEnemyLevel}
+              res={enemyRes}
+              onRes={setEnemyRes}
+            />
 
             <fieldset className="dmg-group">
               <legend>Reaction</legend>

@@ -2773,6 +2773,15 @@ select {
 }
 
 /* --- Damage estimate assumptions form (B2, redesigned #4) --- */
+/* Reaction + enemy controls on the character page (batch 7 #6). */
+.dmg-assumptions {
+  margin-bottom: 14px;
+}
+
+.dmg-assumptions .dmg-form {
+  margin-bottom: 6px;
+}
+
 .dmg-form {
   display: flex;
   flex-wrap: wrap;

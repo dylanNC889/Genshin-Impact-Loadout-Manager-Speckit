@@ -188,6 +188,15 @@ export function instanceAvgDamage(p: {
   /** Per-hit DMG% for this instance's talent only (e.g. Golden Troupe's +25% Skill DMG). Kept
    *  separate from dmgBonusPct so callers can't accidentally apply it to every hit. */
   talentDmgBonusPct?: number;
+  /**
+   * Amplifying-reaction multiplier (1.5 Melt-on-Cryo / 2 Vaporize-on-Pyro, etc.). Scaled by the
+   * triggerer's EM exactly as estimateTeamDamage does, so the two views agree. Transformative
+   * reactions are deliberately NOT here: they are a separate flat-damage line, not a multiplier
+   * on a hit, so they belong to the team estimate rather than a per-talent row.
+   */
+  reactionMultiplier?: number;
+  /** Elemental Mastery, powering the amplifying-reaction bonus. */
+  em?: number;
   charLevel?: number;
   enemyLevel?: number;
   enemyResistancePct?: number;
@@ -199,5 +208,6 @@ export function instanceAvgDamage(p: {
   const avgCrit = 1 + critRate * (p.critDmg / 100);
   const dmgMult = 1 + (p.dmgBonusPct + (p.talentDmgBonusPct ?? 0)) / 100;
   const defFactor = (charLevel + 100) / (charLevel + 100 + (enemyLevel + 100));
-  return (p.multiplier / 100) * p.statValue * dmgMult * avgCrit * defFactor * resFactor;
+  const reaction = p.reactionMultiplier ? p.reactionMultiplier * emReactionBonus(p.em ?? 0) : 1;
+  return (p.multiplier / 100) * p.statValue * dmgMult * avgCrit * defFactor * resFactor * reaction;
 }
