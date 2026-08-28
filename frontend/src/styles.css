@@ -2590,6 +2590,23 @@ select {
   margin-top: 2px;
 }
 
+/* Which conditional buffs a result was scored with (batch 7 #3). */
+.opt-result-buffs {
+  margin-top: 2px;
+  font-style: italic;
+}
+
+.opt-cond-toggle {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 10px 0 4px;
+}
+
+.opt-cond-toggle input {
+  flex: none;
+}
+
 .damage {
   margin-top: 14px;
 }
