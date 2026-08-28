@@ -102,6 +102,7 @@ export function LoadoutEditor({
   const setNotes = useLoadoutStore((s) => s.setNotes);
   const setTags = useLoadoutStore((s) => s.setTags);
   const activeConditionals = useLoadoutStore((s) => s.activeConditionals);
+  const talentLevels = useLoadoutStore((s) => s.talentLevels);
   const toggleConditional = useLoadoutStore((s) => s.toggleConditional);
   const setActiveConditionals = useLoadoutStore((s) => s.setActiveConditionals);
 
@@ -185,6 +186,7 @@ export function LoadoutEditor({
     notes,
     tags,
     activeConditionals,
+    talentLevels,
     artifacts: SLOTS.flatMap((slot) => {
       const d = artifacts[slot];
       return d ? [{ slot, setId: d.setId, mainStat: d.mainStat, subStats: d.subStats }] : [];
@@ -230,6 +232,7 @@ export function LoadoutEditor({
     activeConditionals: loadout.activeConditionals,
     notes: loadout.notes,
     tags: loadout.tags,
+    talentLevels: loadout.talentLevels,
   });
   const shareHref = useHref({ pathname: `/character/${character.id}`, search: `build=${shareCode}` });
   function copyLink() {

@@ -399,6 +399,25 @@ export const ArtifactInstanceSchema = z.object({
 });
 export type ArtifactInstance = z.infer<typeof ArtifactInstanceSchema>;
 
+/**
+ * Talent level per combat talent. Real builds are not uniform — a crowned Burst at 10 with the
+ * Skill at 9 and Normal Attack at 6 is the common shape — so a single level for all three made
+ * every per-talent damage figure wrong for most accounts. Range is 1–15: 1–10 by talent books,
+ * up to 13 via constellations, and genshin-db's scaling arrays carry 15 entries.
+ */
+export const TalentLevelsSchema = z.object({
+  NormalAttack: z.number().int().min(1).max(15),
+  ElementalSkill: z.number().int().min(1).max(15),
+  ElementalBurst: z.number().int().min(1).max(15),
+});
+export type TalentLevels = z.infer<typeof TalentLevelsSchema>;
+
+export const DEFAULT_TALENT_LEVELS: TalentLevels = {
+  NormalAttack: 10,
+  ElementalSkill: 10,
+  ElementalBurst: 10,
+};
+
 export const LoadoutInputSchema = z.object({
   name: z.string().min(1),
   characterId: z.string(),
@@ -414,6 +433,8 @@ export const LoadoutInputSchema = z.object({
   tags: z.array(z.string()).default([]),
   /** Ids of enabled conditional buffs (A). */
   activeConditionals: z.array(z.string()).default([]),
+  /** Talent level per combat talent (batch 7 #4). */
+  talentLevels: TalentLevelsSchema.default(DEFAULT_TALENT_LEVELS),
 });
 export type LoadoutInput = z.infer<typeof LoadoutInputSchema>;
 

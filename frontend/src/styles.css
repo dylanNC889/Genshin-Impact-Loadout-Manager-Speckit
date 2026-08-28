@@ -1691,16 +1691,31 @@ select {
   font-weight: 700;
 }
 
+/* One slider per combat talent (batch 7 #4) — builds are 10/9/9-ish, not uniform. */
+.talent-controls {
+  margin-bottom: 12px;
+}
+
 .talent-control {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 12px;
+  margin-bottom: 6px;
 }
 
 .talent-control label {
   font-size: 12px;
   color: var(--muted);
+  /* Fixed width so the three sliders line up rather than staggering by label length. */
+  flex: none;
+  width: 108px;
+}
+
+.talent-set-all {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
 }
 
 .slider {

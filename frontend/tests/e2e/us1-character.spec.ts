@@ -206,3 +206,69 @@ test("ownership toggle + owned-only filter", async ({ page }) => {
   await expect(page.locator(".char-card")).toHaveCount(1);
   await expect(page.locator(".char-card", { hasText: "Hu Tao" })).toBeVisible();
 });
+
+// Batch 7 #4 — one slider used to drive all three talents, so every per-talent damage figure
+// assumed a uniform build. Real accounts are 10/9/9-ish with a crown on one talent.
+test("talent levels are per-talent and survive a save/reload", async ({ page }) => {
+  await page.goto("/character/hu-tao");
+
+  // Peak "≈ damage" per talent, read by pairing each .skill-type with the table that follows it.
+  const peaks = () =>
+    page.evaluate(() => {
+      const nodes = [...document.querySelectorAll(".skill-type, table.scaling")];
+      const out: Record<string, number> = {};
+      let type: string | null = null;
+      for (const n of nodes) {
+        if (n.classList.contains("skill-type")) {
+          type = n.textContent!.trim();
+          continue;
+        }
+        if (!type) continue;
+        const vals = [...n.querySelectorAll(".scale-dmg")]
+          .map((td) => Number(td.textContent!.replace(/[^0-9]/g, "")))
+          .filter(Boolean);
+        if (vals.length) out[type] = Math.max(...vals);
+        type = null;
+      }
+      return out;
+    });
+
+  // Wait for the skills section to render before reading any figures out of it.
+  await expect(page.locator("table.scaling").first()).toBeVisible();
+  await expect.poll(async () => (await peaks()).ElementalBurst ?? 0).toBeGreaterThan(0);
+  const atTen = await peaks();
+
+  // Drop ONLY the Burst — the other two must not move.
+  await page.getByLabel("Elemental Burst", { exact: true }).fill("6");
+  await expect
+    .poll(async () => (await peaks()).ElementalBurst)
+    .toBeLessThan(atTen.ElementalBurst!);
+  const dropped = await peaks();
+  expect(dropped.NormalAttack).toBe(atTen.NormalAttack);
+  expect(dropped.ElementalSkill).toBe(atTen.ElementalSkill);
+
+  // "Set all" restores every talent together.
+  await page.getByRole("button", { name: "Set all talents to level 10" }).click();
+  await expect.poll(async () => (await peaks()).ElementalBurst).toBe(atTen.ElementalBurst);
+
+  // Save with a non-uniform spread, reopen it, and the levels come back.
+  await page.getByLabel("Normal Attack", { exact: true }).fill("6");
+  const name = "Talent Levels E2E";
+  await page.getByLabel("Loadout name").fill(name);
+  await page.getByRole("button", { name: "Save loadout" }).click();
+  await expect(page.getByText("Saved ✓")).toBeVisible();
+
+  await page.reload();
+  await page.getByRole("link", { name: new RegExp(name) }).first().click();
+  await expect(page.getByLabel("Normal Attack", { exact: true })).toHaveValue("6");
+  await expect(page.getByLabel("Elemental Burst", { exact: true })).toHaveValue("10");
+
+  // Loop-delete every matching row — the E2E store is shared across workers.
+  await page.goto("/saved");
+  for (;;) {
+    const row = page.locator(".saved-list li", { hasText: name }).first();
+    if (!(await row.count())) break;
+    await row.getByRole("button", { name: "delete" }).click();
+    await expect(row).toHaveCount(0);
+  }
+});
