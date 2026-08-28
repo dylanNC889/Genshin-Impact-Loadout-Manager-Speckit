@@ -199,3 +199,71 @@ describe("resMultiplier (the game's piecewise RES curve)", () => {
     expect(resMultiplier(74.9999)).toBeCloseTo(0.25, 4);
   });
 });
+
+describe("refinement scaling of conditional buffs (batch 7 #5)", () => {
+  const RANKED: ConditionalBuff[] = [
+    {
+      id: "catch",
+      label: "The Catch",
+      effects: [],
+      talentDmgBonuses: [{ scopes: ["ElementalBurst"], value: 16, byRefinement: [16, 20, 24, 28, 32] }],
+      defaultOn: true,
+      weaponId: "the-catch",
+    },
+    {
+      id: "flat",
+      label: "A 4pc set, which has no refinement",
+      effects: [],
+      talentDmgBonuses: [{ scopes: ["NormalAttack"], value: 50 }],
+      defaultOn: true,
+    },
+  ];
+
+  it("reads the entry's value at the given rank", () => {
+    expect(conditionalCombatEffects(["catch"], RANKED, 1).talentDmgPct.ElementalBurst).toBe(16);
+    expect(conditionalCombatEffects(["catch"], RANKED, 3).talentDmgPct.ElementalBurst).toBe(24);
+    expect(conditionalCombatEffects(["catch"], RANKED, 5).talentDmgPct.ElementalBurst).toBe(32);
+  });
+
+  it("defaults to R1 when no refinement is given", () => {
+    expect(conditionalCombatEffects(["catch"], RANKED).talentDmgPct.ElementalBurst).toBe(16);
+  });
+
+  it("leaves entries without a series flat at every rank", () => {
+    for (const r of [1, 3, 5]) {
+      expect(conditionalCombatEffects(["flat"], RANKED, r).talentDmgPct.NormalAttack).toBe(50);
+    }
+  });
+
+  it("falls back to the base value for an out-of-range rank", () => {
+    expect(conditionalCombatEffects(["catch"], RANKED, 9).talentDmgPct.ElementalBurst).toBe(16);
+  });
+
+  it("scales a sheet effect through computeFinalStats", () => {
+    const buffs: ConditionalBuff[] = [
+      {
+        id: "homa",
+        label: "Staff of Homa",
+        effects: [{ key: "HP_PCT", value: 20, byRefinement: [20, 25, 30, 35, 40] }],
+        defaultOn: true,
+      },
+    ];
+    const ds = { ...testDataset, conditionalBuffs: buffs };
+    const at = (refinement: number) => {
+      const loadout = {
+        name: "T",
+        characterId: "test-pyro",
+        level: 90,
+        ascensionPhase: 6,
+        weaponId: null,
+        artifacts: [],
+        activeConditionals: ["homa"],
+        refinement,
+      } as unknown as LoadoutInput;
+      return statRecord(computeFinalStats(loadout, ds).stats).HP!;
+    };
+    expect(at(5)).toBeGreaterThan(at(1));
+    // base HP 1700 -> +20% = 2040 at R1, +40% = 2380 at R5.
+    expect(at(5) - at(1)).toBeCloseTo(1700 * 0.2, 4);
+  });
+});

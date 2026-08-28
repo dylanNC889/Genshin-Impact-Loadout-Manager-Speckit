@@ -94,7 +94,7 @@ export function deriveFromLoadout(
     element: character.element,
     talentMultiplier: 200,
     instances: rotationInstances(character, lo.talentLevels),
-    talentDmgPct: conditionalCombatEffects(lo.activeConditionals, buffs).talentDmgPct,
+    talentDmgPct: conditionalCombatEffects(lo.activeConditionals, buffs, lo.refinement).talentDmgPct,
     characterLevel: 90,
   };
 }
@@ -102,7 +102,7 @@ export function deriveFromLoadout(
 /** The RES shreds a saved loadout's enabled conditional buffs put on the enemy (VV 4pc,
  *  Deepwood 4pc…). These are target debuffs, so they apply team-wide, not just to their wearer. */
 export function loadoutResShreds(lo: SavedLoadout, buffs?: ConditionalBuff[]): ResShred[] {
-  return conditionalCombatEffects(lo.activeConditionals, buffs).resShred;
+  return conditionalCombatEffects(lo.activeConditionals, buffs, lo.refinement).resShred;
 }
 
 /** Amplifying-reaction presets applied to every member as a rough estimate assumption. */

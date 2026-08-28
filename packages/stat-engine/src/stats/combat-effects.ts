@@ -1,5 +1,6 @@
 import type { ConditionalBuff, Element, ResShred, TalentScope } from "@app/contracts";
 import { TALENT_SCOPES } from "@app/contracts";
+import { atRefinement } from "./final-stats";
 
 /**
  * Combat effects that a build's enabled conditional buffs contribute but that CANNOT live on the
@@ -27,6 +28,8 @@ const emptyTalentDmg = (): Record<TalentScope, number> =>
 export function conditionalCombatEffects(
   activeConditionals: string[] | undefined,
   buffs: ConditionalBuff[] | undefined,
+  /** Weapon refinement rank (1–5) — scales any buff carrying an R1–R5 series (batch 7 #5). */
+  refinement?: number,
 ): CombatEffects {
   const talentDmgPct = emptyTalentDmg();
   const resShred: ResShred[] = [];
@@ -37,9 +40,13 @@ export function conditionalCombatEffects(
     const buff = byId.get(id);
     if (!buff) continue;
     for (const bonus of buff.talentDmgBonuses ?? []) {
-      for (const scope of bonus.scopes) talentDmgPct[scope] += bonus.value;
+      const value = atRefinement(bonus, refinement);
+      for (const scope of bonus.scopes) talentDmgPct[scope] += value;
     }
-    if (buff.resShred) resShred.push(buff.resShred);
+    if (buff.resShred) {
+      const pct = atRefinement({ value: buff.resShred.pct, byRefinement: buff.resShred.byRefinement }, refinement);
+      resShred.push({ ...buff.resShred, pct });
+    }
   }
   return { talentDmgPct, resShred };
 }
