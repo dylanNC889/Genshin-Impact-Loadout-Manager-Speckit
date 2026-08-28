@@ -272,3 +272,51 @@ test("talent levels are per-talent and survive a save/reload", async ({ page }) 
     await expect(row).toHaveCount(0);
   }
 });
+
+// Batch 7 #6 — the character page always assumed no reaction against a neutral Lv90/10% RES
+// enemy, while the team builder has had these controls since batch 4. So the view where a build
+// is actually tuned gave the least realistic number in the app.
+test("character page damage responds to reaction and enemy assumptions", async ({ page }) => {
+  await page.goto("/character/hu-tao");
+  await expect(page.locator("table.scaling").first()).toBeVisible();
+
+  const burst = () =>
+    page.evaluate(() => {
+      const nodes = [...document.querySelectorAll(".skill-type, table.scaling")];
+      let type: string | null = null;
+      for (const n of nodes) {
+        if (n.classList.contains("skill-type")) {
+          type = n.textContent!.trim();
+          continue;
+        }
+        if (type !== "ElementalBurst") {
+          type = null;
+          continue;
+        }
+        const vals = [...n.querySelectorAll(".scale-dmg")]
+          .map((td) => Number(td.textContent!.replace(/[^0-9]/g, "")))
+          .filter(Boolean);
+        return vals.length ? Math.max(...vals) : 0;
+      }
+      return 0;
+    });
+
+  await expect.poll(burst).toBeGreaterThan(0);
+  const plain = await burst();
+
+  // Vaporize (2x) roughly doubles it — Hu Tao has no EM here, so no EM bonus on top.
+  await page.getByLabel("Reaction").selectOption("vaporize-2");
+  await expect.poll(burst).toBeGreaterThan(plain * 1.9);
+  const vaped = await burst();
+
+  // A Pyro-resistant enemy cuts it back: the RES multiplier goes 0.9 -> 0.5.
+  await page.getByLabel("Enemy preset").selectOption({ label: "Pyro-resistant — +50% Pyro" });
+  await expect.poll(burst).toBeLessThan(vaped);
+
+  // Both choices are remembered per character.
+  await page.goto("/character/hu-tao");
+  await expect(page.getByLabel("Reaction")).toHaveValue("vaporize-2");
+  // ...and don't leak to a different character.
+  await page.goto("/character/ganyu");
+  await expect(page.getByLabel("Reaction")).toHaveValue("none");
+});

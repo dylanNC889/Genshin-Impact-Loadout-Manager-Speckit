@@ -31,16 +31,15 @@ import { decodeShare } from "../share";
 import { getOwned, toggleOwned } from "../ownership";
 import { pushRecent } from "../recent";
 import { downloadCharacterCard } from "../cardImage";
+import { EnemyFieldset, resolveEnemy } from "../components/DamageAssumptions";
+import { REACTIONS } from "../teamDamage";
+import { getDamagePrefs, setDamagePrefs, DEFAULT_DAMAGE_PREFS, type DamagePrefs } from "../damagePrefs";
 import { useLoadoutStore } from "../state/loadoutStore";
 import type { ArtifactSlot, Dataset, Element, LoadoutInput } from "@app/contracts";
 
 const PRIMARY_ORDER = ["HP", "ATK", "DEF", "CRIT_RATE", "CRIT_DMG", "EM", "ER"];
 const ASCENSION_FOR_LEVEL: Record<number, number> = { 1: 0, 20: 1, 40: 2, 50: 3, 60: 4, 70: 5, 80: 6, 90: 6 };
 const SCALE_STAT_TO_KEY: Record<string, string> = { ATK: "ATK", "Max HP": "HP", DEF: "DEF" };
-// The neutral enemy the per-talent "≈ damage" figures assume — matches instanceAvgDamage's
-// default, and is what a build's own RES-shred buffs (VV/Deepwood 4pc) reduce.
-const DEFAULT_ENEMY_RES = 10;
-
 /** The three combat talents, in the order the skills are listed. */
 const TALENT_CONTROLS = [
   { key: "NormalAttack", label: "Normal Attack" },
@@ -100,6 +99,20 @@ export function CharacterPage() {
   const constellation = useLoadoutStore((s) => s.constellation);
   const refinement = useLoadoutStore((s) => s.refinement);
   const activeConditionals = useLoadoutStore((s) => s.activeConditionals);
+  // Reaction + enemy the per-talent figures are read against (batch 7 #6), remembered per
+  // character — Hu Tao is read on Vaporize, a Physical carry on nothing.
+  const [dmgPrefs, setDmgPrefs] = useState<DamagePrefs>(DEFAULT_DAMAGE_PREFS);
+  useEffect(() => {
+    if (id) setDmgPrefs(getDamagePrefs(id));
+  }, [id]);
+  const updatePrefs = (patch: Partial<DamagePrefs>) => {
+    setDmgPrefs((prev) => {
+      const next = { ...prev, ...patch };
+      if (id) setDamagePrefs(id, next);
+      return next;
+    });
+  };
+
   // Per-talent levels (batch 7 #4) — a crowned Burst with a lower Skill/NA is the normal shape.
   const talentLevels = useLoadoutStore((s) => s.talentLevels);
   const setTalentLevel = useLoadoutStore((s) => s.setTalentLevel);
@@ -306,7 +319,11 @@ export function CharacterPage() {
   // Combat effects the enabled conditional buffs contribute that the stat sheet can't hold:
   // per-hit DMG% scoped to one talent, and enemy RES shred (both were previously dropped).
   const combat = conditionalCombatEffects(activeConditionals, modifiers.conditionalBuffs, refinement);
-  const enemyRes = DEFAULT_ENEMY_RES - totalResShred(combat.resShred, char.element as Element);
+  const enemy = resolveEnemy(dmgPrefs.enemyPreset, dmgPrefs.enemyLevel, dmgPrefs.enemyRes);
+  // A preset can raise RES for one element specifically (the "-resistant" presets).
+  const baseRes = enemy.byElement?.[char.element] ?? enemy.res;
+  const enemyRes = baseRes - totalResShred(combat.resShred, char.element as Element);
+  const reactionMultiplier = REACTIONS[dmgPrefs.reaction]?.mult ?? 1;
 
   /** The per-hit DMG% that applies to a given talent row — Charged Attack rows live under the
    *  Normal Attack talent but are buffed by different passives, so scope by the row's label. */
@@ -338,7 +355,10 @@ export function CharacterPage() {
       critDmg: finalStats.CRIT_DMG ?? 0,
       dmgBonusPct: finalStats[`${char.element.toUpperCase()}_DMG`] ?? 0,
       talentDmgBonusPct: rowTalentBonus(talentType, row.label),
+      reactionMultiplier,
+      em: finalStats.EM ?? 0,
       charLevel: level,
+      enemyLevel: enemy.level,
       enemyResistancePct: enemyRes,
     });
   };
@@ -546,6 +566,38 @@ export function CharacterPage() {
               <span className="ta-priority">{advice.priority}</span>
             </div>
             <p className="ta-note">{advice.note}</p>
+          </div>
+          <div className="dmg-assumptions">
+            <div className="dmg-form">
+              <EnemyFieldset
+                preset={dmgPrefs.enemyPreset}
+                onPreset={(enemyPreset) => updatePrefs({ enemyPreset })}
+                level={dmgPrefs.enemyLevel}
+                onLevel={(enemyLevel) => updatePrefs({ enemyLevel })}
+                res={dmgPrefs.enemyRes}
+                onRes={(enemyRes) => updatePrefs({ enemyRes })}
+              />
+              <fieldset className="dmg-group">
+                <legend>Reaction</legend>
+                <label>
+                  <span>Amplifying</span>
+                  <select
+                    value={dmgPrefs.reaction}
+                    onChange={(e) => updatePrefs({ reaction: e.target.value })}
+                    aria-label="Reaction"
+                  >
+                    {Object.entries(REACTIONS).map(([key, r]) => (
+                      <option key={key} value={key}>
+                        {r.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </fieldset>
+            </div>
+            <p className="muted small">
+              The "≈" figures below use these assumptions — approximate, and before any team buffs.
+            </p>
           </div>
           <div className="talent-controls">
             {TALENT_CONTROLS.map(({ key, label }) => (
