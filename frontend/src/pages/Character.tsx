@@ -41,6 +41,13 @@ const SCALE_STAT_TO_KEY: Record<string, string> = { ATK: "ATK", "Max HP": "HP", 
 // default, and is what a build's own RES-shred buffs (VV/Deepwood 4pc) reduce.
 const DEFAULT_ENEMY_RES = 10;
 
+/** The three combat talents, in the order the skills are listed. */
+const TALENT_CONTROLS = [
+  { key: "NormalAttack", label: "Normal Attack" },
+  { key: "ElementalSkill", label: "Elemental Skill" },
+  { key: "ElementalBurst", label: "Elemental Burst" },
+] as const;
+
 /** Format a talent scaling value at the chosen talent level (FR-004). */
 function fmtScale(row: { valuesByLevel: number[]; percent: boolean }, level: number): string {
   const v = row.valuesByLevel[level - 1] ?? row.valuesByLevel[row.valuesByLevel.length - 1] ?? 0;
@@ -74,7 +81,7 @@ export function CharacterPage() {
   const loadoutParam = searchParams.get("loadout");
   const buildParam = searchParams.get("build");
   const [level, setLevel] = useState(90);
-  const [talentLevel, setTalentLevel] = useState(10);
+
   // Rotation builder (B): ordered talent-hit lines + a rotation length for DPS.
   const [rotation, setRotation] = useState<{ instId: string; count: number }[]>([]);
   const [rotSec, setRotSec] = useState(20);
@@ -93,6 +100,11 @@ export function CharacterPage() {
   const constellation = useLoadoutStore((s) => s.constellation);
   const refinement = useLoadoutStore((s) => s.refinement);
   const activeConditionals = useLoadoutStore((s) => s.activeConditionals);
+  // Per-talent levels (batch 7 #4) — a crowned Burst with a lower Skill/NA is the normal shape.
+  const talentLevels = useLoadoutStore((s) => s.talentLevels);
+  const setTalentLevel = useLoadoutStore((s) => s.setTalentLevel);
+  const setAllTalentLevels = useLoadoutStore((s) => s.setAllTalentLevels);
+  const setTalentLevels = useLoadoutStore((s) => s.setTalentLevels);
 
   const detail = useQuery({
     queryKey: ["character", id],
@@ -162,6 +174,7 @@ export function CharacterPage() {
     }
     setNotes(b.notes ?? "");
     setTags(b.tags ?? []);
+    if (b.talentLevels) setTalentLevels(b.talentLevels);
     if (b.activeConditionals) hydrateConditionals(b.activeConditionals);
   }, [
     buildParam,
@@ -172,6 +185,7 @@ export function CharacterPage() {
     setRefinement,
     setNotes,
     setTags,
+    setTalentLevels,
     hydrateConditionals,
   ]);
 
@@ -187,6 +201,7 @@ export function CharacterPage() {
     setNotes(saved.notes ?? "");
     setTags(saved.tags ?? []);
     hydrateConditionals(saved.activeConditionals ?? []);
+    if (saved.talentLevels) setTalentLevels(saved.talentLevels);
     for (const a of saved.artifacts) {
       setArtifact(a.slot, { setId: a.setId, mainStat: a.mainStat, subStats: a.subStats });
     }
@@ -199,6 +214,7 @@ export function CharacterPage() {
     setRefinement,
     setNotes,
     setTags,
+    setTalentLevels,
     hydrateConditionals,
   ]);
 
@@ -268,6 +284,7 @@ export function CharacterPage() {
         notes: "",
         tags: [],
         activeConditionals,
+        talentLevels,
         artifacts: (Object.entries(artifacts) as [ArtifactSlot, (typeof artifacts)[ArtifactSlot]][])
           .filter(([, d]) => d)
           .map(([slot, d]) => ({ slot, setId: d!.setId, mainStat: d!.mainStat, subStats: d!.subStats })),
@@ -277,6 +294,14 @@ export function CharacterPage() {
       /* keep base sheet */
     }
   }
+
+  /** The configured level for a talent, defaulting non-combat rows to the Normal Attack level. */
+  const levelForTalent = (talentType: string): number =>
+    talentType === "ElementalSkill"
+      ? talentLevels.ElementalSkill
+      : talentType === "ElementalBurst"
+        ? talentLevels.ElementalBurst
+        : talentLevels.NormalAttack;
 
   // Combat effects the enabled conditional buffs contribute that the stat sheet can't hold:
   // per-hit DMG% scoped to one talent, and enemy RES shred (both were previously dropped).
@@ -303,7 +328,8 @@ export function CharacterPage() {
   ): number | null => {
     const key = scaleStat ? SCALE_STAT_TO_KEY[scaleStat] : undefined;
     if (!key) return null;
-    const mult = row.valuesByLevel[talentLevel - 1] ?? row.valuesByLevel[row.valuesByLevel.length - 1] ?? 0;
+    const lvl = levelForTalent(talentType);
+    const mult = row.valuesByLevel[lvl - 1] ?? row.valuesByLevel[row.valuesByLevel.length - 1] ?? 0;
     if (!row.percent || !mult) return null;
     return instanceAvgDamage({
       multiplier: mult,
@@ -521,20 +547,38 @@ export function CharacterPage() {
             </div>
             <p className="ta-note">{advice.note}</p>
           </div>
-          <div className="talent-control">
-            <label htmlFor="talent">Talent level</label>
-            <input
-              id="talent"
-              className="slider"
-              type="range"
-              min={1}
-              max={15}
-              step={1}
-              value={talentLevel}
-              aria-valuetext={`Talent level ${talentLevel}`}
-              onChange={(e) => setTalentLevel(Number(e.target.value))}
-            />
-            <span className="slider-value">Lv {talentLevel}</span>
+          <div className="talent-controls">
+            {TALENT_CONTROLS.map(({ key, label }) => (
+              <div className="talent-control" key={key}>
+                <label htmlFor={`talent-${key}`}>{label}</label>
+                <input
+                  id={`talent-${key}`}
+                  className="slider"
+                  type="range"
+                  min={1}
+                  max={15}
+                  step={1}
+                  value={talentLevels[key]}
+                  aria-valuetext={`${label} level ${talentLevels[key]}`}
+                  onChange={(e) => setTalentLevel(key, Number(e.target.value))}
+                />
+                <span className="slider-value">Lv {talentLevels[key]}</span>
+              </div>
+            ))}
+            <div className="talent-set-all">
+              <span className="muted small">Set all</span>
+              {[1, 6, 8, 9, 10, 13].map((n) => (
+                <button
+                  key={n}
+                  type="button"
+                  className="btn small ghost"
+                  onClick={() => setAllTalentLevels(n)}
+                  aria-label={`Set all talents to level ${n}`}
+                >
+                  {n}
+                </button>
+              ))}
+            </div>
           </div>
           <ul className="skills">
             {char.skills.map((s) => (
@@ -557,7 +601,7 @@ export function CharacterPage() {
                           <tr key={i}>
                             <td>{label}</td>
                             <td>
-                              {fmtScale(row, talentLevel)}
+                              {fmtScale(row, levelForTalent(s.type))}
                               {stat ? <span className="scale-stat"> of {stat}</span> : null}
                             </td>
                             <td className="scale-dmg">{dmg != null ? `≈ ${Math.round(dmg).toLocaleString()}` : ""}</td>

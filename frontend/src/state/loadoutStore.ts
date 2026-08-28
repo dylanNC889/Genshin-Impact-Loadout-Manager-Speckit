@@ -1,5 +1,6 @@
 import { create } from "zustand";
-import type { ArtifactSlot, ArtifactSubStat, StatValue } from "@app/contracts";
+import type { ArtifactSlot, ArtifactSubStat, StatValue, TalentLevels } from "@app/contracts";
+import { DEFAULT_TALENT_LEVELS } from "@app/contracts";
 
 /** A single artifact being edited in the loadout (FR-006). */
 export interface ArtifactDraft {
@@ -19,6 +20,8 @@ interface LoadoutState {
   tags: string[];
   /** Enabled conditional-buff ids (A). */
   activeConditionals: string[];
+  /** Talent level per combat talent — real builds are 10/9/9-ish, not uniform (batch 7 #4). */
+  talentLevels: TalentLevels;
   /** True when `activeConditionals` came from a saved build or a share link rather than from the
    *  editor's own defaults. The editor auto-enables every applicable `defaultOn` buff it hasn't
    *  seen before; without this flag that pass runs right after hydration and silently re-enables
@@ -37,6 +40,9 @@ interface LoadoutState {
   /** Mark the hydration handled, so later gear changes seed their defaults normally again. */
   clearConditionalsHydrated: () => void;
   toggleConditional: (id: string, on: boolean) => void;
+  setTalentLevel: (talent: keyof TalentLevels, level: number) => void;
+  setTalentLevels: (levels: TalentLevels) => void;
+  setAllTalentLevels: (level: number) => void;
   reset: () => void;
 }
 
@@ -53,6 +59,7 @@ export const useLoadoutStore = create<LoadoutState>((set) => ({
   tags: [],
   activeConditionals: [],
   conditionalsHydrated: false,
+  talentLevels: DEFAULT_TALENT_LEVELS,
   setWeapon: (id) => set({ weaponId: id }),
   setArtifact: (slot, draft) => set((s) => ({ artifacts: { ...s.artifacts, [slot]: draft } })),
   clearArtifact: (slot) =>
@@ -68,6 +75,11 @@ export const useLoadoutStore = create<LoadoutState>((set) => ({
   setActiveConditionals: (activeConditionals) => set({ activeConditionals }),
   hydrateConditionals: (activeConditionals) => set({ activeConditionals, conditionalsHydrated: true }),
   clearConditionalsHydrated: () => set({ conditionalsHydrated: false }),
+  setTalentLevel: (talent, level) =>
+    set((s) => ({ talentLevels: { ...s.talentLevels, [talent]: level } })),
+  setTalentLevels: (talentLevels) => set({ talentLevels }),
+  setAllTalentLevels: (level) =>
+    set({ talentLevels: { NormalAttack: level, ElementalSkill: level, ElementalBurst: level } }),
   toggleConditional: (id, on) =>
     set((s) => ({
       activeConditionals: on ? [...new Set([...s.activeConditionals, id])] : s.activeConditionals.filter((x) => x !== id),
@@ -82,5 +94,6 @@ export const useLoadoutStore = create<LoadoutState>((set) => ({
       tags: [],
       activeConditionals: [],
       conditionalsHydrated: false,
+      talentLevels: DEFAULT_TALENT_LEVELS,
     }),
 }));

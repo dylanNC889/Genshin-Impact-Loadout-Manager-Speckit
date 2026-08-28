@@ -1,6 +1,14 @@
 import { computeBaseStats, conditionalCombatEffects, estimateTeamDamage } from "@app/stat-engine";
 import type { DamageMember } from "@app/stat-engine";
-import type { ConditionalBuff, DamageEstimate, Element, ResShred, TalentScope } from "@app/contracts";
+import type {
+  ConditionalBuff,
+  DamageEstimate,
+  Element,
+  ResShred,
+  TalentLevels,
+  TalentScope,
+} from "@app/contracts";
+import { DEFAULT_TALENT_LEVELS } from "@app/contracts";
 import type { CharacterDetail, SavedLoadout } from "./api";
 import { teamBuffFor, resShredForElement } from "./teamBuffs";
 
@@ -9,6 +17,7 @@ import { teamBuffFor, resShredForElement } from "./teamBuffs";
  *  DMG") land only on the hits they actually buff. */
 function rotationInstances(
   character: CharacterDetail["character"],
+  talentLevels: TalentLevels = DEFAULT_TALENT_LEVELS,
 ): { label: string; multiplier: number; scope?: TalentScope }[] {
   const LABELS: Record<string, string> = {
     NormalAttack: "Normal Attack",
@@ -20,18 +29,26 @@ function rotationInstances(
     ElementalSkill: "ElementalSkill",
     ElementalBurst: "ElementalBurst",
   };
-  const valueAt = (row: { valuesByLevel: number[] }) =>
-    row.valuesByLevel[9] ?? row.valuesByLevel[row.valuesByLevel.length - 1] ?? 0;
+  const LEVELS: Record<string, keyof TalentLevels> = {
+    NormalAttack: "NormalAttack",
+    ElementalSkill: "ElementalSkill",
+    ElementalBurst: "ElementalBurst",
+  };
+  // Read each talent at ITS configured level rather than a blanket Lv10 (batch 7 #4).
+  const valueAt = (row: { valuesByLevel: number[] }, level: number) =>
+    row.valuesByLevel[level - 1] ?? row.valuesByLevel[row.valuesByLevel.length - 1] ?? 0;
   const out: { label: string; multiplier: number; scope?: TalentScope }[] = [];
   for (const s of character.skills) {
     const dmgRows = s.scaling.filter((r) => r.percent && /DMG/i.test(r.label));
     if (!dmgRows.length) continue;
-    const best = dmgRows.reduce((a, b) => (valueAt(b) > valueAt(a) ? b : a));
+    const levelKey = LEVELS[s.type];
+    const level = levelKey ? talentLevels[levelKey] : DEFAULT_TALENT_LEVELS.NormalAttack;
+    const best = dmgRows.reduce((a, b) => (valueAt(b, level) > valueAt(a, level) ? b : a));
     // A Normal Attack talent's best row may itself be a Charged Attack line, which some
     // passives buff and others don't — scope it by the row, not just the talent.
     const scope =
       s.type === "NormalAttack" && /charged/i.test(best.label) ? "ChargedAttack" : SCOPES[s.type];
-    out.push({ label: LABELS[s.type] ?? s.name, multiplier: valueAt(best), scope });
+    out.push({ label: LABELS[s.type] ?? s.name, multiplier: valueAt(best, level), scope });
   }
   return out.length ? out : [{ label: "Rotation", multiplier: 200 }];
 }
@@ -76,7 +93,7 @@ export function deriveFromLoadout(
     em: get("EM"),
     element: character.element,
     talentMultiplier: 200,
-    instances: rotationInstances(character),
+    instances: rotationInstances(character, lo.talentLevels),
     talentDmgPct: conditionalCombatEffects(lo.activeConditionals, buffs).talentDmgPct,
     characterLevel: 90,
   };

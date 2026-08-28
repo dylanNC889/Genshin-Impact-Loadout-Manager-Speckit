@@ -6,6 +6,7 @@ import type {
   Element,
   LoadoutInput,
 } from "@app/contracts";
+import { DEFAULT_TALENT_LEVELS } from "@app/contracts";
 import { computeFinalStats, defaultActiveConditionals, statRecord } from "@app/stat-engine";
 
 /** An owned artifact (an ArtifactInstance plus a stable id for de-dup/apply). */
@@ -116,6 +117,8 @@ export function optimize(inventory: OwnedArtifact[], dataset: Dataset, q: Optimi
     notes: "",
     tags: [],
     activeConditionals: [],
+    // Talent levels don't affect the stat sheet, so the search is indifferent to them.
+    talentLevels: DEFAULT_TALENT_LEVELS,
   };
 
   // Conditional buffs (batch 7 #3). Scoring every candidate bare made the optimizer blind to the
