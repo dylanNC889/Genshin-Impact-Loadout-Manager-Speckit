@@ -117,8 +117,19 @@ export function LoadoutEditor({
   const seenRef = useRef<Set<string>>(new Set());
   // When the applicable set changes: prune inapplicable ids and enable newly-applicable defaults.
   useEffect(() => {
-    const cur = useLoadoutStore.getState().activeConditionals;
+    const state = useLoadoutStore.getState();
+    const cur = state.activeConditionals;
     const applicableIds = new Set(applicableBuffs.map((b) => b.id));
+    // A saved build or share link carries the author's exact choices, including defaults they
+    // deliberately switched OFF. Seeding those ids as already-seen means this pass won't re-enable
+    // them, while a buff that becomes applicable LATER (they swap a weapon) still gets its default.
+    if (state.conditionalsHydrated) {
+      seenRef.current = applicableIds;
+      state.clearConditionalsHydrated();
+      const pruned = cur.filter((id) => applicableIds.has(id));
+      if (pruned.join(",") !== cur.join(",")) setActiveConditionals(pruned);
+      return;
+    }
     const defaults = applicableBuffs.filter((b) => b.defaultOn && !seenRef.current.has(b.id)).map((b) => b.id);
     seenRef.current = applicableIds;
     const next = [...new Set([...cur.filter((id) => applicableIds.has(id)), ...defaults])];
@@ -201,12 +212,18 @@ export function LoadoutEditor({
 
   // Shareable build link (B3): encode the current build into the URL — no save needed.
   const [copied, setCopied] = useState(false);
+  // Everything that changes the recipient's numbers has to travel. activeConditionals drives
+  // per-hit DMG% and enemy RES shred as well as sheet stats, so omitting it showed the recipient
+  // a materially different build under the same link.
   const shareCode = encodeShare({
     level: loadout.level,
     weaponId: loadout.weaponId,
     constellation: loadout.constellation,
     refinement: loadout.refinement,
     artifacts: loadout.artifacts,
+    activeConditionals: loadout.activeConditionals,
+    notes: loadout.notes,
+    tags: loadout.tags,
   });
   const shareHref = useHref({ pathname: `/character/${character.id}`, search: `build=${shareCode}` });
   function copyLink() {

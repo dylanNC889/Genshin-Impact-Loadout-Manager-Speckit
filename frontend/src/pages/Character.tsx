@@ -86,7 +86,7 @@ export function CharacterPage() {
   const setRefinement = useLoadoutStore((s) => s.setRefinement);
   const setNotes = useLoadoutStore((s) => s.setNotes);
   const setTags = useLoadoutStore((s) => s.setTags);
-  const setActiveConditionals = useLoadoutStore((s) => s.setActiveConditionals);
+  const hydrateConditionals = useLoadoutStore((s) => s.hydrateConditionals);
   // Equipped-build state, for per-talent damage (A7).
   const weaponId = useLoadoutStore((s) => s.weaponId);
   const artifacts = useLoadoutStore((s) => s.artifacts);
@@ -146,6 +146,8 @@ export function CharacterPage() {
   }, [id, resetLoadout]);
 
   // Hydrate the editor from a shared build link (?build=<code>, B3) — no backend needed.
+  // Links predating the fuller payload simply carry no conditionals/notes/tags; treat that as
+  // "use the editor's defaults", which is what an unhydrated editor already does.
   useEffect(() => {
     if (!buildParam) return;
     const b = decodeShare<Partial<LoadoutInput>>(buildParam);
@@ -158,7 +160,20 @@ export function CharacterPage() {
     for (const a of b.artifacts ?? []) {
       setArtifact(a.slot, { setId: a.setId, mainStat: a.mainStat, subStats: a.subStats });
     }
-  }, [buildParam, resetLoadout, setWeapon, setArtifact, setConstellation, setRefinement]);
+    setNotes(b.notes ?? "");
+    setTags(b.tags ?? []);
+    if (b.activeConditionals) hydrateConditionals(b.activeConditionals);
+  }, [
+    buildParam,
+    resetLoadout,
+    setWeapon,
+    setArtifact,
+    setConstellation,
+    setRefinement,
+    setNotes,
+    setTags,
+    hydrateConditionals,
+  ]);
 
   // Hydrate the editor from a saved loadout when opened via ?loadout=<id> (FR-018 reopen).
   useEffect(() => {
@@ -171,11 +186,21 @@ export function CharacterPage() {
     setRefinement(saved.refinement ?? 1);
     setNotes(saved.notes ?? "");
     setTags(saved.tags ?? []);
-    setActiveConditionals(saved.activeConditionals ?? []);
+    hydrateConditionals(saved.activeConditionals ?? []);
     for (const a of saved.artifacts) {
       setArtifact(a.slot, { setId: a.setId, mainStat: a.mainStat, subStats: a.subStats });
     }
-  }, [savedLoadoutQ.data, resetLoadout, setWeapon, setArtifact, setConstellation, setRefinement, setNotes, setTags]);
+  }, [
+    savedLoadoutQ.data,
+    resetLoadout,
+    setWeapon,
+    setArtifact,
+    setConstellation,
+    setRefinement,
+    setNotes,
+    setTags,
+    hydrateConditionals,
+  ]);
 
   if (detail.isLoading) return <div className="character"><DetailSkeleton /></div>;
   if (detail.error) return <p className="error">Failed to load: {(detail.error as Error).message}</p>;
