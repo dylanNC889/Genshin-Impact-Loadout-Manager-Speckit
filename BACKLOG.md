@@ -123,21 +123,34 @@ _None open._
     `stats/combat-effects.ts`. Enemy RES moved to the game's piecewise curve, which halves shred
     below 0%. 10 previously-omitted buffs added (24 → 34).
 
+- **Batch 7** (`specs/improvements-backlog-5.md`, 9 items) — all shipped as PRs #105–#113. Three
+  defect fixes first: share links silently dropped `activeConditionals`/notes/tags (and the
+  saved-build path re-armed defaults on every reopen); nothing enforced that `data/modifiers/*.json`
+  ids resolve; and the optimizer hardcoded `activeConditionals: []`, scoring every candidate blind
+  to the 4pc effects players build around. Then the accuracy work: per-talent levels, conditional
+  buffs scaling with weapon refinement, reaction + enemy controls on the character page, shared
+  Elemental Mastery in team buffs, constellation-gated conditionals (24 entries / 18 characters),
+  and team damage built from each member's saved rotation instead of one hit per talent.
+
+  Three further bugs surfaced while doing the work and were fixed in place:
+  - `REACTIONS.none.mult` is `1`, which is truthy — so `emReactionBonus` applied with **no**
+    reaction selected, silently inflating any build with EM (200 EM ≈ +35%). Now gated by
+    `ampReactionFactor`.
+  - The Optimize page built the worker's client `Dataset` without `conditionalBuffs` at all.
+  - `ConditionalBuffSchema` had no `characterId`, so a constellation buff would have unlocked for
+    every character at that constellation.
+
 ## 📋 Next up
 
-**Batch 7** is spec'd in `specs/improvements-backlog-5.md` — 9 items, sequenced smallest → largest,
-each grounded in a specific defect found by reading the current code:
+_Nothing queued._ Batches 1–7 are all shipped (PRs #11–#113). The next batch would start the usual
+way: brainstorm → spec into `specs/improvements-backlog-6.md` → implement smallest-first.
 
-1. Share links silently drop conditional buffs, notes and tags (S) — **bug**
-2. Nothing enforces that modifier ids resolve (S) — **bug**
-3. The optimizer ranks builds blind to conditional buffs (S–M) — **bug**
-4. Per-talent levels instead of one slider (S–M)
-5. Conditional buff values ignore weapon refinement (M)
-6. Reaction and enemy controls on the character page (M)
-7. Team buffs can't express Elemental Mastery (M)
-8. Constellation-gated conditional buffs (M–L)
-9. Team rotations instead of one hit per talent (L)
-
-Items 1–3 are defect fixes worth landing regardless. Items 4–7 hold the accuracy gain. Items 8–9
-are the ambitious end and depend on the earlier contract changes settling first.
-
+Known limits worth a look if you want candidates, each already documented where it lives:
+- `cashflow-atk` is the one weapon conditional left without a `byRefinement` series — its in-game
+  values weren't confidently known, so it stays flat rather than guessed (`conditional-buffs.json`).
+- Constellation conditionals cover 18 of 116 characters; the UI says so per character rather than
+  implying full coverage.
+- `erRequirements` is deliberately partial — characters with a cheap or too-new Burst get no target
+  rather than a made-up one.
+- Transformative reactions are still team-only: they're a separate flat-damage line, not a
+  multiplier on a hit, so they don't belong on a per-talent row (`instanceAvgDamage`).

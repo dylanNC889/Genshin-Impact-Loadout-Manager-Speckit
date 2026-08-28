@@ -58,8 +58,8 @@ resolves) importing `chromium`, e.g. `frontend/shot.mjs`, then `cd frontend && n
 
 ```bash
 pnpm typecheck          # tsc -b across the workspace
-pnpm test               # vitest (unit) — 75 tests
-cd frontend && npx playwright test   # E2E — 46 tests, ~14s
+pnpm test               # vitest (unit) — 141 tests (packages, backend, frontend/tests/unit)
+cd frontend && npx playwright test   # E2E — 53 tests, ~14s
 npx eslint <changed files>
 ```
 
@@ -126,9 +126,11 @@ changes per record) before committing — the files are one-record-per-line.
 
 - **Zod `.default()` gotcha**: a field with `.default()` is optional in `z.input` but **required** in
   `z.infer` (the output type = `LoadoutInput`). So every `LoadoutInput` literal must include all
-  defaulted fields (`notes: ""`, `tags: []`, `activeConditionals: []`, `constellation`, `refinement`…).
-  Places to update when adding one: `LoadoutEditor.tsx`, `Character.tsx` (finalStats calc),
-  `packages/optimizer/src/index.ts` baseLoadout, and stat-engine test fixtures.
+  defaulted fields (`notes: ""`, `tags: []`, `activeConditionals: []`, `talentLevels`, `rotation`,
+  `constellation`, `refinement`…). Places to update when adding one: `LoadoutEditor.tsx`,
+  `Character.tsx` (finalStats calc), `packages/optimizer/src/index.ts` baseLoadout, and the
+  stat-engine / frontend test fixtures. Export a `DEFAULT_*` const alongside any new one so those
+  call sites have something to spread.
 - **Modifiers** (`data/modifiers/`) are applied additively via `route(pools, key, value)` in
   `packages/stat-engine/src/stats/final-stats.ts`: constellation bonuses, weapon refinements, and
   **conditional buffs** (opt-in via `LoadoutInput.activeConditionals`, keyed to weapon id / set+pieces).
@@ -142,9 +144,20 @@ changes per record) before committing — the files are one-record-per-line.
   - `resShred` → an **enemy** debuff, so it lands on the damage calc. `totalResShred` resolves
     element scoping, the 60-point cap, and same-`source` de-duplication — a Kazuha teammate and
     the build's own VV 4pc are one debuff and take the max instead of stacking.
-  A buff may also declare `element` to gate it to one element's characters (VV's shred fires on
-  the **wearer's** Swirl, so it is Anemo-only). Buffs with no `effects` show "· damage only" in
-  the editor, since toggling them can't move the stat sheet.
+  Gates: `weaponId`, `setId` + `minPieces`, `element` (VV's shred fires on the **wearer's** Swirl,
+  so it is Anemo-only), and `characterId` + `minConstellation` for constellation buffs — without
+  the character gate every C6 build would unlock every C6 buff. All of them live in ONE predicate,
+  `applicableConditionalBuffs` in `stats/conditional-buffs.ts`, shared by the editor and the
+  optimizer so the two can't drift. A weapon-passive entry may carry a `byRefinement` R1–R5 series
+  (index 0 **is** R1, enforced by a test, so adding one can't change unrefined behaviour). Buffs
+  with no `effects` show "· damage only" in the editor, since toggling them can't move the sheet.
+- **Modifier data is guarded by tests** (`packages/dataset/tests/modifiers.test.ts`): every id
+  resolves, every buff actually does something, refinement series start at their base value, and
+  the tables are non-empty — the loader's `catch { return [] }` would otherwise degrade a malformed
+  file to "no modifiers at all" in silence.
+- **A multiplier of 1 means NO reaction.** `REACTIONS.none.mult` is `1`, which is truthy — reading
+  it as `mult ? … : 1` applied `emReactionBonus` to every hit and silently inflated any build with
+  EM (200 EM ≈ +35%). Always go through `ampReactionFactor(multiplier, em)`.
 - Damage: amplifying reactions (`teamDamage.ts` `REACTIONS`), transformative + catalyze
   (Aggravate/Spread add to the hit), EM scaling. Enemy RES uses the game's **piecewise** curve
   (`resMultiplier`): linear 0–75%, `1/(1+4·RES)` above that, and **halved below zero** — so a −30%
@@ -152,6 +165,14 @@ changes per record) before committing — the files are one-record-per-line.
   (`resShredForElement` merges them with a build's own gear shreds and delegates the rules to the
   engine). `frontend/src/teamDamage.ts` `computeTeamDamage` is shared by the team builder and team
   compare; pass it `conditionalBuffs` or per-hit/RES effects are silently not applied.
+- **Rotations**: `frontend/src/rotation.ts` (`talentHits`) is the single enumeration of a
+  character's computable hits — the character page's rotation builder and the team estimate must
+  agree on a hit's id/multiplier/scope or a saved rotation resolves differently in each. Rotations
+  persist on `LoadoutInput.rotation`; a team member without one falls back to the illustrative
+  one-hit-per-talent instances, so un-rotated teams report what they always did.
+- **Per-character damage assumptions** (reaction + enemy) live in `frontend/src/damagePrefs.ts`,
+  stored per character id. `components/DamageAssumptions.tsx` holds `ENEMY_PRESETS` and the enemy
+  fieldset, shared by the character page and the team builder.
 
 ---
 
