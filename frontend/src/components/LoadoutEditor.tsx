@@ -14,7 +14,12 @@ import type {
 import { useState, useEffect, useRef } from "react";
 import { useHref } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { computeFinalStats, statRecord, validateArtifact } from "@app/stat-engine";
+import {
+  applicableConditionalBuffs,
+  computeFinalStats,
+  statRecord,
+  validateArtifact,
+} from "@app/stat-engine";
 import { useLoadoutStore, type ArtifactDraft } from "../state/loadoutStore";
 import { createLoadout, updateLoadout } from "../api";
 import { Card, Icon, StatRow } from "./ui";
@@ -106,12 +111,13 @@ export function LoadoutEditor({
     const d = artifacts[slot];
     if (d) setCounts.set(d.setId, (setCounts.get(d.setId) ?? 0) + 1);
   }
-  const applicableBuffs = (modifiers.conditionalBuffs ?? []).filter((b) => {
-    if (b.weaponId && b.weaponId !== weaponId) return false;
-    if (b.setId && (setCounts.get(b.setId) ?? 0) < (b.minPieces ?? 2)) return false;
-    if (b.minConstellation && constellation < b.minConstellation) return false;
-    if (b.element && b.element !== character.element) return false;
-    return true;
+  // Same gate the optimizer scores with (@app/stat-engine) — one implementation so the editor
+  // can't offer a buff the optimizer ignored, or vice versa.
+  const applicableBuffs = applicableConditionalBuffs(modifiers.conditionalBuffs, {
+    weaponId,
+    setCounts,
+    constellation,
+    element: character.element,
   });
   const applicableKey = applicableBuffs.map((b) => b.id).join(",");
   const seenRef = useRef<Set<string>>(new Set());

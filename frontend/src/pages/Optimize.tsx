@@ -41,6 +41,9 @@ export function OptimizePage() {
   const [setId, setSetId] = useState("");
   const [weaponId, setWeaponId] = useState("");
   const [target, setTarget] = useState<OptimizeTarget>("CV");
+  // Score candidates with the conditional buffs they unlock (the build you'd actually run), or
+  // bare — useful for judging the artifacts on their own.
+  const [includeConditionals, setIncludeConditionals] = useState(true);
   const [inventory, setInventory] = useState<OwnedArtifact[]>(() => loadInventory());
   const [importText, setImportText] = useState("");
   const [importMsg, setImportMsg] = useState<string | null>(null);
@@ -105,6 +108,8 @@ export function OptimizePage() {
       slotStatRules: { allowedMainStats: {}, allowedSubStats: [] },
       constellationBonuses: modifiersQ.data.constellationBonuses,
       weaponRefinements: modifiersQ.data.weaponRefinements,
+      // Without this the optimizer has no catalogue to check, so every candidate scores bare.
+      conditionalBuffs: modifiersQ.data.conditionalBuffs,
     };
     const worker = new Worker(new URL("../optimizer/worker.ts", import.meta.url), { type: "module" });
     worker.onmessage = (e: MessageEvent<{ ok: boolean; builds?: OptimizedBuild[]; error?: string }>) => {
@@ -116,7 +121,14 @@ export function OptimizePage() {
     worker.postMessage({
       inventory,
       dataset,
-      query: { characterId, weaponId: weaponId || null, setId: setId || undefined, target, topN: 5 },
+      query: {
+        characterId,
+        weaponId: weaponId || null,
+        setId: setId || undefined,
+        target,
+        topN: 5,
+        includeConditionals,
+      },
     });
   }
 
@@ -127,9 +139,14 @@ export function OptimizePage() {
       constellation: 0,
       refinement: 1,
       artifacts: build.artifacts.map(({ slot, setId: s, mainStat, subStats }) => ({ slot, setId: s, mainStat, subStats })),
+      activeConditionals: build.activeConditionals,
     });
     navigate(`/character/${characterId}?build=${code}`);
   }
+
+  // Human label for a conditional-buff id, for the "with N conditional buffs" result line.
+  const buffLabel = (id: string) =>
+    (modifiersQ.data?.conditionalBuffs ?? []).find((b) => b.id === id)?.label.split(" — ")[0] ?? id;
 
   // Same rule as importReady: everything onOptimize dereferences has to be loaded before the
   // button is enabled, or an early click silently does nothing.
@@ -226,6 +243,18 @@ export function OptimizePage() {
             </select>
           </label>
         </div>
+        <label className="opt-cond-toggle">
+          <input
+            type="checkbox"
+            checked={includeConditionals}
+            onChange={(e) => setIncludeConditionals(e.target.checked)}
+            aria-label="Count conditional buffs"
+          />
+          <span>
+            Count conditional buffs{" "}
+            <span className="muted small">— score the build you'd actually run, 4pc effects included</span>
+          </span>
+        </label>
         <div className="row-gap">
           <button className="btn primary" onClick={onOptimize} disabled={!ready || running}>
             {running ? "Optimizing…" : "Optimize"}
@@ -257,6 +286,15 @@ export function OptimizePage() {
                 <div className="opt-result-stats muted small">
                   {SUMMARY_KEYS.map((k) => `${k.replace("_", " ")} ${formatStat(k, b.finalStats[k] ?? 0)}`).join(" · ")}
                 </div>
+                {b.activeConditionals.length ? (
+                  <div className="opt-result-buffs muted small">
+                    with {b.activeConditionals.length} conditional buff
+                    {b.activeConditionals.length === 1 ? "" : "s"}:{" "}
+                    {b.activeConditionals
+                      .map((id) => buffLabel(id))
+                      .join(" · ")}
+                  </div>
+                ) : null}
               </li>
             ))}
           </ol>

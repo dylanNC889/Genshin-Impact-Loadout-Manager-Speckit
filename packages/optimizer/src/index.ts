@@ -1,5 +1,12 @@
-import type { ArtifactInstance, ArtifactSlot, Dataset, LoadoutInput } from "@app/contracts";
-import { computeFinalStats, statRecord } from "@app/stat-engine";
+import type {
+  ArtifactInstance,
+  ArtifactSlot,
+  ConditionalBuff,
+  Dataset,
+  Element,
+  LoadoutInput,
+} from "@app/contracts";
+import { computeFinalStats, defaultActiveConditionals, statRecord } from "@app/stat-engine";
 
 /** An owned artifact (an ArtifactInstance plus a stable id for de-dup/apply). */
 export interface OwnedArtifact extends ArtifactInstance {
@@ -22,12 +29,20 @@ export interface OptimizeQuery {
   /** Results to return (default 5) and candidates kept per slot before the search (default 8). */
   topN?: number;
   topKPerSlot?: number;
+  /**
+   * Score each candidate with the conditional buffs it unlocks (default true) — the build the
+   * player would actually run. Set false to rank the artifacts bare, which is a fair question
+   * ("what do these pieces give me on their own") but under-rates 4-piece sets.
+   */
+  includeConditionals?: boolean;
 }
 
 export interface OptimizedBuild {
   score: number;
   artifacts: OwnedArtifact[];
   finalStats: Record<string, number>;
+  /** Conditional-buff ids folded into `finalStats` (empty when includeConditionals is false). */
+  activeConditionals: string[];
 }
 
 const SLOTS: ArtifactSlot[] = ["Flower", "Plume", "Sands", "Goblet", "Circlet"];
@@ -52,6 +67,17 @@ function pruneScore(a: OwnedArtifact, target: OptimizeTarget): number {
     if (wanted && s.key === wanted) hit += s.value;
   }
   return cv + hit * 2;
+}
+
+/** The gates that don't depend on which artifacts a candidate uses, so they can be checked once. */
+function buffPassesFixedGates(
+  buff: ConditionalBuff,
+  ctx: { weaponId?: string | null; constellation?: number; element?: Element },
+): boolean {
+  if (buff.weaponId && buff.weaponId !== ctx.weaponId) return false;
+  if (buff.minConstellation && (ctx.constellation ?? 0) < buff.minConstellation) return false;
+  if (buff.element && buff.element !== ctx.element) return false;
+  return true;
 }
 
 function scoreOf(final: Record<string, number>, target: OptimizeTarget): number {
@@ -92,6 +118,23 @@ export function optimize(inventory: OwnedArtifact[], dataset: Dataset, q: Optimi
     activeConditionals: [],
   };
 
+  // Conditional buffs (batch 7 #3). Scoring every candidate bare made the optimizer blind to the
+  // 4-piece effects players build around — it could not see Marechaussee Hunter's +36% CRIT Rate
+  // under target CV, or Noblesse Oblige's +20% ATK under target ATK, so it under-rated the very
+  // sets it should recommend.
+  //
+  // The weapon, constellation and element gates are fixed for the whole search, so narrow the
+  // catalogue once up front; only the set-piece counts vary per candidate.
+  const includeConditionals = q.includeConditionals ?? true;
+  const element = dataset.characters.find((c) => c.id === q.characterId)?.element;
+  const fixedCtx = { weaponId: baseLoadout.weaponId, constellation: baseLoadout.constellation, element };
+  const candidateBuffs = includeConditionals
+    ? (dataset.conditionalBuffs ?? []).filter((b) =>
+        // Re-checked per candidate with real counts; here just drop what gear can never unlock.
+        buffPassesFixedGates(b, fixedCtx),
+      )
+    : [];
+
   const results: OptimizedBuild[] = [];
   for (const flower of bySlot.Flower)
     for (const plume of bySlot.Plume)
@@ -99,8 +142,16 @@ export function optimize(inventory: OwnedArtifact[], dataset: Dataset, q: Optimi
         for (const goblet of bySlot.Goblet)
           for (const circlet of bySlot.Circlet) {
             const artifacts = [flower, plume, sands, goblet, circlet];
-            const final = statRecord(computeFinalStats({ ...baseLoadout, artifacts }, dataset).stats);
-            results.push({ score: scoreOf(final, q.target), artifacts, finalStats: final });
+            let activeConditionals: string[] = [];
+            if (candidateBuffs.length) {
+              const setCounts = new Map<string, number>();
+              for (const a of artifacts) setCounts.set(a.setId, (setCounts.get(a.setId) ?? 0) + 1);
+              activeConditionals = defaultActiveConditionals(candidateBuffs, { ...fixedCtx, setCounts });
+            }
+            const final = statRecord(
+              computeFinalStats({ ...baseLoadout, artifacts, activeConditionals }, dataset).stats,
+            );
+            results.push({ score: scoreOf(final, q.target), artifacts, finalStats: final, activeConditionals });
           }
 
   return results.sort((a, b) => b.score - a.score).slice(0, topN);

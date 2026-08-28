@@ -2,6 +2,7 @@ export * from "./stats/stat-map";
 export * from "./stats/base-stats";
 export * from "./stats/final-stats";
 export * from "./stats/combat-effects";
+export * from "./stats/conditional-buffs";
 export * from "./stats/validate-artifact";
 export * from "./synergy/tables";
 export * from "./synergy/index";
