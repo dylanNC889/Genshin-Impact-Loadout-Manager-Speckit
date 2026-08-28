@@ -73,8 +73,9 @@ function pruneScore(a: OwnedArtifact, target: OptimizeTarget): number {
 /** The gates that don't depend on which artifacts a candidate uses, so they can be checked once. */
 function buffPassesFixedGates(
   buff: ConditionalBuff,
-  ctx: { weaponId?: string | null; constellation?: number; element?: Element },
+  ctx: { characterId?: string; weaponId?: string | null; constellation?: number; element?: Element },
 ): boolean {
+  if (buff.characterId && buff.characterId !== ctx.characterId) return false;
   if (buff.weaponId && buff.weaponId !== ctx.weaponId) return false;
   if (buff.minConstellation && (ctx.constellation ?? 0) < buff.minConstellation) return false;
   if (buff.element && buff.element !== ctx.element) return false;
@@ -130,7 +131,12 @@ export function optimize(inventory: OwnedArtifact[], dataset: Dataset, q: Optimi
   // catalogue once up front; only the set-piece counts vary per candidate.
   const includeConditionals = q.includeConditionals ?? true;
   const element = dataset.characters.find((c) => c.id === q.characterId)?.element;
-  const fixedCtx = { weaponId: baseLoadout.weaponId, constellation: baseLoadout.constellation, element };
+  const fixedCtx = {
+    characterId: q.characterId,
+    weaponId: baseLoadout.weaponId,
+    constellation: baseLoadout.constellation,
+    element,
+  };
   const candidateBuffs = includeConditionals
     ? (dataset.conditionalBuffs ?? []).filter((b) =>
         // Re-checked per candidate with real counts; here just drop what gear can never unlock.

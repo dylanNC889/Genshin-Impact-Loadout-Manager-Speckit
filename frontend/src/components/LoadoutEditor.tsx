@@ -115,11 +115,17 @@ export function LoadoutEditor({
   // Same gate the optimizer scores with (@app/stat-engine) — one implementation so the editor
   // can't offer a buff the optimizer ignored, or vice versa.
   const applicableBuffs = applicableConditionalBuffs(modifiers.conditionalBuffs, {
+    characterId: character.id,
     weaponId,
     setCounts,
     constellation,
     element: character.element,
   });
+  // Gear first, then constellations — two different sources of buff, listed under their own heads.
+  const gearBuffs = applicableBuffs.filter((b) => !b.minConstellation);
+  const constellationBuffs = applicableBuffs.filter((b) => b.minConstellation);
+  const ordered = [...gearBuffs, ...constellationBuffs];
+
   const applicableKey = applicableBuffs.map((b) => b.id).join(",");
   const seenRef = useRef<Set<string>>(new Set());
   // When the applicable set changes: prune inapplicable ids and enable newly-applicable defaults.
@@ -347,13 +353,22 @@ export function LoadoutEditor({
                 Conditional buffs{" "}
                 <span className="muted small">approx · sheet stats fold into Final Stats when on</span>
               </div>
-              {applicableBuffs.map((b) => {
+              {gearBuffs.length && constellationBuffs.length ? (
+                <div className="cond-subhead muted small">From gear</div>
+              ) : null}
+              {ordered.map((b, i) => {
+                // Constellation buffs come from the character, not the build, so separate them —
+                // a C6 effect sitting among artifact effects reads as something you equipped.
+                const startsConstellations =
+                  Boolean(b.minConstellation) && (i === 0 || !ordered[i - 1]?.minConstellation);
                 // Per-hit DMG% and RES shred can't be sheet stats, so a buff made only of those
                 // leaves Final Stats unchanged and shows up in the damage numbers instead. Say so,
                 // or toggling it looks broken.
                 const combatOnly = !b.effects.length && Boolean(b.talentDmgBonuses?.length || b.resShred);
                 return (
-                  <label key={b.id} className="cond-buff">
+                  <div key={b.id}>
+                    {startsConstellations ? <div className="cond-subhead muted small">From constellations</div> : null}
+                  <label className="cond-buff">
                     <input
                       type="checkbox"
                       checked={activeConditionals.includes(b.id)}
@@ -364,6 +379,7 @@ export function LoadoutEditor({
                       {combatOnly ? <span className="muted small"> · damage only</span> : null}
                     </span>
                   </label>
+                  </div>
                 );
               })}
             </div>

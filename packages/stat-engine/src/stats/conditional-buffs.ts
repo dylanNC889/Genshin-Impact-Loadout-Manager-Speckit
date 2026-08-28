@@ -9,6 +9,8 @@ import type { ConditionalBuff, Element } from "@app/contracts";
  * players build around. Extracted here so the editor and the optimizer answer it identically.
  */
 export interface BuffContext {
+  /** The character being built — gates constellation buffs to their own owner. */
+  characterId?: string;
   weaponId?: string | null;
   /** Equipped piece count per set id. */
   setCounts: Map<string, number> | Record<string, number>;
@@ -22,6 +24,7 @@ const countFor = (counts: BuffContext["setCounts"], setId: string): number =>
 
 /** True when `ctx` unlocks `buff` (all declared gates satisfied). */
 export function buffApplies(buff: ConditionalBuff, ctx: BuffContext): boolean {
+  if (buff.characterId && buff.characterId !== ctx.characterId) return false;
   if (buff.weaponId && buff.weaponId !== ctx.weaponId) return false;
   // A set-gated buff defaults to the 2-piece tier when it doesn't say otherwise.
   if (buff.setId && countFor(ctx.setCounts, buff.setId) < (buff.minPieces ?? 2)) return false;
